@@ -50,7 +50,10 @@ export async function middleware(request: NextRequest) {
 
     return supabaseResponse
   } catch {
-    // Em caso de erro no middleware, deixar a requisição passar
+    // Em caso de erro, redirecionar raiz para login; demais rotas passam
+    if (request.nextUrl.pathname === '/') {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
     return NextResponse.next({ request })
   }
 }
