@@ -28,11 +28,7 @@ jobs:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
         run: |
           echo "Preparando SQL..."
-          python3 -c "
-import json
-sql = open('sql/schema.sql').read()
-print(json.dumps({'query': sql}))
-" > /tmp/query.json
+          python3 -c "import json; sql=open('sql/schema.sql').read(); print(json.dumps({'query':sql}))" > /tmp/query.json
 
           echo "Enviando para Supabase Management API..."
           RESPONSE=$(curl -s -w "\n%{http_code}" \
