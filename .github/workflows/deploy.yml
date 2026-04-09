@@ -13,6 +13,8 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -26,20 +28,19 @@ jobs:
       - name: Migration SQL no Supabase
         env:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p /tmp/debug
-          echo "Token length: ${#SUPABASE_PAT}" > /tmp/debug/result.txt
-
-          if [ -z "$SUPABASE_PAT" ]; then
-            echo "ERRO: secret SUPABASE_PAT nao configurado!" >> /tmp/debug/result.txt
-            cat /tmp/debug/result.txt
-            exit 1
-          fi
+          OUT="debug-migration.txt"
+          echo "=== MIGRATION DEBUG ===" > $OUT
+          echo "Token length: ${#SUPABASE_PAT}" >> $OUT
+          echo "SUPABASE_REF: ${SUPABASE_REF}" >> $OUT
+          date >> $OUT
 
           python3 -c "import json; sql=open('sql/schema.sql').read(); print(json.dumps({'query':sql}))" > /tmp/query.json
-          echo "JSON size: $(wc -c < /tmp/query.json) bytes" >> /tmp/debug/result.txt
+          echo "JSON size: $(wc -c < /tmp/query.json) bytes" >> $OUT
 
-          RESPONSE=$(curl -sv -w "\nHTTP_CODE:%{http_code}" \
+          echo "--- Calling Supabase Management API ---" >> $OUT
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             -X POST \
             "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query" \
             -H "Authorization: Bearer ${SUPABASE_PAT}" \
@@ -47,25 +48,27 @@ jobs:
             --data @/tmp/query.json \
             --max-time 60 2>&1)
 
-          echo "$RESPONSE" >> /tmp/debug/result.txt
-          cat /tmp/debug/result.txt
+          echo "$RESPONSE" >> $OUT
 
-          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | tail -1 | cut -d: -f2)
-          echo "Extracted HTTP: $HTTP_CODE" >> /tmp/debug/result.txt
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
+          echo "HTTP Code: [$HTTP_CODE]" >> $OUT
 
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+          # Commitar debug output no repo (skip ci para não criar loop)
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add $OUT
+          git commit -m "debug: migration result [skip ci]" || true
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF_NAME} || true
+
+          echo "=== RESULTADO ==="
+          cat $OUT
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ] 2>/dev/null; then
             echo "Migration concluida!"
           else
-            echo "Erro na migration! HTTP $HTTP_CODE"
+            echo "Erro na migration! HTTP: $HTTP_CODE"
             exit 1
           fi
-
-      - name: Upload debug log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: migration-debug
-          path: /tmp/debug/result.txt
 
       # ── 2. Bucket de Storage ─────────────────────────────
       - name: Criar bucket 'produtos'
