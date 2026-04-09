@@ -8,6 +8,7 @@ on:
 env:
   SUPABASE_URL: https://eaovtnotwfzuxgtqpkay.supabase.co
   SUPABASE_ANON_KEY: sb_publishable_MhNCcezzMUbC7eEXfKByEA_xrFfZnl_
+  SUPABASE_REF: eaovtnotwfzuxgtqpkay
 
 jobs:
   deploy:
@@ -16,19 +17,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ── Node.js (necessário para migration e build) ──────
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
-      # ── 1. Migration Supabase ────────────────────────────
+      # ── 1. Migration via Supabase Management API ─────────
       - name: Migration SQL no Supabase
         env:
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
         run: |
-          npm install --no-save pg
-          node scripts/migrate.js
+          echo "Preparando SQL..."
+          python3 -c "
+import json
+sql = open('sql/schema.sql').read()
+print(json.dumps({'query': sql}))
+" > /tmp/query.json
+
+          echo "Enviando para Supabase Management API..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query" \
+            -H "Authorization: Bearer ${SUPABASE_PAT}" \
+            -H "Content-Type: application/json" \
+            --data @/tmp/query.json)
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          echo "HTTP: $HTTP_CODE"
+          echo "Resposta: ${BODY:0:300}"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Migration concluida!"
+          else
+            echo "Erro na migration!"
+            exit 1
+          fi
 
       # ── 2. Bucket de Storage ─────────────────────────────
       - name: Criar bucket 'produtos'
@@ -42,7 +66,7 @@ jobs:
           && echo "Bucket criado" \
           || echo "Bucket ja existe (ok)"
 
-      # ── 3. Instalar deps do projeto ──────────────────────
+      # ── 3. Deps do projeto ───────────────────────────────
       - name: npm ci
         run: npm ci
 
