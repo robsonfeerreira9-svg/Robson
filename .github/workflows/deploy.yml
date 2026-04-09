@@ -26,11 +26,10 @@ jobs:
       - name: Migration SQL no Supabase
         env:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Preparando SQL..."
           python3 -c "import json; sql=open('sql/schema.sql').read(); print(json.dumps({'query':sql}))" > /tmp/query.json
 
-          echo "Enviando para Supabase Management API..."
           RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             -X POST \
             "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query" \
@@ -42,9 +41,18 @@ jobs:
           HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
           BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS:")
           echo "HTTP: $HTTP_CODE"
-          echo "Resposta: ${BODY:0:500}"
+          echo "Response: $BODY"
 
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+          # Salvar resultado no repo para diagnóstico
+          echo "HTTP: $HTTP_CODE" > debug-migration.txt
+          echo "$BODY" >> debug-migration.txt
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add debug-migration.txt
+          git commit -m "debug: migration result [skip ci]" || true
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF_NAME} || true
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ] 2>/dev/null; then
             echo "Migration concluida!"
           else
             echo "Erro na migration! HTTP $HTTP_CODE"
