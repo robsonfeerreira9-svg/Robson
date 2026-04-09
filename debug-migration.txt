@@ -1,3 +1,2 @@
-PROJECT_ID=prj_nYWT5NJoSZVnutPDrAsoN7Tf0Dvo
-DEPLOY_EXIT=1
-Error: You specified `VERCEL_ORG_ID` but you forgot to specify `VERCEL_PROJECT_ID`. You need to specify both to deploy to a custom project.
+HTTP: 201
+[{"email":"socio@hggrifes.com","role":"socio","ativo":true},{"email":"func1@hggrifes.com","role":"funcionario","ativo":true}]
