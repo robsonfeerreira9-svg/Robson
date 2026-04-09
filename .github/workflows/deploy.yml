@@ -17,26 +17,12 @@ jobs:
       - uses: actions/checkout@v4
 
       # ── 1. Migration Supabase ────────────────────────────
-      - name: Instalar cliente PostgreSQL
-        run: sudo apt-get install -y postgresql-client
-
       - name: Migration SQL no Supabase
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          PGSSLMODE: require
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
-          echo "Testando conexao..."
-          psql -h db.eaovtnotwfzuxgtqpkay.supabase.co \
-               -U postgres -d postgres \
-               -c "SELECT 'conexao ok';"
-
-          echo "Executando schema.sql..."
-          psql -h db.eaovtnotwfzuxgtqpkay.supabase.co \
-               -U postgres -d postgres \
-               -v ON_ERROR_STOP=1 \
-               -f sql/schema.sql
-
-          echo "Banco configurado com sucesso"
+          npm install --no-save pg
+          node scripts/migrate.js
 
       # ── 2. Bucket de Storage ─────────────────────────────
       - name: Criar bucket 'produtos'
