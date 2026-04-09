@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
 import Image from 'next/image'
@@ -100,7 +100,7 @@ function AjusteModal({ produto, onClose, onSave }: AjusteModalProps) {
 }
 
 // ── Página principal ─────────────────────────────────────────────────────────
-export default function EstoquePage() {
+function EstoquePageInner() {
   const params = useSearchParams()
   const [toast, setToast] = useState<string | null>(null)
   const [ajusteModal, setAjusteModal] = useState<ProdutoComEstoque | null>(null)
@@ -320,5 +320,13 @@ export default function EstoquePage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function EstoquePage() {
+  return (
+    <Suspense>
+      <EstoquePageInner />
+    </Suspense>
   )
 }
