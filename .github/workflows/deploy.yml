@@ -131,6 +131,7 @@ jobs:
 
           # Deploy
           echo "=== Vercel Deploy ==="
+          export VERCEL_PROJECT_ID="$PROJECT_ID"
           DEPLOY_OUT=$(npx vercel@latest deploy --prod --token "$VERCEL_TOKEN" --yes 2>&1)
           DEPLOY_EXIT=$?
           echo "$DEPLOY_OUT"
