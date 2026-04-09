@@ -1,33 +1,31 @@
 #!/usr/bin/env node
-// Script de migration para o Supabase — usado no GitHub Actions
+// Migration Supabase — testa todas as regiões até achar a certa
 'use strict';
 
 const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
+// Todas as regiões do Supabase + conexão direta (IPv4 forçado)
 const HOSTS = [
-  // Conexão direta
-  {
-    host: 'db.eaovtnotwfzuxgtqpkay.supabase.co',
-    port: 5432,
-    user: 'postgres',
-    label: 'direto',
-  },
-  // Session pooler (sa-east-1)
-  {
-    host: 'aws-0-sa-east-1.pooler.supabase.com',
-    port: 5432,
-    user: 'postgres.eaovtnotwfzuxgtqpkay',
-    label: 'pooler sa-east-1',
-  },
-  // Session pooler (us-east-1 fallback)
-  {
-    host: 'aws-0-us-east-1.pooler.supabase.com',
+  // Conexão direta (força IPv4)
+  { host: 'db.eaovtnotwfzuxgtqpkay.supabase.co', port: 5432, user: 'postgres', label: 'direto-ipv4', family: 4 },
+  // Session pooler — todas as regiões disponíveis
+  ...[
+    'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2',
+    'eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-central-1', 'eu-north-1',
+    'sa-east-1',
+    'ap-southeast-1', 'ap-southeast-2',
+    'ap-northeast-1', 'ap-northeast-2',
+    'ap-south-1',
+    'ca-central-1',
+  ].map(r => ({
+    host: `aws-0-${r}.pooler.supabase.com`,
     port: 5432,
     user: 'postgres.eaovtnotwfzuxgtqpkay',
-    label: 'pooler us-east-1',
-  },
+    label: `pooler-${r}`,
+    family: 4,
+  })),
 ];
 
 async function tryConnect(cfg) {
@@ -38,7 +36,8 @@ async function tryConnect(cfg) {
     password: process.env.SUPABASE_DB_PASSWORD,
     database: 'postgres',
     ssl: { rejectUnauthorized: false },
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 8000,
+    family: cfg.family || 0,
   });
   await client.connect();
   return client;
@@ -49,21 +48,22 @@ async function main() {
   const sql = fs.readFileSync(sqlPath, 'utf8');
 
   for (const cfg of HOSTS) {
-    console.log(`\n→ Tentando ${cfg.label} (${cfg.host}:${cfg.port})...`);
+    process.stdout.write(`→ ${cfg.label}... `);
     let client;
     try {
       client = await tryConnect(cfg);
-      console.log('  ✓ Conectado!');
-
+      console.log('CONECTADO!');
       console.log('  Executando schema.sql...');
       await client.query(sql);
       console.log('  ✓ Migration concluída!\n');
       await client.end();
       process.exit(0);
     } catch (err) {
-      console.error(`  ✗ Erro: ${err.message}`);
-      if (err.code) console.error(`    Código: ${err.code}`);
+      const msg = err.message.replace(/\n/g, ' ').substring(0, 80);
+      console.log(`✗ ${msg}`);
       if (client) { try { await client.end(); } catch (_) {} }
+      // Parar cedo se não é problema de região
+      if (err.code === 'ECONNREFUSED') break;
     }
   }
 
