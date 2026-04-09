@@ -82,8 +82,8 @@ jobs:
           || echo "Bucket ja existe (ok)"
 
       # ── 3. Deps do projeto ───────────────────────────────
-      - name: npm ci
-        run: npm ci
+      - name: npm install
+        run: npm install
 
       # ── 4. Deploy Vercel ─────────────────────────────────
       - name: Deploy para Vercel (Production)
