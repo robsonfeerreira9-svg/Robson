@@ -440,7 +440,7 @@ BEGIN
       '00000000-0000-0000-0000-000000000000',
       'authenticated', 'authenticated',
       'socio@hggrifes.com',
-      crypt('senha123', gen_salt('bf')),
+      crypt('HG@2024socio', gen_salt('bf')),
       NOW(),
       '{"provider":"email","providers":["email"]}',
       '{"nome":"Admin Sócio","role":"socio"}',
@@ -455,7 +455,7 @@ BEGIN
   ON CONFLICT (email) DO NOTHING;
 
   -- ── Funcionário ──
-  SELECT id INTO v_func_id FROM auth.users WHERE email = 'func@hggrifes.com';
+  SELECT id INTO v_func_id FROM auth.users WHERE email = 'func1@hggrifes.com';
 
   IF v_func_id IS NULL THEN
     v_func_id := gen_random_uuid();
@@ -470,8 +470,8 @@ BEGIN
       v_func_id,
       '00000000-0000-0000-0000-000000000000',
       'authenticated', 'authenticated',
-      'func@hggrifes.com',
-      crypt('senha123', gen_salt('bf')),
+      'func1@hggrifes.com',
+      crypt('HG@2024func1', gen_salt('bf')),
       NOW(),
       '{"provider":"email","providers":["email"]}',
       '{"nome":"Funcionário Teste","role":"funcionario"}',
@@ -481,7 +481,7 @@ BEGIN
   END IF;
 
   INSERT INTO public.usuarios (id, nome, email, role, ativo)
-  VALUES (v_func_id, 'Funcionário Teste', 'func@hggrifes.com', 'funcionario', true)
+  VALUES (v_func_id, 'Funcionário Teste', 'func1@hggrifes.com', 'funcionario', true)
   ON CONFLICT (id)    DO UPDATE SET role = 'funcionario', ativo = true
   ON CONFLICT (email) DO NOTHING;
 
@@ -501,3 +501,4 @@ SELECT routine_name FROM information_schema.routines
   ORDER BY routine_name;
 
 SELECT email, role, ativo FROM public.usuarios ORDER BY role;
+-- Esperado: func1@hggrifes.com (funcionario), socio@hggrifes.com (socio)
