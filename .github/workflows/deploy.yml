@@ -13,6 +13,8 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -43,14 +45,22 @@ jobs:
           echo "HTTP: $HTTP_CODE"
           echo "Response: $BODY"
 
-          # Salvar resultado no repo para diagnóstico
-          echo "HTTP: $HTTP_CODE" > debug-migration.txt
-          echo "$BODY" >> debug-migration.txt
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git add debug-migration.txt
-          git commit -m "debug: migration result [skip ci]" || true
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF_NAME} || true
+          # Escrever debug diretamente via GitHub API (não precisa de git push)
+          DEBUG_CONTENT=$(printf "HTTP: %s\n%s" "$HTTP_CODE" "$BODY" | base64 -w0)
+          FILE_SHA=$(curl -s \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-migration.txt?ref=${GITHUB_REF_NAME}" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sha',''))" 2>/dev/null || echo "")
+          if [ -n "$FILE_SHA" ]; then
+            SHA_PARAM=",\"sha\":\"${FILE_SHA}\""
+          else
+            SHA_PARAM=""
+          fi
+          curl -s -X PUT \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-migration.txt" \
+            -d "{\"message\":\"debug: migration result [skip ci]\",\"content\":\"${DEBUG_CONTENT}\",\"branch\":\"${GITHUB_REF_NAME}\"${SHA_PARAM}}"
 
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ] 2>/dev/null; then
             echo "Migration concluida!"
