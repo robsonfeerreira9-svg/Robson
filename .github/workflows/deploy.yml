@@ -27,35 +27,31 @@ jobs:
         env:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
         run: |
+          mkdir -p /tmp/debug
+          echo "Token length: ${#SUPABASE_PAT}" > /tmp/debug/result.txt
+
           if [ -z "$SUPABASE_PAT" ]; then
-            echo "## ERRO: secret SUPABASE_PAT nao configurado!" >> $GITHUB_STEP_SUMMARY
+            echo "ERRO: secret SUPABASE_PAT nao configurado!" >> /tmp/debug/result.txt
+            cat /tmp/debug/result.txt
             exit 1
           fi
-          echo "Token OK: ${#SUPABASE_PAT} chars"
 
           python3 -c "import json; sql=open('sql/schema.sql').read(); print(json.dumps({'query':sql}))" > /tmp/query.json
-          echo "JSON gerado: $(wc -c < /tmp/query.json) bytes"
+          echo "JSON size: $(wc -c < /tmp/query.json) bytes" >> /tmp/debug/result.txt
 
-          RESPONSE=$(curl -s -w "\n%{http_code}" \
+          RESPONSE=$(curl -sv -w "\nHTTP_CODE:%{http_code}" \
             -X POST \
             "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query" \
             -H "Authorization: Bearer ${SUPABASE_PAT}" \
             -H "Content-Type: application/json" \
             --data @/tmp/query.json \
-            --max-time 60)
+            --max-time 60 2>&1)
 
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | head -n -1)
+          echo "$RESPONSE" >> /tmp/debug/result.txt
+          cat /tmp/debug/result.txt
 
-          echo "HTTP Code: $HTTP_CODE"
-          echo "Full Response Body:"
-          echo "$BODY"
-
-          echo "## Migration Result" >> $GITHUB_STEP_SUMMARY
-          echo "**HTTP Code:** $HTTP_CODE" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "$BODY" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | tail -1 | cut -d: -f2)
+          echo "Extracted HTTP: $HTTP_CODE" >> /tmp/debug/result.txt
 
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "Migration concluida!"
@@ -63,6 +59,13 @@ jobs:
             echo "Erro na migration! HTTP $HTTP_CODE"
             exit 1
           fi
+
+      - name: Upload debug log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-debug
+          path: /tmp/debug/result.txt
 
       # ── 2. Bucket de Storage ─────────────────────────────
       - name: Criar bucket 'produtos'
