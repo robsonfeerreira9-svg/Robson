@@ -49,9 +49,8 @@ export default function LoginPage() {
       } else {
         router.push('/pdv')
       }
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e)
-      setErro('Erro: ' + msg)
+    } catch {
+      setErro('Erro inesperado. Tente novamente.')
     } finally {
       setLoading(false)
     }
