@@ -1,0 +1,74 @@
+name: Deploy HG Grifes ERP
+
+on:
+  push:
+    branches: [claude/setup-rls-tables-QA4Za]
+  workflow_dispatch:
+
+env:
+  SUPABASE_URL: https://eaovtnotwfzuxgtqpkay.supabase.co
+  SUPABASE_ANON_KEY: sb_publishable_MhNCcezzMUbC7eEXfKByEA_xrFfZnl_
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── 1. Migration Supabase ────────────────────────────
+      - name: Migration SQL no Supabase
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "Executando schema.sql..."
+          psql \
+            "postgresql://postgres:${PGPASSWORD}@db.eaovtnotwfzuxgtqpkay.supabase.co:5432/postgres" \
+            -f sql/schema.sql
+          echo "Banco configurado com sucesso"
+
+      # ── 2. Bucket de Storage ─────────────────────────────
+      - name: Criar bucket 'produtos'
+        run: |
+          curl -sf -X POST \
+            "${SUPABASE_URL}/storage/v1/bucket" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"id":"produtos","name":"produtos","public":true}' \
+          && echo "Bucket criado" \
+          || echo "Bucket ja existe (ok)"
+
+      # ── 3. Node.js + deps ────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      # ── 4. Deploy Vercel ─────────────────────────────────
+      - name: Deploy para Vercel (Production)
+        run: |
+          npx vercel@latest link \
+            --token "${{ secrets.VERCEL_TOKEN }}" \
+            --scope "team_NRmTqJ7tXyq4AOLENBGyFHsa" \
+            --yes
+
+          echo "${SUPABASE_URL}" | npx vercel@latest env add \
+            NEXT_PUBLIC_SUPABASE_URL production \
+            --token "${{ secrets.VERCEL_TOKEN }}" --force 2>/dev/null || true
+
+          echo "${SUPABASE_ANON_KEY}" | npx vercel@latest env add \
+            NEXT_PUBLIC_SUPABASE_ANON_KEY production \
+            --token "${{ secrets.VERCEL_TOKEN }}" --force 2>/dev/null || true
+
+          DEPLOY_URL=$(npx vercel@latest deploy --prod \
+            --token "${{ secrets.VERCEL_TOKEN }}" --yes 2>&1 | grep "^https://" | tail -1)
+
+          echo ""
+          echo "======================================="
+          echo "  DEPLOY CONCLUIDO!"
+          echo "  URL: $DEPLOY_URL"
+          echo "======================================="
