@@ -16,6 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ── Node.js (necessário para migration e build) ──────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
       # ── 1. Migration Supabase ────────────────────────────
       - name: Migration SQL no Supabase
         env:
@@ -36,12 +42,7 @@ jobs:
           && echo "Bucket criado" \
           || echo "Bucket ja existe (ok)"
 
-      # ── 3. Node.js + deps ────────────────────────────────
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-
+      # ── 3. Instalar deps do projeto ──────────────────────
       - name: npm ci
         run: npm ci
 
