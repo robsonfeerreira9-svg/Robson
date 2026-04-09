@@ -1,14 +1,2 @@
-PROJECT_ID=prj_nYWT5NJoSZVnutPDrAsoN7Tf0Dvo
-DEPLOY_EXIT=0
-Retrieving project…
-Deploying robsons-projects-4e5d04b5/hg-grifes-erp
-Uploading [--------------------] (0.0B/6.9KB)
-Uploading [=====---------------] (1.7KB/6.9KB)
-Uploading [====================] (6.9KB/6.9KB)
-Inspect: https://vercel.com/robsons-projects-4e5d04b5/hg-grifes-erp/4yFAhFPddR4J9yUAEYdPTeV4CUaX [3s]
-Production: https://hg-grifes-3xnw3rjin-robsons-projects-4e5d04b5.vercel.app [3s]
-https://hg-grifes-3xnw3rjin-robsons-projects-4e5d04b5.vercel.appBuilding...
-Building...
-[2K[1A[2K[GProduction: https://hg-grifes-3xnw3rjin-robsons-projects-4e5d04b5.vercel.app [35s]
-Completing...
-Aliased: https://hg-grifes-erp.vercel.app [35s]
+HTTP: 201
+[{"email":"socio@hggrifes.com","role":"socio","ativo":true},{"email":"func1@hggrifes.com","role":"funcionario","ativo":true}]
