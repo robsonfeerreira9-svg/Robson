@@ -93,10 +93,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "=== Vercel Link ==="
-          npx vercel@latest link \
+          LINK_OUT=$(npx vercel@latest link \
             --token "$VERCEL_TOKEN" \
             --scope "$VERCEL_ORG_ID" \
-            --yes 2>&1 || { echo "LINK FALHOU"; exit 1; }
+            --yes 2>&1)
+          LINK_EXIT=$?
+          echo "$LINK_OUT"
+          if [ $LINK_EXIT -ne 0 ]; then
+            echo "LINK FALHOU (exit $LINK_EXIT)"
+            # Salvar erro no debug file
+            DEBUG_CONTENT=$(printf "LINK_EXIT=%s\nLINK_OUT:\n%s" "$LINK_EXIT" "$LINK_OUT" | base64 -w0)
+            FILE_SHA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-migration.txt?ref=${GITHUB_REF_NAME}" \
+              | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sha',''))" 2>/dev/null || echo "")
+            if [ -n "$FILE_SHA" ]; then SHA_P=",\"sha\":\"${FILE_SHA}\""; else SHA_P=""; fi
+            curl -s -X PUT -H "Authorization: token ${GITHUB_TOKEN}" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-migration.txt" \
+              -d "{\"message\":\"debug: vercel link error [skip ci]\",\"content\":\"${DEBUG_CONTENT}\",\"branch\":\"${GITHUB_REF_NAME}\"${SHA_P}}" || true
+            exit 1
+          fi
 
           echo "=== Vercel Env ==="
           echo "${SUPABASE_URL}" | npx vercel@latest env add \
