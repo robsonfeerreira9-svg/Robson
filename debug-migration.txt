@@ -1,9 +1,2 @@
-=== MIGRATION DEBUG ===
-Token length: 44
-SUPABASE_REF: eaovtnotwfzuxgtqpkay
-Thu Apr  9 11:50:41 UTC 2026
-JSON size: 23371 bytes
---- Calling Supabase Management API ---
-{"message":"Failed to run sql query: ERROR:  42601: syntax error at or near \"ON\"\nLINE 455:   ON CONFLICT (email) DO NOTHING;\n            ^\n"}
-HTTP_STATUS:400
-HTTP Code: [400]
+HTTP: 201
+[{"email":"socio@hggrifes.com","role":"socio","ativo":true},{"email":"func1@hggrifes.com","role":"funcionario","ativo":true}]
