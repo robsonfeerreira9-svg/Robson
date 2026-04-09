@@ -90,12 +90,15 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_NRmTqJ7tXyq4AOLENBGyFHsa
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "=== Vercel Link ==="
           npx vercel@latest link \
             --token "$VERCEL_TOKEN" \
             --scope "$VERCEL_ORG_ID" \
-            --yes
+            --yes 2>&1 || { echo "LINK FALHOU"; exit 1; }
 
+          echo "=== Vercel Env ==="
           echo "${SUPABASE_URL}" | npx vercel@latest env add \
             NEXT_PUBLIC_SUPABASE_URL production \
             --token "$VERCEL_TOKEN" --force 2>/dev/null || true
@@ -104,11 +107,26 @@ jobs:
             NEXT_PUBLIC_SUPABASE_ANON_KEY production \
             --token "$VERCEL_TOKEN" --force 2>/dev/null || true
 
-          DEPLOY_URL=$(npx vercel@latest deploy --prod \
-            --token "$VERCEL_TOKEN" --yes 2>&1 | grep "^https://" | tail -1)
+          echo "=== Vercel Deploy ==="
+          DEPLOY_OUT=$(npx vercel@latest deploy --prod \
+            --token "$VERCEL_TOKEN" --yes 2>&1)
+          echo "$DEPLOY_OUT"
+          DEPLOY_URL=$(echo "$DEPLOY_OUT" | grep "^https://" | tail -1)
 
           echo ""
           echo "======================================="
           echo "  DEPLOY CONCLUIDO!"
           echo "  URL: $DEPLOY_URL"
           echo "======================================="
+
+          # Salvar URL no debug file
+          DEBUG_CONTENT=$(printf "DEPLOY_URL=%s\n%s" "$DEPLOY_URL" "$DEPLOY_OUT" | base64 -w0)
+          FILE_SHA=$(curl -s \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-migration.txt?ref=${GITHUB_REF_NAME}" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sha',''))" 2>/dev/null || echo "")
+          if [ -n "$FILE_SHA" ]; then SHA_PARAM=",\"sha\":\"${FILE_SHA}\""; else SHA_PARAM=""; fi
+          curl -s -X PUT \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-migration.txt" \
+            -d "{\"message\":\"debug: vercel deploy result [skip ci]\",\"content\":\"${DEBUG_CONTENT}\",\"branch\":\"${GITHUB_REF_NAME}\"${SHA_PARAM}" 2>/dev/null || true
