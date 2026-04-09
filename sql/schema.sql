@@ -451,8 +451,7 @@ BEGIN
 
   INSERT INTO public.usuarios (id, nome, email, role, ativo)
   VALUES (v_socio_id, 'Admin Sócio', 'socio@hggrifes.com', 'socio', true)
-  ON CONFLICT (id)   DO UPDATE SET role = 'socio', ativo = true
-  ON CONFLICT (email) DO NOTHING;
+  ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome, role = EXCLUDED.role, ativo = EXCLUDED.ativo;
 
   -- ── Funcionário ──
   SELECT id INTO v_func_id FROM auth.users WHERE email = 'func1@hggrifes.com';
@@ -482,8 +481,7 @@ BEGIN
 
   INSERT INTO public.usuarios (id, nome, email, role, ativo)
   VALUES (v_func_id, 'Funcionário Teste', 'func1@hggrifes.com', 'funcionario', true)
-  ON CONFLICT (id)    DO UPDATE SET role = 'funcionario', ativo = true
-  ON CONFLICT (email) DO NOTHING;
+  ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome, role = EXCLUDED.role, ativo = EXCLUDED.ativo;
 
 END $$;
 
