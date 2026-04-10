@@ -886,6 +886,49 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 14: Limpeza e custos operacionais
+-- ─────────────────────────────────────────────────────
+DO $$
+BEGIN
+
+  -- Remove produto "cruzeiro" do estoque primeiro (FK constraint)
+  DELETE FROM public.estoque
+  WHERE produto_id IN (
+    SELECT id FROM public.produtos WHERE nome ILIKE '%cruzeiro%'
+  );
+
+  -- Remove o produto cruzeiro apenas se não há itens de venda referenciando-o
+  DELETE FROM public.produtos
+  WHERE nome ILIKE '%cruzeiro%'
+    AND NOT EXISTS (
+      SELECT 1 FROM public.itens_venda iv
+      WHERE iv.produto_id = public.produtos.id
+    );
+
+  -- Custo: Contabilidade R$350 em 15/04/2026 (idempotente)
+  INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, criado_em)
+  SELECT 'saida', 'custo_operacional', 'Contabilidade', 350.00, '2026-04-15 09:00:00+00'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.movimentacao_caixa
+    WHERE descricao = 'Contabilidade'
+      AND criado_em::date = '2026-04-15'
+      AND tipo = 'saida'
+  );
+
+  -- Custo: Pagamento Sistema R$110 em 08/04/2026 (idempotente)
+  INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, criado_em)
+  SELECT 'saida', 'custo_operacional', 'Pagamento Sistema', 110.00, '2026-04-08 09:00:00+00'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.movimentacao_caixa
+    WHERE descricao = 'Pagamento Sistema'
+      AND criado_em::date = '2026-04-08'
+      AND tipo = 'saida'
+  );
+
+END $$;
+
+
+-- ─────────────────────────────────────────────────────
 -- VALIDAÇÃO FINAL
 -- ─────────────────────────────────────────────────────
 -- Execute para confirmar que tudo foi criado:

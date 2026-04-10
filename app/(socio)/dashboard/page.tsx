@@ -192,6 +192,7 @@ function AnoPicker({ value, onChange }: { value: number; onChange: (a: number) =
 export default function DashboardPage() {
   const hoje = new Date()
   const [modo, setModo] = useState<ModoGrafico>('mensal')
+  const [comparar, setComparar] = useState(false)
 
   // Período principal (mensal)
   const [periodoA, setPeriodoA] = useState<PeriodoMes>({ ano: hoje.getFullYear(), mes: hoje.getMonth() + 1 })
@@ -346,16 +347,34 @@ export default function DashboardPage() {
                 {modo === 'mensal' ? (
                   <>
                     <MesPicker value={periodoA} onChange={setPeriodoA} />
-                    <span className="text-[#888888]">vs</span>
-                    <MesPicker value={periodoB} onChange={setPeriodoB} />
+                    {comparar && (
+                      <>
+                        <span className="text-[#888888]">vs</span>
+                        <MesPicker value={periodoB} onChange={setPeriodoB} />
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
                     <AnoPicker value={anoA} onChange={setAnoA} />
-                    <span className="text-[#888888]">vs</span>
-                    <AnoPicker value={anoB} onChange={setAnoB} />
+                    {comparar && (
+                      <>
+                        <span className="text-[#888888]">vs</span>
+                        <AnoPicker value={anoB} onChange={setAnoB} />
+                      </>
+                    )}
                   </>
                 )}
+                <button
+                  onClick={() => setComparar((v) => !v)}
+                  className={`px-2.5 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                    comparar
+                      ? 'bg-[#2A2A2A] text-[#F0F0F0] border-[#444444]'
+                      : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:text-gold hover:border-gold'
+                  }`}
+                >
+                  Comparar
+                </button>
               </div>
             </div>
           </div>
@@ -384,11 +403,13 @@ export default function DashboardPage() {
                 type="monotone" dataKey={keyA} stroke="#F5C518" strokeWidth={2}
                 dot={false} activeDot={{ r: 4, fill: '#F5C518', stroke: '#0D0D0D', strokeWidth: 2 }}
               />
-              <Line
-                type="monotone" dataKey={keyB} stroke="#555555" strokeWidth={1.5}
-                strokeDasharray="4 4" dot={false}
-                activeDot={{ r: 3, fill: '#555555', stroke: '#0D0D0D', strokeWidth: 2 }}
-              />
+              {comparar && (
+                <Line
+                  type="monotone" dataKey={keyB} stroke="#555555" strokeWidth={1.5}
+                  strokeDasharray="4 4" dot={false}
+                  activeDot={{ r: 3, fill: '#555555', stroke: '#0D0D0D', strokeWidth: 2 }}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </Card>
