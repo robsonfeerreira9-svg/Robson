@@ -614,14 +614,16 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
--- STEP 12 — SEED: 47 Produtos (somente se tabela vazia)
+-- STEP 12 — SEED: 47 Produtos (idempotente por nome+tamanho)
+-- Insere apenas os que ainda não existem — nunca duplica.
 -- ─────────────────────────────────────────────────────
 DO $$
 BEGIN
-  IF (SELECT COUNT(*) FROM public.produtos) > 0 THEN RETURN; END IF;
-
+  -- Inserir produtos que ainda não existem (por nome + tamanho)
   INSERT INTO public.produtos (nome, tamanho, canal, custo, markup_percentual, preco_venda)
-  VALUES
+  SELECT t.nome, t.tam::tamanho_produto, t.canal::canal_produto,
+         t.custo::NUMERIC, t.markup::NUMERIC, t.preco::NUMERIC
+  FROM (VALUES
     ('Camiseta Basic Oversize Preta',  'M',     'ambos',  45.00, 166.67, 120.00),
     ('Camiseta Basic Oversize Branca', 'P',     'ambos',  45.00, 166.67, 120.00),
     ('Camiseta Basic Oversize Cinza',  'G',     'ambos',  45.00, 166.67, 120.00),
@@ -668,9 +670,14 @@ BEGIN
     ('Necessaire HG Preta',            'UNICO', 'fisico', 30.00, 166.67,  80.00),
     ('Cinto Couro Preto',              'UNICO', 'fisico', 20.00, 175.00,  55.00),
     ('Conjunto Moletom Preto',         'M',     'fisico',200.00, 170.00, 540.00),
-    ('Conjunto Tactel Preto',          'M',     'fisico',120.00, 175.00, 330.00);
+    ('Conjunto Tactel Preto',          'M',     'fisico',120.00, 175.00, 330.00)
+  ) AS t(nome, tam, canal, custo, markup, preco)
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.produtos p
+    WHERE p.nome = t.nome AND p.tamanho::TEXT = t.tam
+  );
 
-  -- Inserir estoque para cada produto recém-criado
+  -- Inserir estoque para produtos que ainda não têm registro
   INSERT INTO public.estoque (produto_id, quantidade)
   SELECT p.id, dados.qty::INTEGER
   FROM public.produtos p
