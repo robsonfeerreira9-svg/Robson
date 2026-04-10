@@ -1,2 +1,2 @@
-HTTP: 400
-{"message":"Failed to run sql query: ERROR:  23502: null value in column \"produto_id\" of relation \"itens_venda\" violates not-null constraint\nDETAIL:  Failing row contains (541ea1ff-fb5c-45fe-b6ae-0e02d74c3543, ed658e52-05b6-4cb4-aacc-f1e36b23ce0e, null, 1, 120.00, 120.00).\nCONTEXT:  SQL statement \"INSERT INTO public.itens_venda (venda_id, produto_id, quantidade, preco_unitario, subtotal_item) VALUES\n    (v_vid, v_pid1, 1, 120.00, 120.00),\n    (v_vid, v_pid2, 1, 140.00, 140.00)\"\nPL/pgSQL function inline_code_block line 27 at SQL statement\n"}
+HTTP: 201
+[{"email":"socio@hggrifes.com","role":"socio","ativo":true},{"email":"func1@hggrifes.com","role":"funcionario","ativo":true},{"email":"camilly@hggrifes.com","role":"funcionario","ativo":true},{"email":"ciara@hggrifes.com","role":"funcionario","ativo":true}]
