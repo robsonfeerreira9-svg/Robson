@@ -732,7 +732,8 @@ END $$;
 -- ─────────────────────────────────────────────────────
 -- STEP 13 — SEED: Histórico de Vendas (somente se vazio)
 -- Insere diretamente sem chamar realizar_venda() para não
--- alterar o estoque (o estoque já reflete o estado atual)
+-- alterar o estoque (o estoque já reflete o estado atual).
+-- Requer que os produtos do STEP 12 existam (nome exato).
 -- ─────────────────────────────────────────────────────
 DO $$
 DECLARE
@@ -743,6 +744,12 @@ DECLARE
   v_pid2    UUID;
 BEGIN
   IF (SELECT COUNT(*) FROM public.vendas) > 0 THEN RETURN; END IF;
+
+  -- Verificar se os produtos do seed existem; se não, pular silenciosamente
+  IF (SELECT COUNT(*) FROM public.produtos WHERE nome = 'Camiseta Basic Oversize Preta' AND tamanho = 'M') = 0 THEN
+    RAISE NOTICE 'Produtos do seed não encontrados (tabela já tinha dados). Pulando histórico de vendas.';
+    RETURN;
+  END IF;
 
   SELECT id INTO v_camilly FROM public.usuarios WHERE email = 'camilly@hggrifes.com';
   SELECT id INTO v_ciara   FROM public.usuarios WHERE email = 'ciara@hggrifes.com';
