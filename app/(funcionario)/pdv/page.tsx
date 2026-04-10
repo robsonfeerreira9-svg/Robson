@@ -5,6 +5,7 @@ import { mutate } from 'swr'
 import ProductGrid from '@/components/pdv/ProductGrid'
 import Cart, { type CartItem } from '@/components/pdv/Cart'
 import type { ProdutoComEstoque } from '@/lib/database.types'
+import { createClient } from '@/lib/supabase'
 
 export default function PDVPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
@@ -71,6 +72,12 @@ export default function PDVPage() {
             >
               Dashboard →
             </a>
+            <button
+              onClick={async () => { await createClient().auth.signOut(); window.location.href = '/login' }}
+              className="text-xs text-[#FF4444] hover:text-white transition-colors border border-[#FF4444]/40 px-2.5 py-1 rounded hover:border-[#FF4444] hover:bg-[#FF4444]/10"
+            >
+              Sair
+            </button>
           </div>
         </div>
 

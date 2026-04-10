@@ -275,6 +275,12 @@ export default function DashboardPage() {
             <a href="/comissoes" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Comissões</a>
             <a href="/financeiro" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Financeiro</a>
             <a href="/campanhas" className="text-xs text-gold hover:text-[#F0F0F0] transition-colors border border-gold/40 px-3 py-1.5 rounded hover:border-gold">Campanhas</a>
+            <button
+              onClick={async () => { await createClient().auth.signOut(); window.location.href = '/login' }}
+              className="text-xs text-[#FF4444] hover:text-white transition-colors border border-[#FF4444]/40 px-3 py-1.5 rounded hover:border-[#FF4444] hover:bg-[#FF4444]/10"
+            >
+              Sair
+            </button>
           </div>
         </div>
 
