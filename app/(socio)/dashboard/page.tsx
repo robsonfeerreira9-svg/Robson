@@ -81,6 +81,24 @@ async function fetchRankingVendedores() {
   return Object.values(mapa).sort((a, b) => b.total - a.total)
 }
 
+async function fetchInventarioStats() {
+  const supabase = createClient()
+  const { data: produtos } = await supabase
+    .from('produtos')
+    .select('custo, preco_venda, estoque(quantidade)')
+
+  let totalInvestido = 0
+  let potencialRetorno = 0
+
+  for (const p of produtos ?? []) {
+    const qty = (p.estoque as { quantidade: number }[])?.[0]?.quantidade ?? 0
+    totalInvestido += Number(p.custo) * qty
+    potencialRetorno += Number(p.preco_venda) * qty
+  }
+
+  return { totalInvestido, potencialRetorno }
+}
+
 async function fetchAlertas() {
   const supabase = createClient()
   const limite30dias = new Date()
@@ -130,6 +148,7 @@ export default function DashboardPage() {
   const { data: grafico = [] } = useSWR('grafico', fetchGrafico, { refreshInterval: 60000 })
   const { data: ranking = [] } = useSWR('ranking', fetchRankingVendedores, { refreshInterval: 60000 })
   const { data: alertas } = useSWR('alertas-dash', fetchAlertas, { refreshInterval: 60000 })
+  const { data: inventario } = useSWR('inventario-stats', fetchInventarioStats, { refreshInterval: 60000 })
 
   const maxRanking = ranking[0]?.total ?? 1
 
@@ -142,7 +161,7 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Dashboard</h1>
             <p className="text-sm text-[#888888]">HG Grifes — Visão Geral</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap justify-end">
             <a href="/pdv" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">
               PDV
             </a>
@@ -154,6 +173,9 @@ export default function DashboardPage() {
             </a>
             <a href="/financeiro" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">
               Financeiro
+            </a>
+            <a href="/campanhas" className="text-xs text-gold hover:text-[#F0F0F0] transition-colors border border-gold/40 px-3 py-1.5 rounded hover:border-gold">
+              Campanhas
             </a>
           </div>
         </div>
@@ -181,6 +203,24 @@ export default function DashboardPage() {
               </Card>
             </>
           )}
+        </div>
+
+        {/* KPIs de Inventário */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card hover className="flex flex-col gap-1">
+            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold">Total Investido</p>
+            <p className="text-2xl font-black text-[#F0F0F0]">{formatarMoeda(inventario?.totalInvestido ?? 0)}</p>
+            <p className="text-xs text-[#888888]">custo × estoque atual</p>
+          </Card>
+          <Card hover className="flex flex-col gap-1">
+            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold">Potencial de Retorno</p>
+            <p className="text-2xl font-black text-gold">{formatarMoeda(inventario?.potencialRetorno ?? 0)}</p>
+            <p className="text-xs text-[#888888]">
+              {inventario && inventario.totalInvestido > 0
+                ? `${(((inventario.potencialRetorno - inventario.totalInvestido) / inventario.totalInvestido) * 100).toFixed(0)}% de lucro potencial`
+                : 'preço venda × estoque atual'}
+            </p>
+          </Card>
         </div>
 
         {/* Gráfico */}

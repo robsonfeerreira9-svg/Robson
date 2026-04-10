@@ -145,7 +145,7 @@ function EstoquePageInner() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Estoque</h1>
-            <p className="text-sm text-[#888888] mt-1">{produtosFiltrados.length} produtos</p>
+            <a href="/dashboard" className="text-xs text-[#888888] hover:text-gold transition-colors">← Dashboard</a>
           </div>
           <Button variant="primary" onClick={() => window.location.href = '/produtos/novo'}>
             + Novo Produto

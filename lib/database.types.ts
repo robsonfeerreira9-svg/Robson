@@ -89,6 +89,15 @@ export interface MovimentacaoCaixa {
   criado_em: string
 }
 
+export interface Campanha {
+  id: string
+  nome: string
+  descricao: string | null
+  desconto_pct: number
+  ativa: boolean
+  criado_em: string
+}
+
 // Tipo para a procedure realizar_venda
 export interface ItemVendaInput {
   produto_id: string

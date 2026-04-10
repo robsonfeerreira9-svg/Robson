@@ -12,7 +12,7 @@ import {
   formatarCPF,
   formatarTelefone,
 } from '@/lib/utils/preco'
-import type { ProdutoComEstoque, CanalVenda, MetodoPagamento, Usuario } from '@/lib/database.types'
+import type { ProdutoComEstoque, CanalVenda, MetodoPagamento, Usuario, Campanha } from '@/lib/database.types'
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 export interface CartItem {
@@ -47,6 +47,16 @@ async function fetchVendedores(): Promise<Usuario[]> {
   return data ?? []
 }
 
+async function fetchCampanhasAtivas(): Promise<Campanha[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('campanhas')
+    .select('*')
+    .eq('ativa', true)
+    .order('desconto_pct', { ascending: false })
+  return (data as Campanha[]) ?? []
+}
+
 // ── Métodos de pagamento ──────────────────────────────────────────────────────
 const METODOS: { value: MetodoPagamento; label: string }[] = [
   { value: 'pix', label: 'PIX' },
@@ -76,12 +86,14 @@ function useToast() {
 // ── Componente principal ──────────────────────────────────────────────────────
 export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRealizada }: CartProps) {
   const { data: vendedores = [] } = useSWR('vendedores', fetchVendedores)
+  const { data: campanhasAtivas = [] } = useSWR('campanhas-pdv', fetchCampanhasAtivas, { refreshInterval: 60000 })
   const { toast, show } = useToast()
 
   const [vendedorId, setVendedorId] = useState('')
   const [canalVenda, setCanalVenda] = useState<CanalVenda>('fisico')
   const [metodoPagamento, setMetodoPagamento] = useState<MetodoPagamento>('pix')
   const [loading, setLoading] = useState(false)
+  const [campanhaId, setCampanhaId] = useState('')
 
   // Dados do cliente
   const [cliente, setCliente] = useState<DadosCliente>({
@@ -94,9 +106,14 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   // ── Cálculos ────────────────────────────────────────────────────────────
   const subtotal = items.reduce((acc, i) => acc + i.produto.preco_venda * i.quantidade, 0)
   const isPix = metodoPagamento === 'pix'
+  const campanhaSelecionada = campanhasAtivas.find((c) => c.id === campanhaId) ?? null
+  const descontoCampanha = campanhaSelecionada && subtotal > 0
+    ? Number((subtotal * campanhaSelecionada.desconto_pct / 100).toFixed(2))
+    : 0
   const desconto = isPix && subtotal > 0 ? calcularDescontoPix(subtotal) : 0
   const descontoPct = isPix && subtotal > 0 ? calcularPercentualDescontoPix(subtotal) : 0
-  const totalFinal = subtotal - desconto
+  const totalDesconto = descontoCampanha + desconto
+  const totalFinal = subtotal - totalDesconto
 
   // ── Finalizar venda ──────────────────────────────────────────────────────
   async function handleFinalizarVenda() {
@@ -118,7 +135,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         p_canal_venda: canalVenda,
         p_metodo_pagamento: metodoPagamento,
         p_subtotal: Number(subtotal.toFixed(2)),
-        p_desconto_aplicado: Number(desconto.toFixed(2)),
+        p_desconto_aplicado: Number(totalDesconto.toFixed(2)),
         p_total_final: Number(totalFinal.toFixed(2)),
         p_itens: itens,
         p_cliente_cpf: cliente.cpf.replace(/\D/g, '') || undefined,
@@ -136,6 +153,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
       onClear()
       onVendaRealizada()
       setCliente({ nome: '', cpf: '', telefone: '', dataNascimento: '' })
+      setCampanhaId('')
     } catch (err) {
       show('Erro inesperado. Tente novamente.', 'error')
     } finally {
@@ -346,6 +364,43 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
             ))}
           </div>
         </div>
+
+        {/* Campanha / Desconto */}
+        <div className="px-3 pb-3">
+          <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">
+            Campanha
+          </p>
+          {campanhasAtivas.length === 0 ? (
+            <p className="text-xs text-[#888888]">Nenhuma campanha ativa</p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <button
+                onClick={() => setCampanhaId('')}
+                className={`w-full text-left py-1.5 px-2.5 rounded text-xs border transition-colors ${
+                  campanhaId === ''
+                    ? 'bg-[#2A2A2A] border-[#2A2A2A] text-[#F0F0F0]'
+                    : 'bg-transparent border-[#2A2A2A] text-[#888888] hover:border-gold'
+                }`}
+              >
+                Sem campanha
+              </button>
+              {campanhasAtivas.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setCampanhaId(c.id)}
+                  className={`w-full text-left py-1.5 px-2.5 rounded text-xs border transition-colors flex justify-between items-center ${
+                    campanhaId === c.id
+                      ? 'bg-gold/10 border-gold text-gold'
+                      : 'bg-transparent border-[#2A2A2A] text-[#888888] hover:border-gold'
+                  }`}
+                >
+                  <span className="truncate">{c.nome}</span>
+                  <span className="font-bold ml-2 flex-shrink-0">{c.desconto_pct}% OFF</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Rodapé com totais e botão */}
@@ -355,6 +410,12 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
             <span>Subtotal</span>
             <span>{formatarMoeda(subtotal)}</span>
           </div>
+          {campanhaSelecionada && descontoCampanha > 0 && (
+            <div className="flex justify-between text-gold font-semibold">
+              <span>{campanhaSelecionada.nome} ({campanhaSelecionada.desconto_pct}%)</span>
+              <span>− {formatarMoeda(descontoCampanha)}</span>
+            </div>
+          )}
           {isPix && subtotal > 0 && (
             <div className="flex justify-between text-gold font-semibold">
               <span>Desconto PIX ({descontoPct}%)</span>
