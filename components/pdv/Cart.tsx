@@ -7,8 +7,6 @@ import { createClient } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import {
   formatarMoeda,
-  calcularDescontoPix,
-  calcularPercentualDescontoPix,
   formatarCPF,
   formatarTelefone,
 } from '@/lib/utils/preco'
@@ -94,6 +92,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const [metodoPagamento, setMetodoPagamento] = useState<MetodoPagamento>('pix')
   const [loading, setLoading] = useState(false)
   const [campanhaId, setCampanhaId] = useState('')
+  const [descontoManualPct, setDescontoManualPct] = useState('')
 
   // Dados do cliente
   const [cliente, setCliente] = useState<DadosCliente>({
@@ -105,14 +104,15 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
 
   // ── Cálculos ────────────────────────────────────────────────────────────
   const subtotal = items.reduce((acc, i) => acc + i.produto.preco_venda * i.quantidade, 0)
-  const isPix = metodoPagamento === 'pix'
   const campanhaSelecionada = campanhasAtivas.find((c) => c.id === campanhaId) ?? null
   const descontoCampanha = campanhaSelecionada && subtotal > 0
     ? Number((subtotal * campanhaSelecionada.desconto_pct / 100).toFixed(2))
     : 0
-  const desconto = isPix && subtotal > 0 ? calcularDescontoPix(subtotal) : 0
-  const descontoPct = isPix && subtotal > 0 ? calcularPercentualDescontoPix(subtotal) : 0
-  const totalDesconto = descontoCampanha + desconto
+  const descontoManualPctNum = Math.max(0, Math.min(100, parseFloat(descontoManualPct) || 0))
+  const descontoManual = descontoManualPctNum > 0 && subtotal > 0
+    ? Number(((subtotal - descontoCampanha) * descontoManualPctNum / 100).toFixed(2))
+    : 0
+  const totalDesconto = descontoCampanha + descontoManual
   const totalFinal = subtotal - totalDesconto
 
   // ── Finalizar venda ──────────────────────────────────────────────────────
@@ -154,6 +154,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
       onVendaRealizada()
       setCliente({ nome: '', cpf: '', telefone: '', dataNascimento: '' })
       setCampanhaId('')
+      setDescontoManualPct('')
     } catch (err) {
       show('Erro inesperado. Tente novamente.', 'error')
     } finally {
@@ -212,7 +213,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
                 {/* Detalhes */}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-[#F0F0F0] truncate">{item.produto.nome}</p>
-                  <p className="text-[10px] text-[#888888]">{item.produto.tamanho} · {formatarMoeda(item.produto.preco_venda)}</p>
+                  <p className="text-[10px] text-[#888888]">{item.produto.numero || item.produto.tamanho} · {formatarMoeda(item.produto.preco_venda)}</p>
                   <p className="text-xs font-bold text-gold">{formatarMoeda(item.produto.preco_venda * item.quantidade)}</p>
                 </div>
 
@@ -365,6 +366,29 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
           </div>
         </div>
 
+        {/* Desconto manual % */}
+        <div className="px-3 pb-3">
+          <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">Desconto</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              placeholder="0"
+              value={descontoManualPct}
+              onChange={(e) => setDescontoManualPct(e.target.value)}
+              className="flex-1 bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
+            />
+            <span className="text-sm font-bold text-[#888888] flex-shrink-0">%</span>
+            {descontoManualPctNum > 0 && (
+              <span className="text-xs text-gold font-semibold flex-shrink-0">
+                − {formatarMoeda(descontoManual)}
+              </span>
+            )}
+          </div>
+        </div>
+
         {/* Campanha / Desconto */}
         <div className="px-3 pb-3">
           <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">
@@ -416,10 +440,10 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
               <span>− {formatarMoeda(descontoCampanha)}</span>
             </div>
           )}
-          {isPix && subtotal > 0 && (
+          {descontoManual > 0 && (
             <div className="flex justify-between text-gold font-semibold">
-              <span>Desconto PIX ({descontoPct}%)</span>
-              <span>− {formatarMoeda(desconto)}</span>
+              <span>Desconto ({descontoManualPctNum}%)</span>
+              <span>− {formatarMoeda(descontoManual)}</span>
             </div>
           )}
           <div className="flex justify-between font-black text-[#F0F0F0] text-base pt-1 border-t border-[#2A2A2A] mt-1">

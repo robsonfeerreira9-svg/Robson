@@ -886,6 +886,12 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 15: Adiciona coluna numero em produtos
+-- ─────────────────────────────────────────────────────
+ALTER TABLE public.produtos ADD COLUMN IF NOT EXISTS numero TEXT NULL;
+
+
+-- ─────────────────────────────────────────────────────
 -- STEP 14: Limpeza e custos operacionais
 -- ─────────────────────────────────────────────────────
 DO $$

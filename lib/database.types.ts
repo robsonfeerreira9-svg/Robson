@@ -29,6 +29,7 @@ export interface Produto {
   nome: string
   foto_url: string | null
   tamanho: TamanhoProduto
+  numero: string | null
   custo: number
   preco_venda: number
   markup_percentual: number

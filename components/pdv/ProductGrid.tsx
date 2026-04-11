@@ -170,9 +170,9 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
                       </div>
                     )}
 
-                    {/* Badge tamanho */}
+                    {/* Badge tamanho/numero */}
                     <span className="absolute top-1.5 left-1.5 bg-[#0D0D0D]/80 text-[#F0F0F0] text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      {produto.tamanho}
+                      {produto.numero || produto.tamanho}
                     </span>
 
                     {/* Quantidade no carrinho */}

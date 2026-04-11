@@ -35,6 +35,9 @@ export default function NovoProdutoPage() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null)
   const [fotoFile, setFotoFile] = useState<File | null>(null)
 
+  const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numero'>('letra')
+  const [numeroValue, setNumeroValue] = useState('')
+
   const [form, setForm] = useState({
     nome: '',
     tamanho: 'M' as TamanhoProduto,
@@ -118,7 +121,8 @@ export default function NovoProdutoPage() {
         .from('produtos')
         .insert({
           nome: form.nome.trim(),
-          tamanho: form.tamanho,
+          tamanho: tipoNumeracao === 'numero' ? 'UNICO' : form.tamanho,
+          numero: tipoNumeracao === 'numero' ? numeroValue.trim() || null : null,
           canal: form.canal,
           foto_url: fotoUrl,
           custo: userRole === 'socio' ? (parseFloat(form.custo) || 0) : 0,
@@ -213,21 +217,51 @@ export default function NovoProdutoPage() {
               required
             />
 
-            {/* Tamanho + Canal */}
-            <div className="grid grid-cols-2 gap-4">
-              <Select
-                label="Tamanho"
-                options={TAMANHOS}
-                value={form.tamanho}
-                onChange={(e) => setForm((f) => ({ ...f, tamanho: e.target.value as TamanhoProduto }))}
-              />
-              <Select
-                label="Canal"
-                options={CANAIS}
-                value={form.canal}
-                onChange={(e) => setForm((f) => ({ ...f, canal: e.target.value as CanalProduto }))}
-              />
+            {/* Numeração */}
+            <div>
+              <label className="block text-sm font-medium text-[#F0F0F0] mb-1.5">Tipo de Numeração</label>
+              <div className="flex rounded overflow-hidden border border-[#2A2A2A] mb-2">
+                {(['letra', 'numero'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTipoNumeracao(t)}
+                    className={`flex-1 py-2 text-xs font-semibold transition-colors ${
+                      tipoNumeracao === t ? 'bg-gold text-[#0D0D0D]' : 'bg-transparent text-[#888888] hover:text-gold'
+                    }`}
+                  >
+                    {t === 'letra' ? 'Letras (PP/P/M/G/GG)' : 'Números (38/39/40…)'}
+                  </button>
+                ))}
+              </div>
+              {tipoNumeracao === 'letra' ? (
+                <Select
+                  label="Tamanho"
+                  options={TAMANHOS}
+                  value={form.tamanho}
+                  onChange={(e) => setForm((f) => ({ ...f, tamanho: e.target.value as TamanhoProduto }))}
+                />
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-[#F0F0F0] mb-1">Número</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: 38, 39, 40, M, 42..."
+                    value={numeroValue}
+                    onChange={(e) => setNumeroValue(e.target.value)}
+                    className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
+                  />
+                </div>
+              )}
             </div>
+
+            {/* Canal */}
+            <Select
+              label="Canal"
+              options={CANAIS}
+              value={form.canal}
+              onChange={(e) => setForm((f) => ({ ...f, canal: e.target.value as CanalProduto }))}
+            />
 
             {/* Quantidade */}
             <Input

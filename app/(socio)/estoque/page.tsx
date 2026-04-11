@@ -30,39 +30,61 @@ function isProdutoParado(ultimaVenda: string | null) {
   return diff > 30 * 24 * 60 * 60 * 1000 // 30 dias
 }
 
-// ── Modal de ajuste de quantidade ───────────────────────────────────────────
-interface AjusteModalProps {
+// ── Modal de edição completa ─────────────────────────────────────────────────
+const TAMANHOS_OPCOES = ['PP', 'P', 'M', 'G', 'GG', 'UNICO'] as const
+
+interface EditarProdutoModalProps {
   produto: ProdutoComEstoque
   onClose: () => void
   onSave: () => void
 }
 
-function AjusteModal({ produto, onClose, onSave }: AjusteModalProps) {
+function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProps) {
   const estoqueAtual = produto.estoque?.[0]
-  const [novaQty, setNovaQty] = useState(String(estoqueAtual?.quantidade ?? 0))
+  const temNumero = !!produto.numero
+
+  const [nome, setNome] = useState(produto.nome)
+  const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numero'>(temNumero ? 'numero' : 'letra')
+  const [tamanho, setTamanho] = useState<TamanhoProduto>(produto.tamanho)
+  const [numero, setNumero] = useState(produto.numero ?? '')
+  const [preco, setPreco] = useState(String(produto.preco_venda))
+  const [qty, setQty] = useState(String(estoqueAtual?.quantidade ?? 0))
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 
   async function handleSalvar() {
-    const qty = parseInt(novaQty)
-    if (isNaN(qty) || qty < 0) {
-      setErro('Informe uma quantidade válida.')
-      return
-    }
+    if (!nome.trim()) { setErro('Nome é obrigatório.'); return }
+    const precoNum = parseFloat(preco)
+    if (isNaN(precoNum) || precoNum < 0) { setErro('Preço inválido.'); return }
+    const qtyNum = parseInt(qty)
+    if (isNaN(qtyNum) || qtyNum < 0) { setErro('Quantidade inválida.'); return }
+    if (tipoNumeracao === 'numero' && !numero.trim()) { setErro('Informe o número.'); return }
 
     setLoading(true)
     try {
       const supabase = createClient()
-      const { error } = await supabase
-        .from('estoque')
-        .update({ quantidade: qty, atualizado_em: new Date().toISOString() })
-        .eq('produto_id', produto.id)
 
-      if (error) throw error
+      const { error: prodErr } = await supabase
+        .from('produtos')
+        .update({
+          nome: nome.trim(),
+          tamanho: tipoNumeracao === 'letra' ? tamanho : 'UNICO',
+          numero: tipoNumeracao === 'numero' ? numero.trim() : null,
+          preco_venda: precoNum,
+        })
+        .eq('id', produto.id)
+      if (prodErr) throw prodErr
+
+      const { error: estErr } = await supabase
+        .from('estoque')
+        .update({ quantidade: qtyNum, atualizado_em: new Date().toISOString() })
+        .eq('produto_id', produto.id)
+      if (estErr) throw estErr
+
       onSave()
       onClose()
-    } catch (e) {
-      setErro('Erro ao atualizar estoque.')
+    } catch {
+      setErro('Erro ao salvar. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -70,26 +92,89 @@ function AjusteModal({ produto, onClose, onSave }: AjusteModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <Card className="w-full max-w-sm shadow-2xl">
-        <h3 className="font-bold text-[#F0F0F0] mb-1">Ajustar Estoque</h3>
-        <p className="text-sm text-[#888888] mb-4">{produto.nome} — {produto.tamanho}</p>
+      <Card className="w-full max-w-md shadow-2xl">
+        <h3 className="font-bold text-[#F0F0F0] mb-4">Editar Produto</h3>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
+          {/* Nome */}
           <div>
-            <label className="text-sm font-medium text-[#F0F0F0]">Nova quantidade</label>
+            <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Nome</label>
             <input
-              type="number"
-              min="0"
-              value={novaQty}
-              onChange={(e) => setNovaQty(e.target.value)}
+              type="text"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
               className="mt-1.5 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
               autoFocus
             />
           </div>
+
+          {/* Tipo de numeração */}
+          <div>
+            <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Numeração</label>
+            <div className="mt-1.5 flex rounded overflow-hidden border border-[#2A2A2A]">
+              {(['letra', 'numero'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTipoNumeracao(t)}
+                  className={`flex-1 py-2 text-xs font-semibold transition-colors ${
+                    tipoNumeracao === t ? 'bg-gold text-[#0D0D0D]' : 'bg-transparent text-[#888888] hover:text-gold'
+                  }`}
+                >
+                  {t === 'letra' ? 'Letras (PP/P/M…)' : 'Números (38/39/40…)'}
+                </button>
+              ))}
+            </div>
+            {tipoNumeracao === 'letra' ? (
+              <select
+                value={tamanho}
+                onChange={(e) => setTamanho(e.target.value as TamanhoProduto)}
+                className="mt-2 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+              >
+                {TAMANHOS_OPCOES.map((t) => (
+                  <option key={t} value={t} className="bg-[#1A1A1A]">{t}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                placeholder="Ex: 38, 39, 40, 42..."
+                value={numero}
+                onChange={(e) => setNumero(e.target.value)}
+                className="mt-2 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+              />
+            )}
+          </div>
+
+          {/* Preço + Quantidade */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Preço de Venda (R$)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={preco}
+                onChange={(e) => setPreco(e.target.value)}
+                className="mt-1.5 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Quantidade</label>
+              <input
+                type="number"
+                min="0"
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                className="mt-1.5 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+              />
+            </div>
+          </div>
+
           {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
-          <div className="flex gap-2">
+
+          <div className="flex gap-2 pt-1">
             <Button variant="primary" fullWidth loading={loading} onClick={handleSalvar}>
-              Confirmar
+              Salvar
             </Button>
             <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           </div>
@@ -103,8 +188,7 @@ function AjusteModal({ produto, onClose, onSave }: AjusteModalProps) {
 function EstoquePageInner() {
   const params = useSearchParams()
   const [toast, setToast] = useState<string | null>(null)
-  const [ajusteModal, setAjusteModal] = useState<ProdutoComEstoque | null>(null)
-
+  const [editarModal, setEditarModal] = useState<ProdutoComEstoque | null>(null)
   const [filtroTamanho, setFiltroTamanho] = useState<TamanhoProduto | 'todos'>('todos')
   const [filtroCanal, setFiltroCanal] = useState<CanalProduto | 'todos'>('todos')
   const [filtroAlerta, setFiltroAlerta] = useState(false)
@@ -274,7 +358,7 @@ function EstoquePageInner() {
                         </div>
                       </td>
                       <td className="px-4 py-3 font-medium text-[#F0F0F0] max-w-[200px] truncate">{produto.nome}</td>
-                      <td className="px-4 py-3"><Badge variant="default">{produto.tamanho}</Badge></td>
+                      <td className="px-4 py-3"><Badge variant="default">{produto.numero || produto.tamanho}</Badge></td>
                       <td className="px-4 py-3 text-[#888888] capitalize">{produto.canal}</td>
                       <td className="px-4 py-3 text-right font-bold text-[#F0F0F0]">{qty}</td>
                       <td className="px-4 py-3 text-right text-[#888888]">{formatarMoeda(produto.custo)}</td>
@@ -289,10 +373,10 @@ function EstoquePageInner() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button
-                          onClick={() => setAjusteModal(produto)}
+                          onClick={() => setEditarModal(produto)}
                           className="text-xs text-gold hover:underline font-semibold"
                         >
-                          Ajustar Qtd
+                          Editar
                         </button>
                       </td>
                     </tr>
@@ -304,11 +388,11 @@ function EstoquePageInner() {
         </div>
       </div>
 
-      {/* Modal ajuste */}
-      {ajusteModal && (
-        <AjusteModal
-          produto={ajusteModal}
-          onClose={() => setAjusteModal(null)}
+      {/* Modal editar */}
+      {editarModal && (
+        <EditarProdutoModal
+          produto={editarModal}
+          onClose={() => setEditarModal(null)}
           onSave={() => mutate('estoque-socio')}
         />
       )}
