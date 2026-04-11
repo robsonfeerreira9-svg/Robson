@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR, { mutate } from 'swr'
 import { createClient } from '@/lib/supabase'
 import Card from '@/components/ui/Card'
@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import { formatarMoeda } from '@/lib/utils/preco'
-import type { TipoMovimentacao, CategoriaMovimentacao } from '@/lib/database.types'
+import type { TipoMovimentacao, CategoriaMovimentacao, RoleUsuario } from '@/lib/database.types'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 interface Movimentacao {
@@ -21,8 +21,18 @@ interface Movimentacao {
   criado_em: string
 }
 
+// ── Helpers de data ────────────────────────────────────────────────────────────
+function primeiroDiaMes() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+}
+function hoje() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 // ── Fetcher ───────────────────────────────────────────────────────────────────
-async function fetchMovimentacoes(tipo: string, mes: string): Promise<Movimentacao[]> {
+async function fetchMovimentacoes(tipo: string, de: string, ate: string): Promise<Movimentacao[]> {
   const supabase = createClient()
   let query = supabase
     .from('movimentacao_caixa')
@@ -30,12 +40,11 @@ async function fetchMovimentacoes(tipo: string, mes: string): Promise<Movimentac
     .order('criado_em', { ascending: false })
 
   if (tipo) query = query.eq('tipo', tipo)
-
-  if (mes) {
-    const [ano, m] = mes.split('-')
-    const inicio = new Date(Number(ano), Number(m) - 1, 1).toISOString()
-    const fim = new Date(Number(ano), Number(m), 1).toISOString()
-    query = query.gte('criado_em', inicio).lt('criado_em', fim)
+  if (de)  query = query.gte('criado_em', de)
+  if (ate) {
+    const fim = new Date(ate)
+    fim.setDate(fim.getDate() + 1)
+    query = query.lt('criado_em', fim.toISOString())
   }
 
   const { data, error } = await query
@@ -44,6 +53,12 @@ async function fetchMovimentacoes(tipo: string, mes: string): Promise<Movimentac
 }
 
 // ── Modal de nova saída ───────────────────────────────────────────────────────
+const CATEGORIAS_SAIDA = [
+  { value: 'compra_estoque',   label: 'Compra de Estoque' },
+  { value: 'custo_operacional', label: 'Custo Operacional' },
+  { value: 'outro',            label: 'Outro' },
+]
+
 function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
   const [form, setForm] = useState({
     categoria: 'custo_operacional' as CategoriaMovimentacao,
@@ -53,37 +68,19 @@ function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () =
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 
-  const CATEGORIAS = [
-    { value: 'compra_estoque', label: 'Compra de Estoque' },
-    { value: 'custo_operacional', label: 'Custo Operacional' },
-    { value: 'outro', label: 'Outro' },
-  ]
-
   async function handleSalvar() {
-    if (!form.descricao.trim() || !form.valor) {
-      setErro('Preencha todos os campos.')
-      return
-    }
+    if (!form.descricao.trim() || !form.valor) { setErro('Preencha todos os campos.'); return }
     const valor = parseFloat(form.valor)
-    if (isNaN(valor) || valor <= 0) {
-      setErro('Informe um valor válido.')
-      return
-    }
+    if (isNaN(valor) || valor <= 0) { setErro('Informe um valor válido.'); return }
 
     setLoading(true)
     const supabase = createClient()
     const { error } = await supabase.from('movimentacao_caixa').insert({
-      tipo: 'saida',
-      categoria: form.categoria,
-      descricao: form.descricao.trim(),
-      valor,
+      tipo: 'saida', categoria: form.categoria,
+      descricao: form.descricao.trim(), valor,
     })
     setLoading(false)
-
-    if (error) {
-      setErro(`Erro: ${error.message}`)
-      return
-    }
+    if (error) { setErro(`Erro: ${error.message}`); return }
     onSave()
     onClose()
   }
@@ -93,32 +90,17 @@ function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () =
       <Card className="w-full max-w-sm shadow-2xl">
         <h3 className="font-bold text-[#F0F0F0] mb-4">Registrar Saída</h3>
         <div className="flex flex-col gap-3">
-          <Select
-            label="Categoria"
-            options={CATEGORIAS}
-            value={form.categoria}
-            onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as CategoriaMovimentacao }))}
-          />
-          <Input
-            label="Descrição"
-            placeholder="Ex: Aluguel, embalagens..."
+          <Select label="Categoria" options={CATEGORIAS_SAIDA} value={form.categoria}
+            onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as CategoriaMovimentacao }))} />
+          <Input label="Descrição" placeholder="Ex: Aluguel, embalagens..."
             value={form.descricao}
-            onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))}
-          />
-          <Input
-            label="Valor (R$)"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="0,00"
+            onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))} />
+          <Input label="Valor (R$)" type="number" min="0" step="0.01" placeholder="0,00"
             value={form.valor}
-            onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))}
-          />
+            onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} />
           {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
           <div className="flex gap-2 pt-1">
-            <Button variant="primary" fullWidth loading={loading} onClick={handleSalvar}>
-              Registrar Saída
-            </Button>
+            <Button variant="primary" fullWidth loading={loading} onClick={handleSalvar}>Registrar Saída</Button>
             <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           </div>
         </div>
@@ -129,85 +111,133 @@ function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () =
 
 // ── Página ────────────────────────────────────────────────────────────────────
 export default function FinanceiroPage() {
+  const [userRole, setUserRole] = useState<RoleUsuario | null>(null)
   const [tipoFiltro, setTipoFiltro] = useState('')
-  const [mes, setMes] = useState(() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-  })
+  const [dataInicio, setDataInicio] = useState(primeiroDiaMes)
+  const [dataFim,    setDataFim]    = useState(hoje)
   const [showModal, setShowModal] = useState(false)
 
-  const cacheKey = ['movimentacoes', tipoFiltro, mes]
-  const { data: movs = [], isLoading } = useSWR(cacheKey, () => fetchMovimentacoes(tipoFiltro, mes), {
-    refreshInterval: 30000,
-  })
+  // Detectar papel do usuário
+  useEffect(() => {
+    async function loadRole() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase.from('usuarios').select('role').eq('id', user.id).single()
+      setUserRole(data?.role as RoleUsuario ?? 'funcionario')
+    }
+    loadRole()
+  }, [])
+
+  const isSocio = userRole === 'socio'
+
+  const cacheKey = ['movimentacoes', tipoFiltro, dataInicio, dataFim]
+  const { data: movs = [], isLoading } = useSWR(
+    cacheKey,
+    () => fetchMovimentacoes(tipoFiltro, dataInicio, dataFim),
+    { refreshInterval: 30000 }
+  )
 
   const entradas = movs.filter((m) => m.tipo === 'entrada').reduce((a, m) => a + Number(m.valor), 0)
-  const saidas = movs.filter((m) => m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
-  const saldo = entradas - saidas
+  const saidas   = movs.filter((m) => m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
+  const saldo    = entradas - saidas
 
   const labelCategoria: Record<string, string> = {
-    venda: 'Venda',
-    compra_estoque: 'Compra Estoque',
-    custo_operacional: 'Custo Operacional',
-    outro: 'Outro',
+    venda: 'Venda', compra_estoque: 'Compra Estoque',
+    custo_operacional: 'Custo Operacional', outro: 'Outro',
   }
+
+  const backHref = isSocio ? '/dashboard' : '/pdv'
+  const backLabel = isSocio ? '← Dashboard' : '← PDV'
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] p-6">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Financeiro</h1>
-            <a href="/dashboard" className="text-xs text-[#888888] hover:text-gold transition-colors">← Dashboard</a>
+            <a href={backHref} className="text-xs text-[#888888] hover:text-gold transition-colors">{backLabel}</a>
           </div>
-          <Button variant="danger" onClick={() => setShowModal(true)}>
-            + Registrar Saída
-          </Button>
+          <Button variant="danger" onClick={() => setShowModal(true)}>+ Registrar Saída</Button>
         </div>
 
-        {/* Cards resumo */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card hover>
-            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Entradas</p>
-            <p className="text-2xl font-black text-success">{formatarMoeda(entradas)}</p>
-          </Card>
-          <Card hover>
-            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saídas</p>
-            <p className="text-2xl font-black text-danger">{formatarMoeda(saidas)}</p>
-          </Card>
-          <Card hover>
-            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo</p>
-            <p className={`text-2xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
-              {formatarMoeda(saldo)}
-            </p>
-          </Card>
-        </div>
+        {/* Cards resumo — somente sócio */}
+        {isSocio && (
+          <div className="grid grid-cols-3 gap-4">
+            <Card hover>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Entradas</p>
+              <p className="text-2xl font-black text-success">{formatarMoeda(entradas)}</p>
+            </Card>
+            <Card hover>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saídas</p>
+              <p className="text-2xl font-black text-danger">{formatarMoeda(saidas)}</p>
+            </Card>
+            <Card hover>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo</p>
+              <p className={`text-2xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
+                {formatarMoeda(saldo)}
+              </p>
+            </Card>
+          </div>
+        )}
 
         {/* Filtros */}
         <Card padding="sm">
           <div className="flex gap-4 flex-wrap items-end">
+            {/* Tipo — só sócio filtra por tipo */}
+            {isSocio && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-[#888888] font-medium">Tipo</label>
+                <select
+                  value={tipoFiltro}
+                  onChange={(e) => setTipoFiltro(e.target.value)}
+                  className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+                >
+                  <option value="">Todos</option>
+                  <option value="entrada" className="bg-[#1A1A1A]">Entradas</option>
+                  <option value="saida"   className="bg-[#1A1A1A]">Saídas</option>
+                </select>
+              </div>
+            )}
+
+            {/* Período — do dia ao dia */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-medium">Tipo</label>
-              <select
-                value={tipoFiltro}
-                onChange={(e) => setTipoFiltro(e.target.value)}
-                className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
-              >
-                <option value="">Todos</option>
-                <option value="entrada" className="bg-[#1A1A1A]">Entradas</option>
-                <option value="saida" className="bg-[#1A1A1A]">Saídas</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-medium">Mês</label>
+              <label className="text-xs text-[#888888] font-medium">De</label>
               <input
-                type="month"
-                value={mes}
-                onChange={(e) => setMes(e.target.value)}
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
                 className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
                 style={{ colorScheme: 'dark' }}
               />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-[#888888] font-medium">Até</label>
+              <input
+                type="date"
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
+                className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
+
+            {/* Atalhos rápidos de período */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-[#888888] font-medium">Atalho</label>
+              <div className="flex gap-1">
+                {[
+                  { label: 'Hoje', action: () => { setDataInicio(hoje()); setDataFim(hoje()) } },
+                  { label: 'Mês', action: () => { setDataInicio(primeiroDiaMes()); setDataFim(hoje()) } },
+                ].map((a) => (
+                  <button key={a.label} onClick={a.action}
+                    className="px-2.5 py-2 rounded border border-[#2A2A2A] text-xs text-[#888888] hover:border-gold hover:text-gold transition-colors">
+                    {a.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </Card>
@@ -256,10 +286,16 @@ export default function FinanceiroPage() {
                     <td className="px-4 py-3 text-[#F0F0F0] max-w-[250px] truncate">
                       {m.descricao ?? '—'}
                     </td>
+                    {/* Funcionário não vê valores individuais das entradas */}
                     <td className={`px-4 py-3 text-right font-bold ${
                       m.tipo === 'entrada' ? 'text-success' : 'text-danger'
                     }`}>
-                      {m.tipo === 'entrada' ? '+' : '-'} {formatarMoeda(Number(m.valor))}
+                      {isSocio
+                        ? `${m.tipo === 'entrada' ? '+' : '-'} ${formatarMoeda(Number(m.valor))}`
+                        : m.tipo === 'saida'
+                          ? `- ${formatarMoeda(Number(m.valor))}`
+                          : <span className="text-[#555555]">—</span>
+                      }
                     </td>
                   </tr>
                 ))

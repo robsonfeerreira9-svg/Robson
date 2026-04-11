@@ -66,11 +66,14 @@ export default function PDVPage() {
                 {cartItems.reduce((acc, i) => acc + i.quantidade, 0)} iten{cartItems.reduce((acc, i) => acc + i.quantidade, 0) !== 1 ? 's' : ''}
               </span>
             )}
-            <a
-              href="/dashboard"
-              className="text-xs text-[#888888] hover:text-gold transition-colors"
-            >
-              Dashboard →
+            <a href="/estoque" className="text-xs text-[#888888] hover:text-gold transition-colors">
+              Estoque
+            </a>
+            <a href="/campanhas" className="text-xs text-[#888888] hover:text-gold transition-colors">
+              Campanhas
+            </a>
+            <a href="/financeiro" className="text-xs text-[#888888] hover:text-gold transition-colors">
+              Financeiro
             </a>
             <button
               onClick={async () => { await createClient().auth.signOut(); window.location.href = '/login' }}
