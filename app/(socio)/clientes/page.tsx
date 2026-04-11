@@ -157,6 +157,120 @@ function formatarCPF(cpf: string | null) {
 
 const CANAL_LABEL: Record<string, string> = { fisico: 'Física', whatsapp: 'WhatsApp', instagram: 'Instagram' }
 const PAGO_LABEL:  Record<string, string> = { pix: 'PIX', credito: 'Crédito', debito: 'Débito', dinheiro: 'Dinheiro' }
+
+const FAIXAS = [
+  { label: 'Até 17',  min: 0,  max: 17  },
+  { label: '18–24',   min: 18, max: 24  },
+  { label: '25–34',   min: 25, max: 34  },
+  { label: '35–44',   min: 35, max: 44  },
+  { label: '45–54',   min: 45, max: 54  },
+  { label: '55+',     min: 55, max: 999 },
+]
+
+// ── Persona do cliente ────────────────────────────────────────────────────────
+function PersonaCliente({ clientes }: { clientes: ClienteStats[] }) {
+  const comIdade = clientes
+    .map((c) => ({ ...c, idade: calcularIdade(c.data_nascimento) }))
+    .filter((c): c is typeof c & { idade: number } => c.idade !== null)
+
+  if (comIdade.length === 0) {
+    return (
+      <Card>
+        <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">Persona do Cliente</h2>
+        <p className="text-xs text-[#888888]">
+          Nenhum cliente com data de nascimento cadastrada ainda.
+          Preencha as datas de nascimento no PDV para visualizar a persona.
+        </p>
+      </Card>
+    )
+  }
+
+  const idadeMedia = Math.round(comIdade.reduce((s, c) => s + c.idade, 0) / comIdade.length)
+  const idadeMinima = Math.min(...comIdade.map((c) => c.idade))
+  const idadeMaxima = Math.max(...comIdade.map((c) => c.idade))
+
+  const distribuicao = FAIXAS.map((f) => {
+    const count = comIdade.filter((c) => c.idade >= f.min && c.idade <= f.max).length
+    return { ...f, count, pct: comIdade.length > 0 ? (count / comIdade.length) * 100 : 0 }
+  })
+
+  const faixaDominante = distribuicao.reduce((a, b) => (b.count > a.count ? b : a))
+
+  // Perfil textual da persona
+  let perfilIdade = ''
+  if (idadeMedia < 20) perfilIdade = 'Jovem (adolescente/jovem adulto)'
+  else if (idadeMedia < 28) perfilIdade = 'Jovem adulto (18–27 anos)'
+  else if (idadeMedia < 38) perfilIdade = 'Adulto jovem (28–37 anos)'
+  else if (idadeMedia < 48) perfilIdade = 'Adulto (38–47 anos)'
+  else perfilIdade = 'Adulto maduro (48+ anos)'
+
+  return (
+    <Card>
+      <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4 flex items-center gap-2">
+        Persona do Cliente
+        <span className="text-xs text-[#888888] font-normal normal-case tracking-normal">
+          ({comIdade.length} de {clientes.length} com nascimento cadastrado)
+        </span>
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Lado esquerdo — números */}
+        <div className="flex flex-col gap-4">
+          {/* Idade média em destaque */}
+          <div className="bg-[#0D0D0D] rounded-xl p-4 flex items-center gap-4">
+            <div className="text-center">
+              <p className="text-5xl font-black text-gold leading-none">{idadeMedia}</p>
+              <p className="text-xs text-[#888888] mt-1 uppercase tracking-wide">anos</p>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[#F0F0F0]">Idade Média</p>
+              <p className="text-xs text-[#888888] mt-0.5">{perfilIdade}</p>
+              <p className="text-xs text-[#555555] mt-1">
+                Variação: {idadeMinima}–{idadeMaxima} anos
+              </p>
+            </div>
+          </div>
+
+          {/* Faixa dominante */}
+          <div className="bg-[#0D0D0D] rounded-xl p-4">
+            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Faixa mais comum</p>
+            <p className="text-xl font-black text-[#F0F0F0]">{faixaDominante.label} anos</p>
+            <p className="text-xs text-[#888888] mt-0.5">
+              {faixaDominante.count} cliente{faixaDominante.count !== 1 ? 's' : ''} — {faixaDominante.pct.toFixed(0)}% da base
+            </p>
+          </div>
+        </div>
+
+        {/* Lado direito — distribuição */}
+        <div>
+          <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-3">Distribuição por Faixa</p>
+          <div className="flex flex-col gap-2.5">
+            {distribuicao.map((f) => (
+              <div key={f.label}>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className={f.label === faixaDominante.label ? 'font-bold text-gold' : 'text-[#888888]'}>
+                    {f.label} anos
+                  </span>
+                  <span className="text-[#555555]">
+                    {f.count > 0 ? `${f.count} (${f.pct.toFixed(0)}%)` : '—'}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      f.label === faixaDominante.label ? 'bg-gold' : 'bg-[#3A3A3A]'
+                    }`}
+                    style={{ width: `${f.pct}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
 const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 
 // ── Modal de detalhe do cliente ───────────────────────────────────────────────
@@ -351,6 +465,9 @@ export default function ClientesPage() {
             </Card>
           ))}
         </div>
+
+        {/* Persona */}
+        {!isLoading && <PersonaCliente clientes={clientes} />}
 
         {/* Aniversariantes */}
         {aniversariantes.length > 0 && (
