@@ -43,39 +43,43 @@ type Filtro = 'todos' | 'novos' | 'fieis'
 // ── Fetchers ─────────────────────────────────────────────────────────────────
 async function fetchClientesStats(): Promise<ClienteStats[]> {
   const supabase = createClient()
-  const { data, error } = await supabase
+
+  // Busca TODOS os clientes cadastrados
+  const { data: clientesData, error: clientesError } = await supabase
+    .from('clientes')
+    .select('id, nome, cpf, telefone, data_nascimento')
+    .order('nome')
+  if (clientesError) throw clientesError
+
+  // Busca todas as vendas com cliente vinculado
+  const { data: vendasData, error: vendasError } = await supabase
     .from('vendas')
-    .select('cliente_id, total_final, criado_em, clientes(id, nome, cpf, telefone, data_nascimento)')
+    .select('cliente_id, total_final, criado_em')
     .not('cliente_id', 'is', null)
+  if (vendasError) throw vendasError
 
-  if (error) throw error
-
-  const map = new Map<string, ClienteStats>()
-
-  for (const venda of data ?? []) {
-    const c = venda.clientes as {
-      id: string; nome: string; cpf: string | null
-      telefone: string | null; data_nascimento: string | null
-    } | null
-    if (!c) continue
-
-    if (!map.has(c.id)) {
-      map.set(c.id, {
-        id: c.id, nome: c.nome, cpf: c.cpf,
-        telefone: c.telefone, data_nascimento: c.data_nascimento,
-        total_compras: 0, total_gasto: 0, ultima_compra: null,
-      })
+  // Agrega vendas por cliente
+  const vendasMap = new Map<string, { total_compras: number; total_gasto: number; ultima_compra: string | null }>()
+  for (const v of vendasData ?? []) {
+    if (!v.cliente_id) continue
+    if (!vendasMap.has(v.cliente_id)) {
+      vendasMap.set(v.cliente_id, { total_compras: 0, total_gasto: 0, ultima_compra: null })
     }
-
-    const entry = map.get(c.id)!
+    const entry = vendasMap.get(v.cliente_id)!
     entry.total_compras += 1
-    entry.total_gasto += venda.total_final
-    if (!entry.ultima_compra || venda.criado_em > entry.ultima_compra) {
-      entry.ultima_compra = venda.criado_em
+    entry.total_gasto += v.total_final
+    if (!entry.ultima_compra || v.criado_em > entry.ultima_compra) {
+      entry.ultima_compra = v.criado_em
     }
   }
 
-  return Array.from(map.values()).sort((a, b) => b.total_compras - a.total_compras || b.total_gasto - a.total_gasto)
+  // Combina: todos os clientes, com ou sem compras
+  return (clientesData ?? [])
+    .map((c) => {
+      const stats = vendasMap.get(c.id) ?? { total_compras: 0, total_gasto: 0, ultima_compra: null }
+      return { id: c.id, nome: c.nome, cpf: c.cpf, telefone: c.telefone, data_nascimento: c.data_nascimento, ...stats }
+    })
+    .sort((a, b) => b.total_compras - a.total_compras || b.total_gasto - a.total_gasto)
 }
 
 async function fetchAniversariantes(): Promise<Aniversariante[]> {
