@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
@@ -23,6 +23,14 @@ interface DadosCliente {
   cpf: string
   telefone: string
   dataNascimento: string
+}
+
+interface ClienteResult {
+  id: string
+  nome: string
+  cpf: string | null
+  telefone: string | null
+  data_nascimento: string | null
 }
 
 interface CartProps {
@@ -101,6 +109,55 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
     telefone: '',
     dataNascimento: '',
   })
+  const [clienteId, setClienteId] = useState<string | null>(null)
+  const [buscaCliente, setBuscaCliente] = useState('')
+  const [resultadosBusca, setResultadosBusca] = useState<ClienteResult[]>([])
+  const [buscando, setBuscando] = useState(false)
+  const [mostrarDropdown, setMostrarDropdown] = useState(false)
+
+  // Busca reativa de cliente por nome ou telefone
+  useEffect(() => {
+    if (buscaCliente.length < 2) {
+      setResultadosBusca([])
+      setMostrarDropdown(false)
+      return
+    }
+    const timer = setTimeout(async () => {
+      setBuscando(true)
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('clientes')
+          .select('id, nome, cpf, telefone, data_nascimento')
+          .or(`nome.ilike.%${buscaCliente}%,telefone.ilike.%${buscaCliente}%`)
+          .limit(6)
+        setResultadosBusca(data ?? [])
+        setMostrarDropdown(true)
+      } finally {
+        setBuscando(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [buscaCliente])
+
+  function selecionarCliente(c: ClienteResult) {
+    setClienteId(c.id)
+    setCliente({
+      nome: c.nome,
+      cpf: c.cpf ? formatarCPF(c.cpf) : '',
+      telefone: c.telefone ? formatarTelefone(c.telefone) : '',
+      dataNascimento: c.data_nascimento ?? '',
+    })
+    setBuscaCliente('')
+    setResultadosBusca([])
+    setMostrarDropdown(false)
+  }
+
+  function removerCliente() {
+    setClienteId(null)
+    setCliente({ nome: '', cpf: '', telefone: '', dataNascimento: '' })
+    setBuscaCliente('')
+  }
 
   // ── Cálculos ────────────────────────────────────────────────────────────
   const subtotal = items.reduce((acc, i) => acc + i.produto.preco_venda * i.quantidade, 0)
@@ -153,6 +210,8 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
       onClear()
       onVendaRealizada()
       setCliente({ nome: '', cpf: '', telefone: '', dataNascimento: '' })
+      setClienteId(null)
+      setBuscaCliente('')
       setCampanhaId('')
       setDescontoManualPct('')
     } catch (err) {
@@ -262,45 +321,108 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
           <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">
             Dados do Cliente
           </p>
-          <div className="flex flex-col gap-2">
-            <input
-              type="text"
-              placeholder="Nome completo"
-              value={cliente.nome}
-              onChange={(e) => setCliente((c) => ({ ...c, nome: e.target.value }))}
-              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
-            />
-            <input
-              type="text"
-              placeholder="CPF (000.000.000-00)"
-              value={cliente.cpf}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
-                setCliente((c) => ({ ...c, cpf: formatarCPF(raw) }))
-              }}
-              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
-            />
-            <input
-              type="text"
-              placeholder="Telefone (00) 00000-0000"
-              value={cliente.telefone}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
-                setCliente((c) => ({ ...c, telefone: formatarTelefone(raw) }))
-              }}
-              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
-            />
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-[#888888]">Data de nascimento</label>
-              <input
-                type="date"
-                value={cliente.dataNascimento}
-                onChange={(e) => setCliente((c) => ({ ...c, dataNascimento: e.target.value }))}
-                className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] focus:outline-none focus:border-gold"
-                style={{ colorScheme: 'dark' }}
-              />
+
+          {clienteId ? (
+            /* Cliente já encontrado e selecionado */
+            <div className="bg-[#0D0D0D] border border-gold/40 rounded-lg p-2.5 flex items-start justify-between gap-2">
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <p className="text-xs font-bold text-[#F0F0F0] truncate">{cliente.nome}</p>
+                {cliente.telefone && (
+                  <p className="text-[10px] text-[#888888]">{cliente.telefone}</p>
+                )}
+                <span className="text-[10px] text-gold font-semibold">cliente existente</span>
+              </div>
+              <button
+                onClick={removerCliente}
+                className="text-[10px] text-[#888888] hover:text-[#FF4444] transition-colors flex-shrink-0 mt-0.5 underline"
+              >
+                trocar
+              </button>
             </div>
-          </div>
+          ) : (
+            /* Busca + formulário de novo cliente */
+            <div className="flex flex-col gap-2">
+              {/* Campo de busca */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar cliente por nome ou telefone..."
+                  value={buscaCliente}
+                  onChange={(e) => setBuscaCliente(e.target.value)}
+                  onBlur={() => setTimeout(() => setMostrarDropdown(false), 150)}
+                  onFocus={() => resultadosBusca.length > 0 && setMostrarDropdown(true)}
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold pr-8"
+                />
+                {buscando && (
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#888888] text-[10px]">…</span>
+                )}
+
+                {/* Dropdown de resultados */}
+                {mostrarDropdown && resultadosBusca.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg shadow-xl overflow-hidden">
+                    {resultadosBusca.map((c) => (
+                      <button
+                        key={c.id}
+                        onMouseDown={() => selecionarCliente(c)}
+                        className="w-full text-left px-3 py-2 hover:bg-[#2A2A2A] transition-colors flex flex-col gap-0.5 border-b border-[#2A2A2A] last:border-0"
+                      >
+                        <span className="text-xs font-semibold text-[#F0F0F0]">{c.nome}</span>
+                        {c.telefone && (
+                          <span className="text-[10px] text-[#888888]">{formatarTelefone(c.telefone)}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Sem resultados */}
+                {mostrarDropdown && !buscando && buscaCliente.length >= 2 && resultadosBusca.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-3 py-2">
+                    <p className="text-[10px] text-[#888888]">Nenhum cliente encontrado — preencha abaixo para cadastrar</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Formulário manual (novo cliente) */}
+              <input
+                type="text"
+                placeholder="Nome completo"
+                value={cliente.nome}
+                onChange={(e) => setCliente((c) => ({ ...c, nome: e.target.value }))}
+                className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
+              />
+              <input
+                type="text"
+                placeholder="CPF (000.000.000-00)"
+                value={cliente.cpf}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
+                  setCliente((c) => ({ ...c, cpf: formatarCPF(raw) }))
+                }}
+                className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
+              />
+              <input
+                type="text"
+                placeholder="Telefone (00) 00000-0000"
+                value={cliente.telefone}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
+                  setCliente((c) => ({ ...c, telefone: formatarTelefone(raw) }))
+                }}
+                className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
+              />
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-[#888888]">Data de nascimento</label>
+                <input
+                  type="date"
+                  value={cliente.dataNascimento}
+                  onChange={(e) => setCliente((c) => ({ ...c, dataNascimento: e.target.value }))}
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] focus:outline-none focus:border-gold"
+                  style={{ colorScheme: 'dark' }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="border-t border-[#2A2A2A] mx-3 my-1" />
