@@ -886,6 +886,12 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 16: Adiciona meta_mensal em usuarios
+-- ─────────────────────────────────────────────────────
+ALTER TABLE public.usuarios ADD COLUMN IF NOT EXISTS meta_mensal NUMERIC(10,2) NULL;
+
+
+-- ─────────────────────────────────────────────────────
 -- STEP 15: Adiciona coluna numero em produtos
 -- ─────────────────────────────────────────────────────
 ALTER TABLE public.produtos ADD COLUMN IF NOT EXISTS numero TEXT NULL;

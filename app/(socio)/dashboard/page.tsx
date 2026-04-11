@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import useSWR from 'swr'
+import { useState, useRef } from 'react'
+import useSWR, { mutate as swrMutate } from 'swr'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend
@@ -108,6 +108,23 @@ async function fetchAlertas() {
   return { critico, parado }
 }
 
+interface FuncionariaMeta {
+  id: string
+  nome: string
+  meta_mensal: number | null
+}
+
+async function fetchFuncionariasMeta(): Promise<FuncionariaMeta[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('usuarios')
+    .select('id, nome, meta_mensal')
+    .eq('role', 'funcionario')
+    .eq('ativo', true)
+    .order('nome')
+  return (data as FuncionariaMeta[]) ?? []
+}
+
 async function fetchInventarioStats() {
   const supabase = createClient()
   const { data: produtos } = await supabase.from('produtos').select('custo, preco_venda, estoque(quantidade)')
@@ -188,6 +205,76 @@ function AnoPicker({ value, onChange }: { value: number; onChange: (a: number) =
   )
 }
 
+// ── Editor de meta inline ─────────────────────────────────────────────────────
+function MetaEditor({ funcionaria, onSaved }: { funcionaria: FuncionariaMeta; onSaved: () => void }) {
+  const [editando, setEditando] = useState(false)
+  const [valor, setValor] = useState(String(funcionaria.meta_mensal ?? ''))
+  const [salvando, setSalvando] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function iniciarEdicao() {
+    setValor(String(funcionaria.meta_mensal ?? ''))
+    setEditando(true)
+    setTimeout(() => inputRef.current?.focus(), 50)
+  }
+
+  async function salvar() {
+    setSalvando(true)
+    const supabase = createClient()
+    const metaNum = parseFloat(valor) || null
+    await supabase.from('usuarios').update({ meta_mensal: metaNum } as never).eq('id', funcionaria.id)
+    setSalvando(false)
+    setEditando(false)
+    onSaved()
+  }
+
+  if (editando) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-[#888888]">R$</span>
+        <input
+          ref={inputRef}
+          type="number"
+          min="0"
+          step="100"
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') salvar(); if (e.key === 'Escape') setEditando(false) }}
+          className="w-28 bg-[#0D0D0D] border border-gold rounded px-2 py-1 text-xs text-[#F0F0F0] focus:outline-none"
+          placeholder="0,00"
+        />
+        <button
+          onClick={salvar}
+          disabled={salvando}
+          className="text-success text-xs font-bold hover:opacity-80 transition-opacity"
+        >
+          {salvando ? '...' : '✓'}
+        </button>
+        <button
+          onClick={() => setEditando(false)}
+          className="text-[#888888] text-xs hover:text-[#FF4444] transition-colors"
+        >
+          ✕
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`text-xs font-bold ${funcionaria.meta_mensal ? 'text-gold' : 'text-[#555555]'}`}>
+        {funcionaria.meta_mensal ? formatarMoeda(funcionaria.meta_mensal) : 'Sem meta'}
+      </span>
+      <button
+        onClick={iniciarEdicao}
+        className="text-[10px] text-[#888888] hover:text-gold transition-colors underline"
+      >
+        {funcionaria.meta_mensal ? 'editar' : 'definir'}
+      </button>
+    </div>
+  )
+}
+
 // ── Página ───────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const hoje = new Date()
@@ -240,6 +327,7 @@ export default function DashboardPage() {
   )
   const { data: alertas }    = useSWR('alertas-dash',    fetchAlertas,        { refreshInterval: 60000 })
   const { data: inventario } = useSWR('inventario-stats', fetchInventarioStats, { refreshInterval: 60000 })
+  const { data: funcionariasMeta = [] } = useSWR('funcionarias-meta', fetchFuncionariasMeta)
 
   // ── Dados do gráfico mesclados ─────────────────────────────────────────────
   const chartData = modo === 'mensal'
@@ -494,6 +582,31 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
+
+        {/* Metas das vendedoras */}
+        {funcionariasMeta.length > 0 && (
+          <Card>
+            <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">
+              Metas Mensais — Vendedoras
+            </h2>
+            <div className="flex flex-col gap-4">
+              {funcionariasMeta.map((f) => (
+                <div key={f.id} className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-[#2A2A2A] text-gold flex items-center justify-center text-xs font-black flex-shrink-0">
+                      {f.nome.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-semibold text-[#F0F0F0] truncate">{f.nome}</span>
+                  </div>
+                  <MetaEditor
+                    funcionaria={f}
+                    onSaved={() => swrMutate('funcionarias-meta')}
+                  />
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
       </div>
     </div>

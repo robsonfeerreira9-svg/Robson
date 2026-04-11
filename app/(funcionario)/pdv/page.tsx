@@ -1,14 +1,22 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { mutate } from 'swr'
 import ProductGrid from '@/components/pdv/ProductGrid'
 import Cart, { type CartItem } from '@/components/pdv/Cart'
 import type { ProdutoComEstoque } from '@/lib/database.types'
 import { createClient } from '@/lib/supabase'
+import SplashMotivacional from '@/components/SplashMotivacional'
 
 export default function PDVPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [userId, setUserId] = useState('')
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id)
+    })
+  }, [])
 
   const handleAddToCart = useCallback((produto: ProdutoComEstoque) => {
     setCartItems((prev) => {
@@ -49,6 +57,9 @@ export default function PDVPage() {
 
   return (
     <div className="flex h-screen bg-[#0D0D0D] overflow-hidden">
+      {/* Splash motivacional — uma vez por dia */}
+      {userId && <SplashMotivacional userId={userId} />}
+
       {/* Cabeçalho mobile */}
       <div className="hidden" />
 
@@ -66,6 +77,9 @@ export default function PDVPage() {
                 {cartItems.reduce((acc, i) => acc + i.quantidade, 0)} iten{cartItems.reduce((acc, i) => acc + i.quantidade, 0) !== 1 ? 's' : ''}
               </span>
             )}
+            <a href="/perfil" className="text-xs text-gold hover:text-[#F0F0F0] transition-colors border border-gold/30 px-2 py-0.5 rounded hover:border-gold">
+              Meu Perfil
+            </a>
             <a href="/estoque" className="text-xs text-[#888888] hover:text-gold transition-colors">
               Estoque
             </a>

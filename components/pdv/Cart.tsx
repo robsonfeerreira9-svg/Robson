@@ -96,6 +96,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const { toast, show } = useToast()
 
   const [vendedorId, setVendedorId] = useState('')
+  const [currentUserId, setCurrentUserId] = useState('')
   const [canalVenda, setCanalVenda] = useState<CanalVenda>('fisico')
   const [metodoPagamento, setMetodoPagamento] = useState<MetodoPagamento>('pix')
   const [loading, setLoading] = useState(false)
@@ -114,6 +115,20 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const [resultadosBusca, setResultadosBusca] = useState<ClienteResult[]>([])
   const [buscando, setBuscando] = useState(false)
   const [mostrarDropdown, setMostrarDropdown] = useState(false)
+
+  // Auto-detectar e selecionar o usuário logado como vendedor
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (currentUserId && vendedores.length > 0 && !vendedorId) {
+      const eu = vendedores.find((v) => v.id === currentUserId)
+      if (eu) setVendedorId(eu.id)
+    }
+  }, [currentUserId, vendedores])
 
   // Busca reativa de cliente por nome ou telefone
   useEffect(() => {
@@ -427,23 +442,23 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
 
         <div className="border-t border-[#2A2A2A] mx-3 my-1" />
 
-        {/* Vendedor */}
+        {/* Vendedor — exibe apenas o nome da vendedora logada */}
         <div className="p-3">
           <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">
-            Vendedor
+            Vendedora
           </p>
-          <select
-            value={vendedorId}
-            onChange={(e) => setVendedorId(e.target.value)}
-            className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] focus:outline-none focus:border-gold"
-          >
-            <option value="">Selecionar vendedor...</option>
-            {vendedores.map((v) => (
-              <option key={v.id} value={v.id} className="bg-[#1A1A1A]">
-                {v.nome}
-              </option>
-            ))}
-          </select>
+          {vendedorId ? (
+            <div className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-gold text-[#0D0D0D] flex items-center justify-center text-[10px] font-black flex-shrink-0">
+                {vendedores.find((v) => v.id === vendedorId)?.nome.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-xs text-[#F0F0F0] font-semibold">
+                {vendedores.find((v) => v.id === vendedorId)?.nome}
+              </span>
+            </div>
+          ) : (
+            <p className="text-xs text-[#888888]">Carregando...</p>
+          )}
         </div>
 
         {/* Canal da venda */}

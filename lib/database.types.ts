@@ -12,6 +12,7 @@ export interface Usuario {
   email: string
   role: RoleUsuario
   ativo: boolean
+  meta_mensal: number | null
   criado_em: string
 }
 
