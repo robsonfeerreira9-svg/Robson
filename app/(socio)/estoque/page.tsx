@@ -47,6 +47,7 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
   const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numero'>(temNumero ? 'numero' : 'letra')
   const [tamanho, setTamanho] = useState<TamanhoProduto>(produto.tamanho)
   const [numero, setNumero] = useState(produto.numero ?? '')
+  const [custo, setCusto] = useState(String(produto.custo))
   const [preco, setPreco] = useState(String(produto.preco_venda))
   const [qty, setQty] = useState(String(estoqueAtual?.quantidade ?? 0))
   const [loading, setLoading] = useState(false)
@@ -54,6 +55,8 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
 
   async function handleSalvar() {
     if (!nome.trim()) { setErro('Nome é obrigatório.'); return }
+    const custoNum = parseFloat(custo)
+    if (isNaN(custoNum) || custoNum < 0) { setErro('Custo inválido.'); return }
     const precoNum = parseFloat(preco)
     if (isNaN(precoNum) || precoNum < 0) { setErro('Preço inválido.'); return }
     const qtyNum = parseInt(qty)
@@ -70,6 +73,7 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
           nome: nome.trim(),
           tamanho: tipoNumeracao === 'letra' ? tamanho : 'UNICO',
           numero: tipoNumeracao === 'numero' ? numero.trim() : null,
+          custo: custoNum,
           preco_venda: precoNum,
         })
         .eq('id', produto.id)
@@ -145,8 +149,19 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
             )}
           </div>
 
-          {/* Preço + Quantidade */}
+          {/* Custo + Preço de venda */}
           <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Custo (R$)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={custo}
+                onChange={(e) => setCusto(e.target.value)}
+                className="mt-1.5 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+              />
+            </div>
             <div>
               <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Preço de Venda (R$)</label>
               <input
@@ -158,16 +173,18 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
                 className="mt-1.5 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
               />
             </div>
-            <div>
-              <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Quantidade</label>
-              <input
-                type="number"
-                min="0"
-                value={qty}
-                onChange={(e) => setQty(e.target.value)}
-                className="mt-1.5 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
-              />
-            </div>
+          </div>
+
+          {/* Quantidade */}
+          <div>
+            <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Quantidade</label>
+            <input
+              type="number"
+              min="0"
+              value={qty}
+              onChange={(e) => setQty(e.target.value)}
+              className="mt-1.5 w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+            />
           </div>
 
           {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
