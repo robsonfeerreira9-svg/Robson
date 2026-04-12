@@ -209,25 +209,6 @@ function EstoquePageInner() {
   const [filtroTamanho, setFiltroTamanho] = useState<TamanhoProduto | 'todos'>('todos')
   const [filtroCanal, setFiltroCanal] = useState<CanalProduto | 'todos'>('todos')
   const [filtroAlerta, setFiltroAlerta] = useState(false)
-  const [limpandoSemFoto, setLimpandoSemFoto] = useState(false)
-
-  async function limparSemFoto() {
-    const semFoto = produtos.filter((p) => !p.foto_url)
-    if (semFoto.length === 0) { setToast('Nenhum produto sem foto.'); setTimeout(() => setToast(null), 3000); return }
-    if (!confirm(`Apagar ${semFoto.length} produto(s) sem foto? Esta ação não pode ser desfeita.`)) return
-    setLimpandoSemFoto(true)
-    const supabase = createClient()
-    const ids = semFoto.map((p) => p.id)
-    // Apaga estoque e depois produtos
-    await supabase.from('estoque').delete().in('produto_id', ids)
-    const { error } = await supabase.from('produtos').delete().in('id', ids)
-    setLimpandoSemFoto(false)
-    if (error) { setToast(`Erro: ${error.message}`); setTimeout(() => setToast(null), 4000); return }
-    setToast(`${ids.length} produto(s) removido(s).`)
-    setTimeout(() => setToast(null), 4000)
-    mutate('estoque-socio')
-  }
-
   const { data: produtos = [], isLoading } = useSWR('estoque-socio', fetchEstoque, {
     refreshInterval: 60000,
   })
@@ -266,16 +247,9 @@ function EstoquePageInner() {
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Estoque</h1>
             <a href="/dashboard" className="text-xs text-[#888888] hover:text-gold transition-colors">← Dashboard</a>
           </div>
-          <div className="flex gap-2">
-            {produtos.some((p) => !p.foto_url) && (
-              <Button variant="danger" loading={limpandoSemFoto} onClick={limparSemFoto}>
-                Limpar sem foto
-              </Button>
-            )}
-            <Button variant="primary" onClick={() => window.location.href = '/produtos/novo'}>
-              + Novo Produto
-            </Button>
-          </div>
+          <Button variant="primary" onClick={() => window.location.href = '/produtos/novo'}>
+            + Novo Produto
+          </Button>
         </div>
 
         {/* Filtros */}
