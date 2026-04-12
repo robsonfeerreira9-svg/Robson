@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import Card from '@/components/ui/Card'
-import { formatarMoeda } from '@/lib/utils/preco'
 import SplashMotivacional from '@/components/SplashMotivacional'
 
 interface PerfilData {
   nome: string
   qtdVendas: number
-  totalVendas: number
+  totalVendas: number  // usado só internamente para % da meta — não exibido
   meta: number | null
 }
 
@@ -27,13 +26,10 @@ async function fetchPerfil(userId: string): Promise<PerfilData> {
       .lt('criado_em', fimMes),
   ])
 
-  const qtdVendas = vendas?.length ?? 0
-  const totalVendas = (vendas ?? []).reduce((a, v) => a + Number(v.total_final), 0)
-
   return {
     nome: usuario?.nome ?? '',
-    qtdVendas,
-    totalVendas,
+    qtdVendas: vendas?.length ?? 0,
+    totalVendas: (vendas ?? []).reduce((a, v) => a + Number(v.total_final), 0),
     meta: usuario?.meta_mensal ?? null,
   }
 }
@@ -66,10 +62,6 @@ export default function PerfilPage() {
   const pct = perfil?.meta && perfil.meta > 0
     ? Math.min(100, (perfil.totalVendas / perfil.meta) * 100)
     : 0
-
-  const falta = perfil?.meta
-    ? Math.max(0, perfil.meta - perfil.totalVendas)
-    : null
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] p-6">
@@ -112,36 +104,22 @@ export default function PerfilPage() {
               </div>
             </Card>
 
-            {/* Cards de vendas do mês */}
-            <div className="grid grid-cols-2 gap-4">
-              <Card hover>
-                <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">
-                  Vendas no Mês
-                </p>
-                <p className="text-3xl font-black text-gold">{perfil.qtdVendas}</p>
-                <p className="text-[10px] text-[#888888] mt-1">
-                  {perfil.qtdVendas === 1 ? 'venda realizada' : 'vendas realizadas'}
-                </p>
-              </Card>
-              <Card hover>
-                <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">
-                  Faturado no Mês
-                </p>
-                <p className="text-2xl font-black text-success">{formatarMoeda(perfil.totalVendas)}</p>
-                <p className="text-[10px] text-[#888888] mt-1">valor total</p>
-              </Card>
-            </div>
+            {/* Cards de vendas do mês — apenas quantidade, sem valores */}
+            <Card hover>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">
+                Vendas no Mês
+              </p>
+              <p className="text-4xl font-black text-gold">{perfil.qtdVendas}</p>
+              <p className="text-[10px] text-[#888888] mt-1">
+                {perfil.qtdVendas === 1 ? 'venda realizada' : 'vendas realizadas'}
+              </p>
+            </Card>
 
             {/* Card de meta */}
             <Card>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide">
-                  Meta do Mês
-                </p>
-                {perfil.meta && (
-                  <span className="text-xs font-bold text-gold">{formatarMoeda(perfil.meta)}</span>
-                )}
-              </div>
+              <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-3">
+                Meta do Mês
+              </p>
 
               {!perfil.meta ? (
                 <p className="text-sm text-[#888888]">Meta não definida ainda — fale com o sócio.</p>
@@ -159,15 +137,15 @@ export default function PerfilPage() {
 
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[#888888]">
-                      {pct.toFixed(0)}% concluído
+                      {pct.toFixed(0)}% da meta
                     </span>
-                    {falta !== null && falta > 0 ? (
-                      <span className="text-xs font-bold text-[#F0F0F0]">
-                        Faltam {formatarMoeda(falta)}
-                      </span>
-                    ) : (
+                    {pct >= 100 ? (
                       <span className="text-xs font-black text-success uppercase tracking-wide">
                         Meta batida!
+                      </span>
+                    ) : (
+                      <span className="text-xs font-bold text-[#F0F0F0]">
+                        Continue assim!
                       </span>
                     )}
                   </div>

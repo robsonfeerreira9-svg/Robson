@@ -886,6 +886,126 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 17: Atualiza realizar_venda com suporte a data retroativa
+-- ─────────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.realizar_venda(
+  p_vendedor_id          UUID,
+  p_canal_venda          canal_venda_tipo,
+  p_metodo_pagamento     metodo_pagamento_tipo,
+  p_subtotal             NUMERIC,
+  p_desconto_aplicado    NUMERIC,
+  p_total_final          NUMERIC,
+  p_itens                JSONB,
+  p_cliente_cpf          TEXT        DEFAULT NULL,
+  p_cliente_nome         TEXT        DEFAULT NULL,
+  p_cliente_telefone     TEXT        DEFAULT NULL,
+  p_cliente_nascimento   DATE        DEFAULT NULL,
+  p_data_venda           TIMESTAMPTZ DEFAULT NULL
+)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_venda_id    UUID;
+  v_cliente_id  UUID;
+  v_item        JSONB;
+  v_estoque_qty INTEGER;
+  v_comissao    NUMERIC;
+  v_ts          TIMESTAMPTZ;
+BEGIN
+  v_ts := COALESCE(p_data_venda, NOW());
+
+  -- 1. Upsert cliente se CPF informado
+  IF p_cliente_cpf IS NOT NULL AND trim(p_cliente_cpf) != '' THEN
+    INSERT INTO public.clientes (cpf, nome, telefone, data_nascimento)
+    VALUES (
+      trim(p_cliente_cpf),
+      COALESCE(p_cliente_nome, 'Cliente'),
+      p_cliente_telefone,
+      p_cliente_nascimento
+    )
+    ON CONFLICT (cpf) DO UPDATE
+      SET nome            = EXCLUDED.nome,
+          telefone        = EXCLUDED.telefone,
+          data_nascimento = EXCLUDED.data_nascimento
+    RETURNING id INTO v_cliente_id;
+  END IF;
+
+  -- 2. Inserir venda com data customizada (retroativa ou agora)
+  INSERT INTO public.vendas (
+    vendedor_id, cliente_id, canal_venda, metodo_pagamento,
+    subtotal, desconto_aplicado, total_final, criado_em
+  ) VALUES (
+    p_vendedor_id, v_cliente_id, p_canal_venda, p_metodo_pagamento,
+    p_subtotal, p_desconto_aplicado, p_total_final, v_ts
+  )
+  RETURNING id INTO v_venda_id;
+
+  -- 3. Processar cada item
+  FOR v_item IN SELECT * FROM jsonb_array_elements(p_itens) LOOP
+
+    -- 3a. Inserir item_venda
+    INSERT INTO public.itens_venda (
+      venda_id, produto_id, quantidade, preco_unitario, subtotal_item
+    ) VALUES (
+      v_venda_id,
+      (v_item->>'produto_id')::UUID,
+      (v_item->>'quantidade')::INTEGER,
+      (v_item->>'preco_unitario')::NUMERIC,
+      (v_item->>'subtotal_item')::NUMERIC
+    );
+
+    -- 3b. Verificar estoque disponível
+    SELECT quantidade INTO v_estoque_qty
+    FROM public.estoque
+    WHERE produto_id = (v_item->>'produto_id')::UUID;
+
+    IF v_estoque_qty IS NULL THEN
+      RAISE EXCEPTION 'Produto % não encontrado no estoque', (v_item->>'produto_id');
+    END IF;
+
+    IF v_estoque_qty < (v_item->>'quantidade')::INTEGER THEN
+      RAISE EXCEPTION 'Estoque insuficiente para o produto %. Disponível: %, Solicitado: %',
+        (v_item->>'produto_id'), v_estoque_qty, (v_item->>'quantidade')::INTEGER;
+    END IF;
+
+    -- 3c. Debitar estoque
+    UPDATE public.estoque
+    SET
+      quantidade      = quantidade - (v_item->>'quantidade')::INTEGER,
+      ultima_venda_em = v_ts,
+      atualizado_em   = NOW()
+    WHERE produto_id = (v_item->>'produto_id')::UUID;
+
+  END LOOP;
+
+  -- 4. Calcular e inserir comissão (5% do total_final)
+  v_comissao := ROUND(p_total_final * 0.05, 2);
+  INSERT INTO public.comissoes (venda_id, vendedor_id, percentual, valor_comissao, criado_em)
+  VALUES (v_venda_id, p_vendedor_id, 5, v_comissao, v_ts);
+
+  -- 5. Registrar entrada no caixa
+  INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, referencia_venda_id, criado_em)
+  VALUES (
+    'entrada',
+    'venda',
+    'Venda #' || v_venda_id::TEXT,
+    p_total_final,
+    v_venda_id,
+    v_ts
+  );
+
+  RETURN v_venda_id;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE;
+END;
+$$;
+
+
+-- ─────────────────────────────────────────────────────
 -- STEP 16: Adiciona meta_mensal em usuarios
 -- ─────────────────────────────────────────────────────
 ALTER TABLE public.usuarios ADD COLUMN IF NOT EXISTS meta_mensal NUMERIC(10,2) NULL;

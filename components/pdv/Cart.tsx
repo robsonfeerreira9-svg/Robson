@@ -98,6 +98,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const [vendedorId, setVendedorId] = useState('')
   const [currentUserId, setCurrentUserId] = useState('')
   const [canalVenda, setCanalVenda] = useState<CanalVenda>('fisico')
+  const [dataVenda, setDataVenda] = useState(() => new Date().toISOString().slice(0, 10))
   const [metodoPagamento, setMetodoPagamento] = useState<MetodoPagamento>('pix')
   const [loading, setLoading] = useState(false)
   const [campanhaId, setCampanhaId] = useState('')
@@ -202,6 +203,12 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         subtotal_item: Number((i.produto.preco_venda * i.quantidade).toFixed(2)),
       }))
 
+      // Se a data for diferente de hoje, passa para a function marcar retroativamente
+      const hoje = new Date().toISOString().slice(0, 10)
+      const dataVendaISO = dataVenda !== hoje
+        ? new Date(dataVenda + 'T12:00:00').toISOString()
+        : undefined
+
       const { error } = await supabase.rpc('realizar_venda', {
         p_vendedor_id: vendedorId,
         p_canal_venda: canalVenda,
@@ -214,6 +221,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         p_cliente_nome: cliente.nome || undefined,
         p_cliente_telefone: cliente.telefone.replace(/\D/g, '') || undefined,
         p_cliente_nascimento: cliente.dataNascimento || undefined,
+        p_data_venda: dataVendaISO,
       } as never)
 
       if (error) {
@@ -229,6 +237,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
       setBuscaCliente('')
       setCampanhaId('')
       setDescontoManualPct('')
+      setDataVenda(new Date().toISOString().slice(0, 10))
     } catch (err) {
       show('Erro inesperado. Tente novamente.', 'error')
     } finally {
@@ -458,6 +467,22 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
             </div>
           ) : (
             <p className="text-xs text-[#888888]">Carregando...</p>
+          )}
+        </div>
+
+        {/* Data da venda — permite registrar vendas passadas */}
+        <div className="px-3 pb-3">
+          <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">Data da Venda</p>
+          <input
+            type="date"
+            value={dataVenda}
+            max={new Date().toISOString().slice(0, 10)}
+            onChange={(e) => setDataVenda(e.target.value)}
+            className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] focus:outline-none focus:border-gold"
+            style={{ colorScheme: 'dark' }}
+          />
+          {dataVenda !== new Date().toISOString().slice(0, 10) && (
+            <p className="text-[10px] text-gold mt-1">Venda retroativa — {new Date(dataVenda + 'T12:00:00').toLocaleDateString('pt-BR')}</p>
           )}
         </div>
 

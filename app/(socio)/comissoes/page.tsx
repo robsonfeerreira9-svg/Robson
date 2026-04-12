@@ -97,6 +97,21 @@ export default function ComissoesPage() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   })
   const [pagamentoModal, setPagamentoModal] = useState<ComissaoRow | null>(null)
+  const [marcandoTodas, setMarcandoTodas] = useState(false)
+
+  async function marcarTodasPagas() {
+    const pendentes = comissoes.filter((c) => !c.pago)
+    if (pendentes.length === 0) return
+    if (!confirm(`Marcar ${pendentes.length} comissão(ões) como pagas?`)) return
+    setMarcandoTodas(true)
+    const supabase = createClient()
+    await supabase
+      .from('comissoes')
+      .update({ pago: true })
+      .in('id', pendentes.map((c) => c.id))
+    setMarcandoTodas(false)
+    mutate(['comissoes', vendedorFiltro, mes])
+  }
 
   const { data: comissoes = [], isLoading } = useSWR(
     ['comissoes', vendedorFiltro, mes],
@@ -126,6 +141,15 @@ export default function ComissoesPage() {
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Comissões</h1>
             <a href="/dashboard" className="text-xs text-[#888888] hover:text-gold transition-colors">← Dashboard</a>
           </div>
+          {comissoes.some((c) => !c.pago) && (
+            <Button
+              variant="primary"
+              loading={marcandoTodas}
+              onClick={marcarTodasPagas}
+            >
+              Marcar Todas como Pagas
+            </Button>
+          )}
         </div>
 
         {/* Resumo pendentes */}

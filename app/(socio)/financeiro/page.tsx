@@ -52,16 +52,27 @@ async function fetchMovimentacoes(tipo: string, de: string, ate: string): Promis
   return (data as Movimentacao[]) ?? []
 }
 
-// ── Modal de nova saída ───────────────────────────────────────────────────────
-const CATEGORIAS_SAIDA = [
-  { value: 'compra_estoque',   label: 'Compra de Estoque' },
+// ── Modal genérico de movimentação ───────────────────────────────────────────
+const CATEGORIAS_SAIDA: { value: CategoriaMovimentacao; label: string }[] = [
+  { value: 'compra_estoque',    label: 'Compra de Estoque' },
   { value: 'custo_operacional', label: 'Custo Operacional' },
-  { value: 'outro',            label: 'Outro' },
+  { value: 'outro',             label: 'Outro' },
 ]
 
-function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
+const CATEGORIAS_ENTRADA: { value: CategoriaMovimentacao; label: string }[] = [
+  { value: 'outro', label: 'Aporte / Outros' },
+]
+
+function MovimentacaoModal({
+  tipo, onClose, onSave,
+}: {
+  tipo: 'entrada' | 'saida'
+  onClose: () => void
+  onSave: () => void
+}) {
+  const categorias = tipo === 'saida' ? CATEGORIAS_SAIDA : CATEGORIAS_ENTRADA
   const [form, setForm] = useState({
-    categoria: 'custo_operacional' as CategoriaMovimentacao,
+    categoria: categorias[0].value,
     descricao: '',
     valor: '',
   })
@@ -76,7 +87,7 @@ function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () =
     setLoading(true)
     const supabase = createClient()
     const { error } = await supabase.from('movimentacao_caixa').insert({
-      tipo: 'saida', categoria: form.categoria,
+      tipo, categoria: form.categoria,
       descricao: form.descricao.trim(), valor,
     })
     setLoading(false)
@@ -85,14 +96,20 @@ function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () =
     onClose()
   }
 
+  const isEntrada = tipo === 'entrada'
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <Card className="w-full max-w-sm shadow-2xl">
-        <h3 className="font-bold text-[#F0F0F0] mb-4">Registrar Saída</h3>
+        <h3 className="font-bold text-[#F0F0F0] mb-4">
+          {isEntrada ? 'Registrar Entrada' : 'Registrar Saída'}
+        </h3>
         <div className="flex flex-col gap-3">
-          <Select label="Categoria" options={CATEGORIAS_SAIDA} value={form.categoria}
+          <Select label="Categoria" options={categorias} value={form.categoria}
             onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as CategoriaMovimentacao }))} />
-          <Input label="Descrição" placeholder="Ex: Aluguel, embalagens..."
+          <Input
+            label="Descrição"
+            placeholder={isEntrada ? 'Ex: Aporte de caixa, transferência...' : 'Ex: Aluguel, embalagens...'}
             value={form.descricao}
             onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))} />
           <Input label="Valor (R$)" type="number" min="0" step="0.01" placeholder="0,00"
@@ -100,7 +117,13 @@ function NovaSaidaModal({ onClose, onSave }: { onClose: () => void; onSave: () =
             onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} />
           {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
           <div className="flex gap-2 pt-1">
-            <Button variant="primary" fullWidth loading={loading} onClick={handleSalvar}>Registrar Saída</Button>
+            <Button
+              variant={isEntrada ? 'primary' : 'primary'}
+              fullWidth loading={loading} onClick={handleSalvar}
+              className={isEntrada ? '' : 'bg-danger border-danger'}
+            >
+              {isEntrada ? 'Registrar Entrada' : 'Registrar Saída'}
+            </Button>
             <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           </div>
         </div>
@@ -115,7 +138,7 @@ export default function FinanceiroPage() {
   const [tipoFiltro, setTipoFiltro] = useState('')
   const [dataInicio, setDataInicio] = useState(primeiroDiaMes)
   const [dataFim,    setDataFim]    = useState(hoje)
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState<'entrada' | 'saida' | null>(null)
 
   // Detectar papel do usuário
   useEffect(() => {
@@ -160,7 +183,12 @@ export default function FinanceiroPage() {
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Financeiro</h1>
             <a href={backHref} className="text-xs text-[#888888] hover:text-gold transition-colors">{backLabel}</a>
           </div>
-          <Button variant="danger" onClick={() => setShowModal(true)}>+ Registrar Saída</Button>
+          <div className="flex gap-2">
+            {isSocio && (
+              <Button variant="primary" onClick={() => setShowModal('entrada')}>+ Entrada</Button>
+            )}
+            <Button variant="danger" onClick={() => setShowModal('saida')}>+ Saída</Button>
+          </div>
         </div>
 
         {/* Cards resumo — somente sócio */}
@@ -306,8 +334,9 @@ export default function FinanceiroPage() {
       </div>
 
       {showModal && (
-        <NovaSaidaModal
-          onClose={() => setShowModal(false)}
+        <MovimentacaoModal
+          tipo={showModal}
+          onClose={() => setShowModal(null)}
           onSave={() => mutate(cacheKey)}
         />
       )}
