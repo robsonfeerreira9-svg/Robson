@@ -203,26 +203,29 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         subtotal_item: Number((i.produto.preco_venda * i.quantidade).toFixed(2)),
       }))
 
-      // Se a data for diferente de hoje, passa para a function marcar retroativamente
+      // Monta os parâmetros — só inclui p_data_venda quando é realmente retroativa
       const hoje = new Date().toISOString().slice(0, 10)
-      const dataVendaISO = dataVenda !== hoje
+      const isRetroativa = dataVenda !== hoje
+      const dataVendaISO = isRetroativa
         ? new Date(dataVenda + 'T12:00:00').toISOString()
-        : undefined
+        : null
 
-      const { error } = await supabase.rpc('realizar_venda', {
-        p_vendedor_id: vendedorId,
-        p_canal_venda: canalVenda,
-        p_metodo_pagamento: metodoPagamento,
-        p_subtotal: Number(subtotal.toFixed(2)),
+      const rpcParams: Record<string, unknown> = {
+        p_vendedor_id:       vendedorId,
+        p_canal_venda:       canalVenda,
+        p_metodo_pagamento:  metodoPagamento,
+        p_subtotal:          Number(subtotal.toFixed(2)),
         p_desconto_aplicado: Number(totalDesconto.toFixed(2)),
-        p_total_final: Number(totalFinal.toFixed(2)),
-        p_itens: itens,
-        p_cliente_cpf: cliente.cpf.replace(/\D/g, '') || undefined,
-        p_cliente_nome: cliente.nome || undefined,
-        p_cliente_telefone: cliente.telefone.replace(/\D/g, '') || undefined,
-        p_cliente_nascimento: cliente.dataNascimento || undefined,
-        p_data_venda: dataVendaISO,
-      } as never)
+        p_total_final:       Number(totalFinal.toFixed(2)),
+        p_itens:             itens,
+      }
+      if (cliente.cpf.replace(/\D/g, ''))     rpcParams.p_cliente_cpf       = cliente.cpf.replace(/\D/g, '')
+      if (cliente.nome)                        rpcParams.p_cliente_nome      = cliente.nome
+      if (cliente.telefone.replace(/\D/g, '')) rpcParams.p_cliente_telefone  = cliente.telefone.replace(/\D/g, '')
+      if (cliente.dataNascimento)              rpcParams.p_cliente_nascimento = cliente.dataNascimento
+      if (dataVendaISO)                        rpcParams.p_data_venda        = dataVendaISO
+
+      const { error } = await supabase.rpc('realizar_venda', rpcParams as never)
 
       if (error) {
         show(`Erro: ${error.message}`, 'error')

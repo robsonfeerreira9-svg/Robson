@@ -886,6 +886,19 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 19: Apagar TODAS as vendas e dados relacionados
+-- Rodar uma única vez no Supabase SQL Editor
+-- ─────────────────────────────────────────────────────
+DELETE FROM public.comissoes;
+DELETE FROM public.itens_venda;
+DELETE FROM public.movimentacao_caixa WHERE categoria = 'venda';
+DELETE FROM public.vendas;
+
+-- Reseta ultima_venda_em no estoque (opcional, limpa histórico)
+UPDATE public.estoque SET ultima_venda_em = NULL;
+
+
+-- ─────────────────────────────────────────────────────
 -- STEP 18: Limpar produtos sem foto (apaga na ordem correta)
 -- Rodar uma única vez no Supabase SQL Editor
 -- ─────────────────────────────────────────────────────
