@@ -33,6 +33,129 @@ interface ClienteResult {
   data_nascimento: string | null
 }
 
+interface ComprovanteDados {
+  itens: CartItem[]
+  subtotal: number
+  desconto: number
+  total: number
+  metodo: MetodoPagamento
+  canal: CanalVenda
+  clienteNome: string
+  vendedorNome: string
+  dataVenda: string
+  campanhaNome: string | null
+}
+
+// ── Comprovante de venda ──────────────────────────────────────────────────────
+const LABEL_METODO: Record<MetodoPagamento, string> = {
+  pix: 'PIX', credito: 'Cartão de Crédito', debito: 'Cartão de Débito', dinheiro: 'Dinheiro',
+}
+const LABEL_CANAL: Record<CanalVenda, string> = {
+  fisico: 'Loja Física', whatsapp: 'WhatsApp', instagram: 'Instagram',
+}
+
+function Comprovante({ dados, onNovaVenda }: { dados: ComprovanteDados; onNovaVenda: () => void }) {
+  const dataFormatada = new Date(dados.dataVenda + 'T12:00:00').toLocaleDateString('pt-BR', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="w-full max-w-sm bg-[#1A1A1A] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
+        {/* Cabeçalho verde */}
+        <div className="bg-[#1A3A1A] px-6 pt-8 pb-6 flex flex-col items-center gap-3">
+          <div className="w-14 h-14 rounded-full bg-success/20 border-2 border-success flex items-center justify-center">
+            <svg className="w-7 h-7 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="text-success font-black text-lg uppercase tracking-wide">Venda Realizada!</p>
+            <p className="text-[#888888] text-xs mt-0.5">{dataFormatada}</p>
+          </div>
+          <p className="text-3xl font-black text-gold">{formatarMoeda(dados.total)}</p>
+        </div>
+
+        {/* Corpo */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4 max-h-[50vh]">
+
+          {/* Itens */}
+          <div className="flex flex-col gap-2">
+            {dados.itens.map((item) => (
+              <div key={item.produto.id} className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-[#F0F0F0] truncate">{item.produto.nome}</p>
+                  <p className="text-[10px] text-[#888888]">
+                    {item.produto.numero || item.produto.tamanho} · {item.quantidade}×
+                  </p>
+                </div>
+                <p className="text-xs font-bold text-[#F0F0F0] flex-shrink-0">
+                  {formatarMoeda(item.produto.preco_venda * item.quantidade)}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-[#2A2A2A]" />
+
+          {/* Totais */}
+          <div className="flex flex-col gap-1.5 text-xs">
+            <div className="flex justify-between text-[#888888]">
+              <span>Subtotal</span>
+              <span>{formatarMoeda(dados.subtotal)}</span>
+            </div>
+            {dados.desconto > 0 && (
+              <div className="flex justify-between text-gold">
+                <span>{dados.campanhaNome ? `${dados.campanhaNome}` : 'Desconto'}</span>
+                <span>− {formatarMoeda(dados.desconto)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-black text-[#F0F0F0] text-sm pt-1 border-t border-[#2A2A2A]">
+              <span>Total</span>
+              <span className="text-gold">{formatarMoeda(dados.total)}</span>
+            </div>
+          </div>
+
+          <div className="border-t border-[#2A2A2A]" />
+
+          {/* Detalhes */}
+          <div className="flex flex-col gap-1.5 text-xs text-[#888888]">
+            <div className="flex justify-between">
+              <span>Pagamento</span>
+              <span className="text-[#F0F0F0] font-semibold">{LABEL_METODO[dados.metodo]}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Canal</span>
+              <span className="text-[#F0F0F0] font-semibold">{LABEL_CANAL[dados.canal]}</span>
+            </div>
+            {dados.clienteNome && (
+              <div className="flex justify-between">
+                <span>Cliente</span>
+                <span className="text-[#F0F0F0] font-semibold">{dados.clienteNome}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span>Vendedora</span>
+              <span className="text-[#F0F0F0] font-semibold">{dados.vendedorNome}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Rodapé */}
+        <div className="px-5 py-4 border-t border-[#2A2A2A]">
+          <button
+            onClick={onNovaVenda}
+            className="w-full bg-gold text-[#0D0D0D] font-black text-sm uppercase tracking-widest py-3 rounded-xl hover:bg-[#e6b800] active:scale-95 transition-all"
+          >
+            Nova Venda
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 interface CartProps {
   items: CartItem[]
   onUpdateQty: (produtoId: string, qty: number) => void
@@ -95,6 +218,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const { data: campanhasAtivas = [] } = useSWR('campanhas-pdv', fetchCampanhasAtivas, { refreshInterval: 60000 })
   const { toast, show } = useToast()
 
+  const [comprovante, setComprovante] = useState<ComprovanteDados | null>(null)
   const [vendedorId, setVendedorId] = useState('')
   const [currentUserId, setCurrentUserId] = useState('')
   const [canalVenda, setCanalVenda] = useState<CanalVenda>('fisico')
@@ -232,15 +356,22 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         return
       }
 
-      show('Venda realizada com sucesso!', 'success')
-      onClear()
+      // Guarda dados para o comprovante antes de limpar o estado
+      const vendedorNome = vendedores.find((v) => v.id === vendedorId)?.nome ?? ''
+      const campanhaNome = campanhaSelecionada?.nome ?? null
+      setComprovante({
+        itens: [...items],
+        subtotal,
+        desconto: totalDesconto,
+        total: totalFinal,
+        metodo: metodoPagamento,
+        canal: canalVenda,
+        clienteNome: cliente.nome,
+        vendedorNome,
+        dataVenda,
+        campanhaNome,
+      })
       onVendaRealizada()
-      setCliente({ nome: '', cpf: '', telefone: '', dataNascimento: '' })
-      setClienteId(null)
-      setBuscaCliente('')
-      setCampanhaId('')
-      setDescontoManualPct('')
-      setDataVenda(new Date().toISOString().slice(0, 10))
     } catch (err) {
       show('Erro inesperado. Tente novamente.', 'error')
     } finally {
@@ -250,7 +381,20 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
 
   const podeFinalizarVenda = items.length > 0 && vendedorId !== ''
 
+  function handleNovaVenda() {
+    setComprovante(null)
+    onClear()
+    setCliente({ nome: '', cpf: '', telefone: '', dataNascimento: '' })
+    setClienteId(null)
+    setBuscaCliente('')
+    setCampanhaId('')
+    setDescontoManualPct('')
+    setDataVenda(new Date().toISOString().slice(0, 10))
+  }
+
   return (
+    <>
+    {comprovante && <Comprovante dados={comprovante} onNovaVenda={handleNovaVenda} />}
     <div className="flex flex-col h-full bg-[#1A1A1A] border-l border-[#2A2A2A]">
       {/* Header */}
       <div className="p-4 border-b border-[#2A2A2A] flex items-center justify-between">
@@ -646,5 +790,6 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         </div>
       )}
     </div>
+    </>
   )
 }

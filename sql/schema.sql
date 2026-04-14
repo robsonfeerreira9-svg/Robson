@@ -886,6 +886,18 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 20: Apagar todos os clientes e vendas de teste
+-- Rodar no Supabase SQL Editor
+-- ─────────────────────────────────────────────────────
+DELETE FROM public.comissoes;
+DELETE FROM public.itens_venda;
+DELETE FROM public.movimentacao_caixa WHERE categoria = 'venda';
+DELETE FROM public.vendas;
+DELETE FROM public.clientes;
+UPDATE public.estoque SET ultima_venda_em = NULL;
+
+
+-- ─────────────────────────────────────────────────────
 -- STEP 19: Apagar TODAS as vendas e dados relacionados
 -- Rodar uma única vez no Supabase SQL Editor
 -- ─────────────────────────────────────────────────────
