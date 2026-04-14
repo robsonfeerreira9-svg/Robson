@@ -933,7 +933,18 @@ END $$;
 
 -- ─────────────────────────────────────────────────────
 -- STEP 17: Atualiza realizar_venda com suporte a data retroativa
+-- IMPORTANTE: remove a versão antiga antes de criar a nova
 -- ─────────────────────────────────────────────────────
+
+-- Remove a versão sem p_data_venda para evitar ambiguidade de overload
+DROP FUNCTION IF EXISTS public.realizar_venda(
+  uuid,
+  public.canal_venda_tipo,
+  public.metodo_pagamento_tipo,
+  numeric, numeric, numeric, jsonb,
+  text, text, text, date
+);
+
 CREATE OR REPLACE FUNCTION public.realizar_venda(
   p_vendedor_id          UUID,
   p_canal_venda          canal_venda_tipo,
