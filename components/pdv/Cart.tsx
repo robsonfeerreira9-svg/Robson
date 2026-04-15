@@ -39,6 +39,7 @@ interface ComprovanteDados {
   desconto: number
   total: number
   metodo: MetodoPagamento
+  parcelas: number
   canal: CanalVenda
   clienteNome: string
   vendedorNome: string
@@ -125,6 +126,14 @@ function Comprovante({ dados, onNovaVenda }: { dados: ComprovanteDados; onNovaVe
               <span>Pagamento</span>
               <span className="text-[#F0F0F0] font-semibold">{LABEL_METODO[dados.metodo]}</span>
             </div>
+            {dados.metodo === 'credito' && dados.parcelas > 1 && (
+              <div className="flex justify-between">
+                <span>Parcelas</span>
+                <span className="text-gold font-semibold">
+                  {dados.parcelas}× de {formatarMoeda(dados.total / dados.parcelas)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Canal</span>
               <span className="text-[#F0F0F0] font-semibold">{LABEL_CANAL[dados.canal]}</span>
@@ -219,6 +228,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const { toast, show } = useToast()
 
   const [comprovante, setComprovante] = useState<ComprovanteDados | null>(null)
+  const [parcelas, setParcelas] = useState(1)
   const [vendedorId, setVendedorId] = useState('')
   const [currentUserId, setCurrentUserId] = useState('')
   const [canalVenda, setCanalVenda] = useState<CanalVenda>('fisico')
@@ -365,6 +375,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         desconto: totalDesconto,
         total: totalFinal,
         metodo: metodoPagamento,
+        parcelas: metodoPagamento === 'credito' ? parcelas : 1,
         canal: canalVenda,
         clienteNome: cliente.nome,
         vendedorNome,
@@ -383,6 +394,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
 
   function handleNovaVenda() {
     setComprovante(null)
+    setParcelas(1)
     onClear()
     setCliente({ nome: '', cpf: '', telefone: '', dataNascimento: '' })
     setClienteId(null)
@@ -662,7 +674,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
             {METODOS.map((m) => (
               <button
                 key={m.value}
-                onClick={() => setMetodoPagamento(m.value)}
+                onClick={() => { setMetodoPagamento(m.value); if (m.value !== 'credito') setParcelas(1) }}
                 className={`py-2 rounded text-xs font-bold border transition-colors ${
                   metodoPagamento === m.value
                     ? 'bg-gold text-[#0D0D0D] border-gold'
@@ -673,6 +685,33 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
               </button>
             ))}
           </div>
+
+          {/* Parcelamento — só aparece no crédito */}
+          {metodoPagamento === 'credito' && (
+            <div className="mt-3">
+              <p className="text-[10px] text-[#888888] mb-1.5">Parcelas</p>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setParcelas(n)}
+                    className={`flex-1 py-1.5 rounded text-xs font-bold border transition-colors ${
+                      parcelas === n
+                        ? 'bg-gold text-[#0D0D0D] border-gold'
+                        : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-gold'
+                    }`}
+                  >
+                    {n}×
+                  </button>
+                ))}
+              </div>
+              {parcelas > 1 && totalFinal > 0 && (
+                <p className="text-[10px] text-gold mt-1.5">
+                  {parcelas}× de {formatarMoeda(totalFinal / parcelas)}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Desconto manual % */}

@@ -18,6 +18,7 @@ interface Movimentacao {
   categoria: CategoriaMovimentacao
   descricao: string | null
   valor: number
+  vence_em: string | null
   criado_em: string
 }
 
@@ -31,7 +32,7 @@ function hoje() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-// ── Fetcher ───────────────────────────────────────────────────────────────────
+// ── Fetcher principal ─────────────────────────────────────────────────────────
 async function fetchMovimentacoes(tipo: string, de: string, ate: string): Promise<Movimentacao[]> {
   const supabase = createClient()
   let query = supabase
@@ -52,7 +53,25 @@ async function fetchMovimentacoes(tipo: string, de: string, ate: string): Promis
   return (data as Movimentacao[]) ?? []
 }
 
-// ── Modal genérico de movimentação ───────────────────────────────────────────
+// ── Fetcher de contas que vencem nos próximos 7 dias (+ vencidas) ─────────────
+async function fetchVenceSemana(): Promise<Movimentacao[]> {
+  const supabase = createClient()
+  const em7Dias = new Date()
+  em7Dias.setDate(em7Dias.getDate() + 7)
+
+  const { data, error } = await supabase
+    .from('movimentacao_caixa')
+    .select('*')
+    .eq('tipo', 'saida')
+    .not('vence_em', 'is', null)
+    .lte('vence_em', em7Dias.toISOString().slice(0, 10))
+    .order('vence_em', { ascending: true })
+
+  if (error) throw error
+  return (data as Movimentacao[]) ?? []
+}
+
+// ── Categorias ────────────────────────────────────────────────────────────────
 const CATEGORIAS_SAIDA: { value: CategoriaMovimentacao; label: string }[] = [
   { value: 'compra_estoque',    label: 'Compra de Estoque' },
   { value: 'custo_operacional', label: 'Custo Operacional' },
@@ -63,6 +82,7 @@ const CATEGORIAS_ENTRADA: { value: CategoriaMovimentacao; label: string }[] = [
   { value: 'outro', label: 'Aporte / Outros' },
 ]
 
+// ── Modal de movimentação ─────────────────────────────────────────────────────
 function MovimentacaoModal({
   tipo, onClose, onSave,
 }: {
@@ -75,6 +95,7 @@ function MovimentacaoModal({
     categoria: categorias[0].value,
     descricao: '',
     valor: '',
+    vence_em: '',
   })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
@@ -86,10 +107,16 @@ function MovimentacaoModal({
 
     setLoading(true)
     const supabase = createClient()
-    const { error } = await supabase.from('movimentacao_caixa').insert({
-      tipo, categoria: form.categoria,
-      descricao: form.descricao.trim(), valor,
-    })
+    const payload: Record<string, unknown> = {
+      tipo,
+      categoria: form.categoria,
+      descricao: form.descricao.trim(),
+      valor,
+    }
+    if (tipo === 'saida' && form.vence_em) {
+      payload.vence_em = form.vence_em
+    }
+    const { error } = await supabase.from('movimentacao_caixa').insert(payload)
     setLoading(false)
     if (error) { setErro(`Erro: ${error.message}`); return }
     onSave()
@@ -105,21 +132,47 @@ function MovimentacaoModal({
           {isEntrada ? 'Registrar Entrada' : 'Registrar Saída'}
         </h3>
         <div className="flex flex-col gap-3">
-          <Select label="Categoria" options={categorias} value={form.categoria}
-            onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as CategoriaMovimentacao }))} />
+          <Select
+            label="Categoria"
+            options={categorias}
+            value={form.categoria}
+            onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as CategoriaMovimentacao }))}
+          />
           <Input
             label="Descrição"
             placeholder={isEntrada ? 'Ex: Aporte de caixa, transferência...' : 'Ex: Aluguel, embalagens...'}
             value={form.descricao}
-            onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))} />
-          <Input label="Valor (R$)" type="number" min="0" step="0.01" placeholder="0,00"
+            onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))}
+          />
+          <Input
+            label="Valor (R$)"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0,00"
             value={form.valor}
-            onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} />
+            onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))}
+          />
+          {/* Vencimento — apenas saídas */}
+          {!isEntrada && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-[#888888] font-medium">Vencimento (opcional)</label>
+              <input
+                type="date"
+                value={form.vence_em}
+                onChange={(e) => setForm((f) => ({ ...f, vence_em: e.target.value }))}
+                className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
+          )}
           {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
           <div className="flex gap-2 pt-1">
             <Button
-              variant={isEntrada ? 'primary' : 'primary'}
-              fullWidth loading={loading} onClick={handleSalvar}
+              variant="primary"
+              fullWidth
+              loading={loading}
+              onClick={handleSalvar}
               className={isEntrada ? '' : 'bg-danger border-danger'}
             >
               {isEntrada ? 'Registrar Entrada' : 'Registrar Saída'}
@@ -132,6 +185,57 @@ function MovimentacaoModal({
   )
 }
 
+// ── Bloco "Vence esta semana" ─────────────────────────────────────────────────
+function VenceSemana() {
+  const { data: contas = [], isLoading } = useSWR('vence-semana', fetchVenceSemana, { refreshInterval: 60000 })
+
+  if (isLoading || contas.length === 0) return null
+
+  const hojeStr = hoje()
+
+  function statusVenc(vence_em: string): 'vencida' | 'hoje' | 'proxima' {
+    if (vence_em < hojeStr) return 'vencida'
+    if (vence_em === hojeStr) return 'hoje'
+    return 'proxima'
+  }
+
+  const colorMap = {
+    vencida: { badge: 'danger' as const,   label: 'Vencida', text: 'text-danger' },
+    hoje:    { badge: 'warning' as const,  label: 'Hoje',    text: 'text-[#F59E0B]' },
+    proxima: { badge: 'default' as const,  label: 'Próxima', text: 'text-[#888888]' },
+  }
+
+  return (
+    <Card className="border border-[#3A2A00]">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-base">⚠️</span>
+        <h2 className="text-sm font-bold text-[#F59E0B] uppercase tracking-wide">Vence esta semana</h2>
+      </div>
+      <div className="flex flex-col divide-y divide-[#2A2A2A]">
+        {contas.map((c) => {
+          const status = statusVenc(c.vence_em!)
+          const { badge, label, text } = colorMap[status]
+          const dataFormatada = new Date(c.vence_em! + 'T12:00:00').toLocaleDateString('pt-BR', {
+            day: '2-digit', month: '2-digit',
+          })
+          return (
+            <div key={c.id} className="flex items-center justify-between gap-3 py-2.5">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-[#F0F0F0] font-medium truncate">{c.descricao ?? '—'}</p>
+                <p className={`text-xs ${text}`}>Vence {dataFormatada}</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Badge variant={badge}>{label}</Badge>
+                <span className="text-sm font-bold text-danger">{formatarMoeda(Number(c.valor))}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </Card>
+  )
+}
+
 // ── Página ────────────────────────────────────────────────────────────────────
 export default function FinanceiroPage() {
   const [userRole, setUserRole] = useState<RoleUsuario | null>(null)
@@ -140,7 +244,6 @@ export default function FinanceiroPage() {
   const [dataFim,    setDataFim]    = useState(hoje)
   const [showModal, setShowModal] = useState<'entrada' | 'saida' | null>(null)
 
-  // Detectar papel do usuário
   useEffect(() => {
     async function loadRole() {
       const supabase = createClient()
@@ -173,6 +276,13 @@ export default function FinanceiroPage() {
   const backHref = isSocio ? '/dashboard' : '/pdv'
   const backLabel = isSocio ? '← Dashboard' : '← PDV'
 
+  function handleSaved() {
+    mutate(cacheKey)
+    mutate('vence-semana')
+  }
+
+  const colCount = isSocio ? 6 : 5
+
   return (
     <div className="min-h-screen bg-[#0D0D0D] p-6">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
@@ -190,6 +300,9 @@ export default function FinanceiroPage() {
             <Button variant="danger" onClick={() => setShowModal('saida')}>+ Saída</Button>
           </div>
         </div>
+
+        {/* Vence esta semana — sempre visível para sócio */}
+        {isSocio && <VenceSemana />}
 
         {/* Cards resumo — somente sócio */}
         {isSocio && (
@@ -214,7 +327,6 @@ export default function FinanceiroPage() {
         {/* Filtros */}
         <Card padding="sm">
           <div className="flex gap-4 flex-wrap items-end">
-            {/* Tipo — só sócio filtra por tipo */}
             {isSocio && (
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs text-[#888888] font-medium">Tipo</label>
@@ -230,7 +342,6 @@ export default function FinanceiroPage() {
               </div>
             )}
 
-            {/* Período — do dia ao dia */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs text-[#888888] font-medium">De</label>
               <input
@@ -252,13 +363,12 @@ export default function FinanceiroPage() {
               />
             </div>
 
-            {/* Atalhos rápidos de período */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs text-[#888888] font-medium">Atalho</label>
               <div className="flex gap-1">
                 {[
                   { label: 'Hoje', action: () => { setDataInicio(hoje()); setDataFim(hoje()) } },
-                  { label: 'Mês', action: () => { setDataInicio(primeiroDiaMes()); setDataFim(hoje()) } },
+                  { label: 'Mês',  action: () => { setDataInicio(primeiroDiaMes()); setDataFim(hoje()) } },
                 ].map((a) => (
                   <button key={a.label} onClick={a.action}
                     className="px-2.5 py-2 rounded border border-[#2A2A2A] text-xs text-[#888888] hover:border-gold hover:text-gold transition-colors">
@@ -279,6 +389,9 @@ export default function FinanceiroPage() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Tipo</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Categoria</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Descrição</th>
+                {isSocio && (
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Vencimento</th>
+                )}
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Valor</th>
               </tr>
             </thead>
@@ -286,47 +399,64 @@ export default function FinanceiroPage() {
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr key={i} className="border-b border-[#2A2A2A]">
-                    {Array.from({ length: 5 }).map((_, j) => (
+                    {Array.from({ length: colCount }).map((_, j) => (
                       <td key={j} className="px-4 py-3"><div className="skeleton h-4 rounded" /></td>
                     ))}
                   </tr>
                 ))
               ) : movs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-12 text-[#888888]">
+                  <td colSpan={colCount} className="text-center py-12 text-[#888888]">
                     Nenhuma movimentação no período
                   </td>
                 </tr>
               ) : (
-                movs.map((m) => (
-                  <tr key={m.id} className="bg-[#1A1A1A] border-b border-[#2A2A2A] hover:bg-[#222222] transition-colors">
-                    <td className="px-4 py-3 text-[#888888] text-xs">
-                      {new Date(m.criado_em).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={m.tipo === 'entrada' ? 'success' : 'danger'}>
-                        {m.tipo === 'entrada' ? 'Entrada' : 'Saída'}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-[#888888] text-xs">
-                      {labelCategoria[m.categoria] ?? m.categoria}
-                    </td>
-                    <td className="px-4 py-3 text-[#F0F0F0] max-w-[250px] truncate">
-                      {m.descricao ?? '—'}
-                    </td>
-                    {/* Funcionário não vê valores individuais das entradas */}
-                    <td className={`px-4 py-3 text-right font-bold ${
-                      m.tipo === 'entrada' ? 'text-success' : 'text-danger'
-                    }`}>
-                      {isSocio
-                        ? `${m.tipo === 'entrada' ? '+' : '-'} ${formatarMoeda(Number(m.valor))}`
-                        : m.tipo === 'saida'
-                          ? `- ${formatarMoeda(Number(m.valor))}`
-                          : <span className="text-[#555555]">—</span>
-                      }
-                    </td>
-                  </tr>
-                ))
+                movs.map((m) => {
+                  const hojeStr = hoje()
+                  const vencColor = m.vence_em
+                    ? m.vence_em < hojeStr
+                      ? 'text-danger font-semibold'
+                      : m.vence_em === hojeStr
+                        ? 'text-[#F59E0B] font-semibold'
+                        : 'text-[#888888]'
+                    : 'text-[#444444]'
+
+                  return (
+                    <tr key={m.id} className="bg-[#1A1A1A] border-b border-[#2A2A2A] hover:bg-[#222222] transition-colors">
+                      <td className="px-4 py-3 text-[#888888] text-xs">
+                        {new Date(m.criado_em).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={m.tipo === 'entrada' ? 'success' : 'danger'}>
+                          {m.tipo === 'entrada' ? 'Entrada' : 'Saída'}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-[#888888] text-xs">
+                        {labelCategoria[m.categoria] ?? m.categoria}
+                      </td>
+                      <td className="px-4 py-3 text-[#F0F0F0] max-w-[200px] truncate">
+                        {m.descricao ?? '—'}
+                      </td>
+                      {isSocio && (
+                        <td className={`px-4 py-3 text-xs ${vencColor}`}>
+                          {m.vence_em
+                            ? new Date(m.vence_em + 'T12:00:00').toLocaleDateString('pt-BR')
+                            : '—'}
+                        </td>
+                      )}
+                      <td className={`px-4 py-3 text-right font-bold ${
+                        m.tipo === 'entrada' ? 'text-success' : 'text-danger'
+                      }`}>
+                        {isSocio
+                          ? `${m.tipo === 'entrada' ? '+' : '-'} ${formatarMoeda(Number(m.valor))}`
+                          : m.tipo === 'saida'
+                            ? `- ${formatarMoeda(Number(m.valor))}`
+                            : <span className="text-[#555555]">—</span>
+                        }
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>
@@ -337,7 +467,7 @@ export default function FinanceiroPage() {
         <MovimentacaoModal
           tipo={showModal}
           onClose={() => setShowModal(null)}
-          onSave={() => mutate(cacheKey)}
+          onSave={handleSaved}
         />
       )}
     </div>

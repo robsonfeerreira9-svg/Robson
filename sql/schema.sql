@@ -1130,6 +1130,13 @@ END $$;
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 21: Coluna vence_em em movimentacao_caixa
+-- ─────────────────────────────────────────────────────
+ALTER TABLE public.movimentacao_caixa
+  ADD COLUMN IF NOT EXISTS vence_em DATE NULL;
+
+
+-- ─────────────────────────────────────────────────────
 -- VALIDAÇÃO FINAL
 -- ─────────────────────────────────────────────────────
 -- Execute para confirmar que tudo foi criado:
