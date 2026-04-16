@@ -4,19 +4,28 @@ import { useState, useCallback, useEffect } from 'react'
 import { mutate } from 'swr'
 import ProductGrid from '@/components/pdv/ProductGrid'
 import Cart, { type CartItem } from '@/components/pdv/Cart'
-import type { ProdutoComEstoque } from '@/lib/database.types'
+import type { ProdutoComEstoque, RoleUsuario } from '@/lib/database.types'
 import { createClient } from '@/lib/supabase'
 import SplashMotivacional from '@/components/SplashMotivacional'
 
 export default function PDVPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [userId, setUserId] = useState('')
+  const [userRole, setUserRole] = useState<RoleUsuario>('funcionario')
 
   useEffect(() => {
-    createClient().auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
-    })
+    async function init() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      setUserId(user.id)
+      const { data } = await supabase.from('usuarios').select('role').eq('id', user.id).single()
+      if (data?.role) setUserRole(data.role as RoleUsuario)
+    }
+    init()
   }, [])
+
+  const isSocio = userRole === 'socio'
 
   const handleAddToCart = useCallback((produto: ProdutoComEstoque) => {
     setCartItems((prev) => {
@@ -51,17 +60,13 @@ export default function PDVPage() {
   }, [])
 
   const handleVendaRealizada = useCallback(() => {
-    // Revalidar dados do grid de produtos após a venda
     mutate('produtos-pdv')
   }, [])
 
   return (
     <div className="flex h-screen bg-[#0D0D0D] overflow-hidden">
-      {/* Splash motivacional — uma vez por dia */}
-      {userId && <SplashMotivacional userId={userId} />}
-
-      {/* Cabeçalho mobile */}
-      <div className="hidden" />
+      {/* Splash motivacional — apenas para funcionárias */}
+      {userId && !isSocio && <SplashMotivacional userId={userId} />}
 
       {/* Coluna esquerda — grid de produtos (65%) */}
       <div className="flex-1 flex flex-col overflow-hidden border-r border-[#2A2A2A]">
@@ -77,9 +82,16 @@ export default function PDVPage() {
                 {cartItems.reduce((acc, i) => acc + i.quantidade, 0)} iten{cartItems.reduce((acc, i) => acc + i.quantidade, 0) !== 1 ? 's' : ''}
               </span>
             )}
-            <a href="/perfil" className="text-xs text-gold hover:text-[#F0F0F0] transition-colors border border-gold/30 px-2 py-0.5 rounded hover:border-gold">
-              Meu Perfil
-            </a>
+            {/* Navegação baseada no papel */}
+            {isSocio ? (
+              <a href="/dashboard" className="text-xs text-gold hover:text-[#F0F0F0] transition-colors border border-gold/30 px-2 py-0.5 rounded hover:border-gold">
+                ← Dashboard
+              </a>
+            ) : (
+              <a href="/perfil" className="text-xs text-gold hover:text-[#F0F0F0] transition-colors border border-gold/30 px-2 py-0.5 rounded hover:border-gold">
+                Meu Perfil
+              </a>
+            )}
             <a href="/estoque" className="text-xs text-[#888888] hover:text-gold transition-colors">
               Estoque
             </a>
@@ -113,6 +125,7 @@ export default function PDVPage() {
           onRemove={handleRemove}
           onClear={handleClear}
           onVendaRealizada={handleVendaRealizada}
+          userRole={userRole}
         />
       </div>
     </div>

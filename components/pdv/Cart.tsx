@@ -10,7 +10,7 @@ import {
   formatarCPF,
   formatarTelefone,
 } from '@/lib/utils/preco'
-import type { ProdutoComEstoque, CanalVenda, MetodoPagamento, Usuario, Campanha } from '@/lib/database.types'
+import type { ProdutoComEstoque, CanalVenda, MetodoPagamento, Usuario, Campanha, RoleUsuario } from '@/lib/database.types'
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 export interface CartItem {
@@ -171,6 +171,7 @@ interface CartProps {
   onRemove: (produtoId: string) => void
   onClear: () => void
   onVendaRealizada: () => void
+  userRole?: RoleUsuario
 }
 
 // ── Fetchers ─────────────────────────────────────────────────────────────────
@@ -180,6 +181,7 @@ async function fetchVendedores(): Promise<Usuario[]> {
     .from('usuarios')
     .select('*')
     .eq('ativo', true)
+    .eq('role', 'funcionario')
     .order('nome')
   if (error) throw error
   return data ?? []
@@ -222,7 +224,7 @@ function useToast() {
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRealizada }: CartProps) {
+export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRealizada, userRole }: CartProps) {
   const { data: vendedores = [] } = useSWR('vendedores', fetchVendedores)
   const { data: campanhasAtivas = [] } = useSWR('campanhas-pdv', fetchCampanhasAtivas, { refreshInterval: 60000 })
   const { toast, show } = useToast()
@@ -259,11 +261,13 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   }, [])
 
   useEffect(() => {
+    // Sócio não é auto-selecionado — deve escolher explicitamente a vendedora
+    if (userRole === 'socio') return
     if (currentUserId && vendedores.length > 0 && !vendedorId) {
       const eu = vendedores.find((v) => v.id === currentUserId)
       if (eu) setVendedorId(eu.id)
     }
-  }, [currentUserId, vendedores])
+  }, [currentUserId, vendedores, userRole])
 
   // Busca reativa de cliente por nome ou telefone
   useEffect(() => {
@@ -610,12 +614,25 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
 
         <div className="border-t border-[#2A2A2A] mx-3 my-1" />
 
-        {/* Vendedor — exibe apenas o nome da vendedora logada */}
+        {/* Vendedora */}
         <div className="p-3">
           <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">
-            Vendedora
+            Vendedora Responsável
           </p>
-          {vendedorId ? (
+          {userRole === 'socio' ? (
+            /* Sócio escolhe qual funcionária é responsável */
+            <select
+              value={vendedorId}
+              onChange={(e) => setVendedorId(e.target.value)}
+              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] focus:outline-none focus:border-gold"
+            >
+              <option value="">Selecione a vendedora...</option>
+              {vendedores.map((v) => (
+                <option key={v.id} value={v.id} className="bg-[#1A1A1A]">{v.nome}</option>
+              ))}
+            </select>
+          ) : vendedorId ? (
+            /* Funcionária: exibe apenas o próprio nome */
             <div className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-gold text-[#0D0D0D] flex items-center justify-center text-[10px] font-black flex-shrink-0">
                 {vendedores.find((v) => v.id === vendedorId)?.nome.charAt(0).toUpperCase()}
