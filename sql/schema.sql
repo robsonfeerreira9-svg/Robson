@@ -1137,6 +1137,64 @@ ALTER TABLE public.movimentacao_caixa
 
 
 -- ─────────────────────────────────────────────────────
+-- STEP 22: Função cancelar_venda + limpeza vendas Robson
+-- ─────────────────────────────────────────────────────
+
+-- Função para cancelar venda: restaura estoque e remove registros
+CREATE OR REPLACE FUNCTION public.cancelar_venda(p_venda_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- 1. Restaurar estoque para cada item da venda
+  UPDATE public.estoque e
+  SET quantidade    = e.quantidade + iv.quantidade,
+      atualizado_em = NOW()
+  FROM public.itens_venda iv
+  WHERE iv.venda_id = p_venda_id
+    AND e.produto_id = iv.produto_id;
+
+  -- 2. Remover entrada no caixa gerada por esta venda
+  DELETE FROM public.movimentacao_caixa
+  WHERE referencia_venda_id = p_venda_id;
+
+  -- 3. Deletar a venda — CASCADE remove itens_venda e comissoes
+  DELETE FROM public.vendas WHERE id = p_venda_id;
+END;
+$$;
+
+-- Política RLS: sócio pode chamar cancelar_venda via SECURITY DEFINER (já cobre)
+
+-- Limpeza: remover vendas registradas em nome do usuário "Robson"
+DO $$
+DECLARE
+  v_venda_id UUID;
+BEGIN
+  FOR v_venda_id IN
+    SELECT v.id
+    FROM public.vendas v
+    JOIN public.usuarios u ON u.id = v.vendedor_id
+    WHERE LOWER(u.nome) LIKE '%robson%'
+  LOOP
+    -- Restaurar estoque
+    UPDATE public.estoque e
+    SET quantidade    = e.quantidade + iv.quantidade,
+        atualizado_em = NOW()
+    FROM public.itens_venda iv
+    WHERE iv.venda_id = v_venda_id
+      AND e.produto_id = iv.produto_id;
+
+    -- Remover movimentacao_caixa
+    DELETE FROM public.movimentacao_caixa WHERE referencia_venda_id = v_venda_id;
+
+    -- Deletar venda (CASCADE remove itens_venda e comissoes)
+    DELETE FROM public.vendas WHERE id = v_venda_id;
+  END LOOP;
+END $$;
+
+
+-- ─────────────────────────────────────────────────────
 -- VALIDAÇÃO FINAL
 -- ─────────────────────────────────────────────────────
 -- Execute para confirmar que tudo foi criado:

@@ -359,6 +359,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-2 flex-wrap justify-end">
             <a href="/pdv"       className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">PDV</a>
+            <a href="/vendas"    className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Vendas</a>
             <a href="/estoque"   className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Estoque</a>
             <a href="/clientes"  className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Clientes</a>
             <a href="/comissoes" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Comissões</a>
@@ -422,17 +423,17 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide">Receita</h2>
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Toggle Mensal / Anual */}
+              {/* Toggle Diário / Anual */}
               <div className="flex rounded overflow-hidden border border-[#2A2A2A]">
                 {(['mensal', 'anual'] as ModoGrafico[]).map((m) => (
                   <button
                     key={m}
-                    onClick={() => setModo(m)}
-                    className={`px-3 py-1.5 text-xs font-semibold transition-colors capitalize ${
+                    onClick={() => { setModo(m); setComparar(false) }}
+                    className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
                       modo === m ? 'bg-gold text-[#0D0D0D]' : 'bg-transparent text-[#888888] hover:text-gold'
                     }`}
                   >
-                    {m === 'mensal' ? 'Mês a Mês' : 'Ano a Ano'}
+                    {m === 'mensal' ? 'Dias do Mês' : 'Mês a Mês'}
                   </button>
                 ))}
               </div>
@@ -468,7 +469,9 @@ export default function DashboardPage() {
                       : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:text-gold hover:border-gold'
                   }`}
                 >
-                  Comparar
+                  {comparar
+                    ? (modo === 'mensal' ? 'Mês vs Mês ✓' : 'Ano vs Ano ✓')
+                    : '+ Comparar'}
                 </button>
               </div>
             </div>
