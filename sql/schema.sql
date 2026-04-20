@@ -1164,34 +1164,9 @@ BEGIN
 END;
 $$;
 
--- Política RLS: sócio pode chamar cancelar_venda via SECURITY DEFINER (já cobre)
-
--- Limpeza: remover vendas registradas em nome do usuário "Robson"
-DO $$
-DECLARE
-  v_venda_id UUID;
-BEGIN
-  FOR v_venda_id IN
-    SELECT v.id
-    FROM public.vendas v
-    JOIN public.usuarios u ON u.id = v.vendedor_id
-    WHERE LOWER(u.nome) LIKE '%robson%'
-  LOOP
-    -- Restaurar estoque
-    UPDATE public.estoque e
-    SET quantidade    = e.quantidade + iv.quantidade,
-        atualizado_em = NOW()
-    FROM public.itens_venda iv
-    WHERE iv.venda_id = v_venda_id
-      AND e.produto_id = iv.produto_id;
-
-    -- Remover movimentacao_caixa
-    DELETE FROM public.movimentacao_caixa WHERE referencia_venda_id = v_venda_id;
-
-    -- Deletar venda (CASCADE remove itens_venda e comissoes)
-    DELETE FROM public.vendas WHERE id = v_venda_id;
-  END LOOP;
-END $$;
+-- Para excluir uma venda específica, use a função cancelar_venda pela página /vendas do sistema.
+-- NÃO execute deletes manuais de vendas sem usar a função cancelar_venda,
+-- pois ela garante restauração do estoque e remoção das comissões.
 
 
 -- ─────────────────────────────────────────────────────
