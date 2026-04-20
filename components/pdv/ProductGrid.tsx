@@ -67,6 +67,16 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
   const getQtdNoCarrinho = (produtoId: string) =>
     cartItems.find((i) => i.produto.id === produtoId)?.quantidade ?? 0
 
+  // Mapa nome → tamanhos em estoque (para exibir chips nas cards)
+  const tamanhosEmEstoque = produtos.reduce((map, p) => {
+    if ((p.estoque?.[0]?.quantidade ?? 0) <= 0) return map
+    const key = p.nome
+    if (!map[key]) map[key] = []
+    const size = p.numero ? `Nº${p.numero}` : p.tamanho
+    if (!map[key].includes(size)) map[key].push(size)
+    return map
+  }, {} as Record<string, string[]>)
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4">
@@ -170,14 +180,16 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
                       </div>
                     )}
 
-                    {/* Badge tamanho/numero */}
-                    <span className="absolute top-1.5 left-1.5 bg-[#0D0D0D]/80 text-[#F0F0F0] text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      {produto.numero || produto.tamanho}
-                    </span>
+                    {/* Badge tamanho/número — grande e central no topo */}
+                    <div className="absolute top-0 left-0 right-0 flex justify-center">
+                      <span className="bg-gold text-[#0D0D0D] text-sm font-black px-3 py-1 rounded-b-lg shadow-lg tracking-wide">
+                        {produto.numero ? `Nº ${produto.numero}` : produto.tamanho}
+                      </span>
+                    </div>
 
                     {/* Quantidade no carrinho */}
                     {noCarrinho > 0 && (
-                      <span className="absolute top-1.5 right-1.5 bg-gold text-[#0D0D0D] text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                      <span className="absolute top-1.5 right-1.5 bg-[#0D0D0D] text-gold text-[10px] font-black px-1.5 py-0.5 rounded-full border border-gold">
                         {noCarrinho}
                       </span>
                     )}
@@ -194,6 +206,21 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
                     <p className="text-[10px] text-[#888888]">
                       Estoque: {disponivel}
                     </p>
+                    {/* Chips dos outros tamanhos disponíveis do mesmo modelo */}
+                    {(tamanhosEmEstoque[produto.nome]?.length ?? 0) > 1 && (
+                      <div className="flex flex-wrap gap-0.5 mt-0.5">
+                        {tamanhosEmEstoque[produto.nome].map((s) => {
+                          const atual = produto.numero ? `Nº${produto.numero}` : produto.tamanho
+                          return (
+                            <span key={s} className={`text-[9px] font-bold px-1 py-0.5 rounded border ${
+                              s === atual
+                                ? 'bg-gold/20 text-gold border-gold/60'
+                                : 'bg-[#0D0D0D] text-[#666666] border-[#333333]'
+                            }`}>{s}</span>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 </button>
               )

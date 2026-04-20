@@ -125,6 +125,30 @@ async function fetchFuncionariasMeta(): Promise<FuncionariaMeta[]> {
   return (data as FuncionariaMeta[]) ?? []
 }
 
+async function fetchRankingTamanhos() {
+  const supabase = createClient()
+  const inicioAno = new Date(new Date().getFullYear(), 0, 1).toISOString()
+  const { data } = await supabase
+    .from('itens_venda')
+    .select('quantidade, produtos!inner(tamanho, numero), vendas!inner(criado_em)')
+    .gte('vendas.criado_em', inicioAno)
+
+  const tamMapa: Record<string, number> = {}
+  const numMapa: Record<string, number> = {}
+  for (const item of data ?? []) {
+    const p = item.produtos as { tamanho: string; numero: string | null } | null
+    if (!p) continue
+    if (p.numero) {
+      numMapa[p.numero] = (numMapa[p.numero] ?? 0) + Number(item.quantidade)
+    } else {
+      tamMapa[p.tamanho] = (tamMapa[p.tamanho] ?? 0) + Number(item.quantidade)
+    }
+  }
+  const tamanhos = Object.entries(tamMapa).map(([k, v]) => ({ label: k, qtd: v })).sort((a, b) => b.qtd - a.qtd)
+  const numeros  = Object.entries(numMapa).map(([k, v]) => ({ label: k, qtd: v })).sort((a, b) => b.qtd - a.qtd)
+  return { tamanhos, numeros }
+}
+
 async function fetchInventarioStats() {
   const supabase = createClient()
   const { data: produtos } = await supabase.from('produtos').select('custo, preco_venda, estoque(quantidade)')
@@ -328,6 +352,7 @@ export default function DashboardPage() {
   const { data: alertas }    = useSWR('alertas-dash',    fetchAlertas,        { refreshInterval: 60000 })
   const { data: inventario } = useSWR('inventario-stats', fetchInventarioStats, { refreshInterval: 60000 })
   const { data: funcionariasMeta = [] } = useSWR('funcionarias-meta', fetchFuncionariasMeta)
+  const { data: rankingTamanhos } = useSWR('ranking-tamanhos', fetchRankingTamanhos, { refreshInterval: 300000 })
 
   // ── Dados do gráfico mesclados ─────────────────────────────────────────────
   const chartData = modo === 'mensal'
@@ -587,6 +612,62 @@ export default function DashboardPage() {
         </div>
 
         {/* Metas das vendedoras */}
+        {/* Ranking de tamanhos mais vendidos — ano atual */}
+        {rankingTamanhos && (rankingTamanhos.tamanhos.length > 0 || rankingTamanhos.numeros.length > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {rankingTamanhos.tamanhos.length > 0 && (
+              <Card>
+                <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">
+                  Tamanhos Mais Vendidos
+                  <span className="text-[#555555] font-normal normal-case text-xs ml-2">ano atual</span>
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {rankingTamanhos.tamanhos.slice(0, 6).map((t, i) => {
+                    const max = rankingTamanhos.tamanhos[0]?.qtd ?? 1
+                    return (
+                      <div key={t.label} className="flex items-center gap-3">
+                        <span className={`w-8 text-xs font-black text-center ${i === 0 ? 'text-gold' : 'text-[#888888]'}`}>
+                          {t.label}
+                        </span>
+                        <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${i === 0 ? 'bg-gold' : 'bg-[#555555]'}`}
+                            style={{ width: `${(t.qtd / max) * 100}%` }} />
+                        </div>
+                        <span className="text-xs text-[#888888] w-12 text-right">{t.qtd} pç</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
+            )}
+            {rankingTamanhos.numeros.length > 0 && (
+              <Card>
+                <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">
+                  Numerações Mais Vendidas
+                  <span className="text-[#555555] font-normal normal-case text-xs ml-2">ano atual</span>
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {rankingTamanhos.numeros.slice(0, 6).map((n, i) => {
+                    const max = rankingTamanhos.numeros[0]?.qtd ?? 1
+                    return (
+                      <div key={n.label} className="flex items-center gap-3">
+                        <span className={`w-8 text-xs font-black text-center ${i === 0 ? 'text-gold' : 'text-[#888888]'}`}>
+                          {n.label}
+                        </span>
+                        <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${i === 0 ? 'bg-gold' : 'bg-[#555555]'}`}
+                            style={{ width: `${(n.qtd / max) * 100}%` }} />
+                        </div>
+                        <span className="text-xs text-[#888888] w-12 text-right">{n.qtd} pç</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+
         {funcionariasMeta.length > 0 && (
           <Card>
             <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">

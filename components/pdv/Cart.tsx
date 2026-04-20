@@ -357,11 +357,17 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         p_total_final:       Number(totalFinal.toFixed(2)),
         p_itens:             itens,
       }
-      if (cliente.cpf.replace(/\D/g, ''))     rpcParams.p_cliente_cpf       = cliente.cpf.replace(/\D/g, '')
-      if (cliente.nome)                        rpcParams.p_cliente_nome      = cliente.nome
-      if (cliente.telefone.replace(/\D/g, '')) rpcParams.p_cliente_telefone  = cliente.telefone.replace(/\D/g, '')
-      if (cliente.dataNascimento)              rpcParams.p_cliente_nascimento = cliente.dataNascimento
-      if (dataVendaISO)                        rpcParams.p_data_venda        = dataVendaISO
+      if (clienteId) {
+        // Cliente já existente selecionado via busca — passa o ID direto
+        rpcParams.p_cliente_id = clienteId
+      } else {
+        // Dados para criar/atualizar cliente (CPF é opcional)
+        if (cliente.cpf.replace(/\D/g, ''))     rpcParams.p_cliente_cpf       = cliente.cpf.replace(/\D/g, '')
+        if (cliente.nome.trim())                 rpcParams.p_cliente_nome      = cliente.nome.trim()
+        if (cliente.telefone.replace(/\D/g, '')) rpcParams.p_cliente_telefone  = cliente.telefone.replace(/\D/g, '')
+        if (cliente.dataNascimento)              rpcParams.p_cliente_nascimento = cliente.dataNascimento
+      }
+      if (dataVendaISO) rpcParams.p_data_venda = dataVendaISO
 
       const { error } = await supabase.rpc('realizar_venda', rpcParams as never)
 
@@ -580,7 +586,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
               />
               <input
                 type="text"
-                placeholder="CPF (000.000.000-00)"
+                placeholder="CPF (opcional)"
                 value={cliente.cpf}
                 onChange={(e) => {
                   const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
