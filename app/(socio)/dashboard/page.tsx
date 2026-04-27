@@ -149,6 +149,28 @@ async function fetchRankingTamanhos() {
   return { tamanhos, numeros }
 }
 
+interface ContaPagar {
+  id: string
+  descricao: string | null
+  valor: number
+  vence_em: string
+}
+
+async function fetchContasAPagar(): Promise<ContaPagar[]> {
+  const supabase = createClient()
+  const em7Dias = new Date()
+  em7Dias.setDate(em7Dias.getDate() + 7)
+  const { data } = await supabase
+    .from('movimentacao_caixa')
+    .select('id, descricao, valor, vence_em')
+    .eq('tipo', 'saida')
+    .eq('pago', false)
+    .not('vence_em', 'is', null)
+    .lte('vence_em', em7Dias.toISOString().slice(0, 10))
+    .order('vence_em', { ascending: true })
+  return (data as ContaPagar[]) ?? []
+}
+
 async function fetchInventarioStats() {
   const supabase = createClient()
   const { data: produtos } = await supabase.from('produtos').select('custo, preco_venda, estoque(quantidade)')
@@ -353,6 +375,7 @@ export default function DashboardPage() {
   const { data: inventario } = useSWR('inventario-stats', fetchInventarioStats, { refreshInterval: 60000 })
   const { data: funcionariasMeta = [] } = useSWR('funcionarias-meta', fetchFuncionariasMeta)
   const { data: rankingTamanhos } = useSWR('ranking-tamanhos', fetchRankingTamanhos, { refreshInterval: 300000 })
+  const { data: contasAPagar = [] } = useSWR('contas-a-pagar-dash', fetchContasAPagar, { refreshInterval: 30000 })
 
   // ── Dados do gráfico mesclados ─────────────────────────────────────────────
   const chartData = modo === 'mensal'
@@ -398,6 +421,54 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+
+        {/* ── Contas a Pagar desta semana ── */}
+        {(() => {
+          const hojeStr = new Date().toISOString().slice(0, 10)
+          const totalPendente = contasAPagar.reduce((a, c) => a + Number(c.valor), 0)
+          if (contasAPagar.length === 0) return null
+          return (
+            <div className="bg-[#1A1000] border border-[#F59E0B]/40 rounded-xl p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">⚠️</span>
+                  <h2 className="text-sm font-black text-[#F59E0B] uppercase tracking-wide">
+                    Contas a Pagar Esta Semana
+                  </h2>
+                  <span className="bg-danger/20 text-danger text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                    {contasAPagar.length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-base font-black text-danger">{formatarMoeda(totalPendente)}</span>
+                  <a href="/financeiro" className="text-[10px] text-[#888888] hover:text-gold underline transition-colors">
+                    Gerenciar →
+                  </a>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {contasAPagar.map((c) => {
+                  const vencida = c.vence_em < hojeStr
+                  const hoje    = c.vence_em === hojeStr
+                  const dataFmt = new Date(c.vence_em + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                  return (
+                    <div key={c.id} className="flex items-center justify-between gap-3 bg-[#0D0D00] rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${
+                          vencida ? 'bg-danger/20 text-danger' : hoje ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#2A2A2A] text-[#888888]'
+                        }`}>
+                          {vencida ? 'VENCIDA' : hoje ? 'HOJE' : dataFmt}
+                        </span>
+                        <span className="text-xs text-[#F0F0F0] truncate">{c.descricao ?? '—'}</span>
+                      </div>
+                      <span className="text-xs font-bold text-danger flex-shrink-0">{formatarMoeda(Number(c.valor))}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* KPIs do mês selecionado */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
