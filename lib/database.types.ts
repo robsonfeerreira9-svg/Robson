@@ -89,6 +89,7 @@ export interface MovimentacaoCaixa {
   valor: number
   referencia_venda_id: string | null
   vence_em: string | null
+  pago: boolean
   criado_em: string
 }
 

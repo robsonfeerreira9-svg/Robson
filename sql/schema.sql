@@ -1310,6 +1310,18 @@ WHERE LOWER(nome) IN ('func1', 'funcionario', 'funcionário', 'teste', 'test', '
 -- UPDATE public.usuarios SET nome = 'HG Sócio' WHERE role = 'socio';
 
 
+-- ─────────────────────────────────────────────────────
+-- STEP 24: Campo pago em movimentacao_caixa
+-- Saídas com vence_em futuro entram como pago=false (pendente).
+-- Só afetam o saldo quando pago=true (conta quitada).
+-- ─────────────────────────────────────────────────────
+ALTER TABLE public.movimentacao_caixa
+  ADD COLUMN IF NOT EXISTS pago BOOLEAN NOT NULL DEFAULT TRUE;
+
+-- Entradas e saídas já existentes ficam como pagas (default TRUE).
+-- Saídas novas com vence_em serão criadas com pago=FALSE pelo frontend.
+
+
 
 -- Execute para confirmar que tudo foi criado:
 SELECT table_name FROM information_schema.tables

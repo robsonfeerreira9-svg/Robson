@@ -19,6 +19,7 @@ interface Movimentacao {
   descricao: string | null
   valor: number
   vence_em: string | null
+  pago: boolean
   criado_em: string
 }
 
@@ -53,7 +54,7 @@ async function fetchMovimentacoes(tipo: string, de: string, ate: string): Promis
   return (data as Movimentacao[]) ?? []
 }
 
-// ── Fetcher de contas que vencem nos próximos 7 dias (+ vencidas) ─────────────
+// ── Fetcher de contas a pagar (pago=false, vence nos próximos 7 dias ou vencidas) ──
 async function fetchVenceSemana(): Promise<Movimentacao[]> {
   const supabase = createClient()
   const em7Dias = new Date()
@@ -63,6 +64,7 @@ async function fetchVenceSemana(): Promise<Movimentacao[]> {
     .from('movimentacao_caixa')
     .select('*')
     .eq('tipo', 'saida')
+    .eq('pago', false)
     .not('vence_em', 'is', null)
     .lte('vence_em', em7Dias.toISOString().slice(0, 10))
     .order('vence_em', { ascending: true })
@@ -100,6 +102,9 @@ function MovimentacaoModal({
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 
+  const isEntrada = tipo === 'entrada'
+  const temVencimento = !isEntrada && form.vence_em !== ''
+
   async function handleSalvar() {
     if (!form.descricao.trim() || !form.valor) { setErro('Preencha todos os campos.'); return }
     const valor = parseFloat(form.valor)
@@ -112,9 +117,9 @@ function MovimentacaoModal({
       categoria: form.categoria,
       descricao: form.descricao.trim(),
       valor,
-    }
-    if (tipo === 'saida' && form.vence_em) {
-      payload.vence_em = form.vence_em
+      // Saída com vencimento = pendente (não sai do caixa ainda)
+      // Saída sem vencimento = saiu agora (pago=true, default do banco)
+      ...(temVencimento ? { vence_em: form.vence_em, pago: false } : {}),
     }
     const { error } = await supabase.from('movimentacao_caixa').insert(payload)
     setLoading(false)
@@ -122,8 +127,6 @@ function MovimentacaoModal({
     onSave()
     onClose()
   }
-
-  const isEntrada = tipo === 'entrada'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -140,7 +143,7 @@ function MovimentacaoModal({
           />
           <Input
             label="Descrição"
-            placeholder={isEntrada ? 'Ex: Aporte de caixa, transferência...' : 'Ex: Aluguel, embalagens...'}
+            placeholder={isEntrada ? 'Ex: Aporte de caixa...' : 'Ex: Aluguel, embalagens...'}
             value={form.descricao}
             onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))}
           />
@@ -156,7 +159,9 @@ function MovimentacaoModal({
           {/* Vencimento — apenas saídas */}
           {!isEntrada && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-medium">Vencimento (opcional)</label>
+              <label className="text-xs text-[#888888] font-medium">
+                Data de Vencimento <span className="text-[#555555]">(opcional)</span>
+              </label>
               <input
                 type="date"
                 value={form.vence_em}
@@ -164,6 +169,16 @@ function MovimentacaoModal({
                 className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
                 style={{ colorScheme: 'dark' }}
               />
+              {temVencimento && (
+                <p className="text-[10px] text-[#F59E0B]">
+                  Esta conta ficará como <strong>Pendente</strong> até você marcar como paga.
+                </p>
+              )}
+              {!temVencimento && form.valor && (
+                <p className="text-[10px] text-[#888888]">
+                  Sem vencimento = saída imediata do caixa.
+                </p>
+              )}
             </div>
           )}
           {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
@@ -175,7 +190,7 @@ function MovimentacaoModal({
               onClick={handleSalvar}
               className={isEntrada ? '' : 'bg-danger border-danger'}
             >
-              {isEntrada ? 'Registrar Entrada' : 'Registrar Saída'}
+              {isEntrada ? 'Registrar Entrada' : temVencimento ? 'Lançar como Pendente' : 'Registrar Saída'}
             </Button>
             <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           </div>
@@ -185,9 +200,10 @@ function MovimentacaoModal({
   )
 }
 
-// ── Bloco "Vence esta semana" ─────────────────────────────────────────────────
-function VenceSemana() {
-  const { data: contas = [], isLoading } = useSWR('vence-semana', fetchVenceSemana, { refreshInterval: 60000 })
+// ── Bloco "Contas a Pagar" (pendentes) ────────────────────────────────────────
+function VenceSemana({ onPago }: { onPago: () => void }) {
+  const { data: contas = [], isLoading } = useSWR('vence-semana', fetchVenceSemana, { refreshInterval: 30000 })
+  const [pagandoId, setPagandoId] = useState<string | null>(null)
 
   if (isLoading || contas.length === 0) return null
 
@@ -200,16 +216,30 @@ function VenceSemana() {
   }
 
   const colorMap = {
-    vencida: { badge: 'danger' as const,   label: 'Vencida', text: 'text-danger' },
-    hoje:    { badge: 'warning' as const,  label: 'Hoje',    text: 'text-[#F59E0B]' },
-    proxima: { badge: 'default' as const,  label: 'Próxima', text: 'text-[#888888]' },
+    vencida: { badge: 'danger' as const,  label: 'Vencida', text: 'text-danger' },
+    hoje:    { badge: 'warning' as const, label: 'Hoje',    text: 'text-[#F59E0B]' },
+    proxima: { badge: 'default' as const, label: 'Próxima', text: 'text-[#888888]' },
   }
+
+  async function handlePagar(id: string) {
+    setPagandoId(id)
+    const supabase = createClient()
+    await supabase.from('movimentacao_caixa').update({ pago: true }).eq('id', id)
+    setPagandoId(null)
+    mutate('vence-semana')
+    onPago()
+  }
+
+  const total = contas.reduce((a, c) => a + Number(c.valor), 0)
 
   return (
     <Card className="border border-[#3A2A00]">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-base">⚠️</span>
-        <h2 className="text-sm font-bold text-[#F59E0B] uppercase tracking-wide">Vence esta semana</h2>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-base">⚠️</span>
+          <h2 className="text-sm font-bold text-[#F59E0B] uppercase tracking-wide">Contas a Pagar</h2>
+        </div>
+        <span className="text-sm font-black text-danger">{formatarMoeda(total)}</span>
       </div>
       <div className="flex flex-col divide-y divide-[#2A2A2A]">
         {contas.map((c) => {
@@ -227,11 +257,21 @@ function VenceSemana() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge variant={badge}>{label}</Badge>
                 <span className="text-sm font-bold text-danger">{formatarMoeda(Number(c.valor))}</span>
+                <button
+                  onClick={() => handlePagar(c.id)}
+                  disabled={pagandoId === c.id}
+                  className="text-xs font-bold px-2.5 py-1 rounded border border-success/50 text-success hover:bg-success/10 transition-colors disabled:opacity-40"
+                >
+                  {pagandoId === c.id ? '…' : 'Pagar'}
+                </button>
               </div>
             </div>
           )
         })}
       </div>
+      <p className="text-[10px] text-[#555555] mt-2">
+        Clique "Pagar" para confirmar o pagamento e registrar a saída no caixa.
+      </p>
     </Card>
   )
 }
@@ -243,6 +283,7 @@ export default function FinanceiroPage() {
   const [dataInicio, setDataInicio] = useState(primeiroDiaMes)
   const [dataFim,    setDataFim]    = useState(hoje)
   const [showModal, setShowModal] = useState<'entrada' | 'saida' | null>(null)
+  const [pagandoInlineId, setPagandoInlineId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadRole() {
@@ -264,8 +305,10 @@ export default function FinanceiroPage() {
     { refreshInterval: 30000 }
   )
 
-  const entradas = movs.filter((m) => m.tipo === 'entrada').reduce((a, m) => a + Number(m.valor), 0)
-  const saidas   = movs.filter((m) => m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
+  // Saldo considera apenas entradas/saídas já pagas
+  const entradas = movs.filter((m) => m.pago && m.tipo === 'entrada').reduce((a, m) => a + Number(m.valor), 0)
+  const saidas   = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
+  const pendente = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   const saldo    = entradas - saidas
 
   const labelCategoria: Record<string, string> = {
@@ -281,7 +324,16 @@ export default function FinanceiroPage() {
     mutate('vence-semana')
   }
 
-  const colCount = isSocio ? 6 : 5
+  async function handlePagarInline(id: string) {
+    setPagandoInlineId(id)
+    const supabase = createClient()
+    await supabase.from('movimentacao_caixa').update({ pago: true }).eq('id', id)
+    setPagandoInlineId(null)
+    mutate(cacheKey)
+    mutate('vence-semana')
+  }
+
+  const colCount = isSocio ? 7 : 5
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] p-6">
@@ -301,22 +353,28 @@ export default function FinanceiroPage() {
           </div>
         </div>
 
-        {/* Vence esta semana — sempre visível para sócio */}
-        {isSocio && <VenceSemana />}
+        {/* Contas a pagar — sempre visível para sócio */}
+        {isSocio && <VenceSemana onPago={handleSaved} />}
 
         {/* Cards resumo — somente sócio */}
         {isSocio && (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card hover>
               <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Entradas</p>
               <p className="text-2xl font-black text-success">{formatarMoeda(entradas)}</p>
             </Card>
             <Card hover>
-              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saídas</p>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saídas Pagas</p>
               <p className="text-2xl font-black text-danger">{formatarMoeda(saidas)}</p>
             </Card>
+            {pendente > 0 && (
+              <Card hover>
+                <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Pendente</p>
+                <p className="text-2xl font-black text-[#F59E0B]">{formatarMoeda(pendente)}</p>
+              </Card>
+            )}
             <Card hover>
-              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo</p>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo Real</p>
               <p className={`text-2xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
                 {formatarMoeda(saldo)}
               </p>
@@ -393,6 +451,9 @@ export default function FinanceiroPage() {
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Vencimento</th>
                 )}
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Valor</th>
+                {isSocio && (
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Status</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -420,9 +481,15 @@ export default function FinanceiroPage() {
                         ? 'text-[#F59E0B] font-semibold'
                         : 'text-[#888888]'
                     : 'text-[#444444]'
+                  const isPendente = !m.pago && m.tipo === 'saida'
 
                   return (
-                    <tr key={m.id} className="bg-[#1A1A1A] border-b border-[#2A2A2A] hover:bg-[#222222] transition-colors">
+                    <tr
+                      key={m.id}
+                      className={`border-b border-[#2A2A2A] transition-colors ${
+                        isPendente ? 'bg-[#1A1500] hover:bg-[#201900]' : 'bg-[#1A1A1A] hover:bg-[#222222]'
+                      }`}
+                    >
                       <td className="px-4 py-3 text-[#888888] text-xs">
                         {new Date(m.criado_em).toLocaleDateString('pt-BR')}
                       </td>
@@ -445,7 +512,9 @@ export default function FinanceiroPage() {
                         </td>
                       )}
                       <td className={`px-4 py-3 text-right font-bold ${
-                        m.tipo === 'entrada' ? 'text-success' : 'text-danger'
+                        isPendente
+                          ? 'text-[#F59E0B]'
+                          : m.tipo === 'entrada' ? 'text-success' : 'text-danger'
                       }`}>
                         {isSocio
                           ? `${m.tipo === 'entrada' ? '+' : '-'} ${formatarMoeda(Number(m.valor))}`
@@ -454,6 +523,23 @@ export default function FinanceiroPage() {
                             : <span className="text-[#555555]">—</span>
                         }
                       </td>
+                      {isSocio && (
+                        <td className="px-4 py-3 text-center">
+                          {isPendente ? (
+                            <button
+                              onClick={() => handlePagarInline(m.id)}
+                              disabled={pagandoInlineId === m.id}
+                              className="text-xs font-bold px-2.5 py-1 rounded border border-success/50 text-success hover:bg-success/10 transition-colors disabled:opacity-40"
+                            >
+                              {pagandoInlineId === m.id ? '…' : 'Pagar'}
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-[#444444]">
+                              {m.tipo === 'entrada' ? '—' : 'Pago'}
+                            </span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   )
                 })
@@ -461,6 +547,10 @@ export default function FinanceiroPage() {
             </tbody>
           </table>
         </div>
+
+        <p className="text-[10px] text-[#555555] text-center">
+          Saldo Real = entradas − saídas pagas. Saídas pendentes aparecem em amarelo e não afetam o saldo.
+        </p>
       </div>
 
       {showModal && (
