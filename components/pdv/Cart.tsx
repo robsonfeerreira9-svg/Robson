@@ -239,6 +239,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const [loading, setLoading] = useState(false)
   const [campanhaId, setCampanhaId] = useState('')
   const [descontoManualPct, setDescontoManualPct] = useState('')
+  const [descontoTipo, setDescontoTipo] = useState<'percent' | 'valor'>('percent')
 
   // Dados do cliente
   const [cliente, setCliente] = useState<DadosCliente>({
@@ -319,10 +320,17 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   const descontoCampanha = campanhaSelecionada && subtotal > 0
     ? Number((subtotal * campanhaSelecionada.desconto_pct / 100).toFixed(2))
     : 0
-  const descontoManualPctNum = Math.max(0, Math.min(100, parseFloat(descontoManualPct) || 0))
-  const descontoManual = descontoManualPctNum > 0 && subtotal > 0
-    ? Number(((subtotal - descontoCampanha) * descontoManualPctNum / 100).toFixed(2))
+  const descontoManualPctNum = descontoTipo === 'percent'
+    ? Math.max(0, Math.min(100, parseFloat(descontoManualPct) || 0))
     : 0
+  const descontoManual = descontoTipo === 'percent'
+    ? (descontoManualPctNum > 0 && subtotal > 0
+        ? Number(((subtotal - descontoCampanha) * descontoManualPctNum / 100).toFixed(2))
+        : 0)
+    : Math.min(
+        Math.max(0, parseFloat(descontoManualPct) || 0),
+        Math.max(0, subtotal - descontoCampanha)
+      )
   const totalDesconto = descontoCampanha + descontoManual
   const totalFinal = subtotal - totalDesconto
 
@@ -411,6 +419,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
     setBuscaCliente('')
     setCampanhaId('')
     setDescontoManualPct('')
+    setDescontoTipo('percent')
     setDataVenda(new Date().toISOString().slice(0, 10))
   }
 
@@ -626,13 +635,16 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
             Vendedora Responsável
           </p>
           {userRole === 'socio' ? (
-            /* Sócio escolhe qual funcionária é responsável */
+            /* Sócio escolhe qual funcionária é responsável (ou ele mesmo) */
             <select
               value={vendedorId}
               onChange={(e) => setVendedorId(e.target.value)}
               className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] focus:outline-none focus:border-gold"
             >
               <option value="">Selecione a vendedora...</option>
+              {currentUserId && (
+                <option value={currentUserId} className="bg-[#1A1A1A] font-bold">⭐ HG / Sócio</option>
+              )}
               {vendedores.map((v) => (
                 <option key={v.id} value={v.id} className="bg-[#1A1A1A]">{v.nome}</option>
               ))}
@@ -737,22 +749,41 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
           )}
         </div>
 
-        {/* Desconto manual % */}
+        {/* Desconto manual — % ou R$ */}
         <div className="px-3 pb-3">
-          <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">Desconto</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-[#F0F0F0] uppercase tracking-wide">Desconto</p>
+            <div className="flex rounded overflow-hidden border border-[#2A2A2A]">
+              {(['percent', 'valor'] as const).map((tipo) => (
+                <button
+                  key={tipo}
+                  onClick={() => { setDescontoTipo(tipo); setDescontoManualPct('') }}
+                  className={`px-2.5 py-1 text-xs font-bold transition-colors ${
+                    descontoTipo === tipo
+                      ? 'bg-gold text-[#0D0D0D]'
+                      : 'bg-transparent text-[#888888] hover:text-gold'
+                  }`}
+                >
+                  {tipo === 'percent' ? '%' : 'R$'}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <input
               type="number"
               min="0"
-              max="100"
-              step="0.5"
+              max={descontoTipo === 'percent' ? 100 : undefined}
+              step={descontoTipo === 'percent' ? 0.5 : 1}
               placeholder="0"
               value={descontoManualPct}
               onChange={(e) => setDescontoManualPct(e.target.value)}
               className="flex-1 bg-[#0D0D0D] border border-[#2A2A2A] rounded px-2.5 py-2 text-xs text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
             />
-            <span className="text-sm font-bold text-[#888888] flex-shrink-0">%</span>
-            {descontoManualPctNum > 0 && (
+            <span className="text-sm font-bold text-[#888888] flex-shrink-0">
+              {descontoTipo === 'percent' ? '%' : 'R$'}
+            </span>
+            {descontoManual > 0 && (
               <span className="text-xs text-gold font-semibold flex-shrink-0">
                 − {formatarMoeda(descontoManual)}
               </span>
