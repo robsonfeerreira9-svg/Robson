@@ -5,6 +5,7 @@ on:
     branches: [claude/setup-rls-tables-QA4Za]
     paths:
       - '.github/workflows/restore-backup.yml'
+      - 'sql/post-restore.sql'
 
 env:
   SUPABASE_REF: eaovtnotwfzuxgtqpkay
@@ -18,92 +19,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Listar backups disponíveis e restaurar
+      - name: Verificar dados atuais e listar backups
         env:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
+          echo "=== 1. Verificando dados atuais ==="
+          DADOS=$(curl -s -X POST \
+            "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query" \
+            -H "Authorization: Bearer ${SUPABASE_PAT}" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"SELECT (SELECT COUNT(*) FROM public.vendas) AS vendas, (SELECT COUNT(*) FROM public.clientes) AS clientes, (SELECT COUNT(*) FROM public.movimentacao_caixa) AS movimentacoes"}')
+          echo "Dados atuais: $DADOS"
 
-          echo "=== Buscando backups disponíveis ==="
-          BACKUPS=$(curl -s \
+          echo "=== 2. Listando backups disponíveis ==="
+          BACKUPS=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/backups" \
             -H "Authorization: Bearer ${SUPABASE_PAT}")
+          HTTP_CODE=$(echo "$BACKUPS" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY=$(echo "$BACKUPS" | grep -v "HTTP_STATUS:")
+          echo "HTTP: $HTTP_CODE"
+          echo "Backups: $BODY"
 
-          echo "Backups raw: $BACKUPS"
+          echo "=== 3. Verificando endpoint alternativo ==="
+          BACKUPS2=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            "https://api.supabase.com/v1/projects/${SUPABASE_REF}/backups" \
+            -H "Authorization: Bearer ${SUPABASE_PAT}")
+          HTTP2=$(echo "$BACKUPS2" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY2=$(echo "$BACKUPS2" | grep -v "HTTP_STATUS:")
+          echo "HTTP alt: $HTTP2 | $BODY2"
 
-          # Selecionar backup mais recente ANTES de 2026-05-06T00:32:00Z
-          BACKUP_ID=$(echo "$BACKUPS" | python3 -c "
-import json, sys
-from datetime import datetime, timezone
+          # Montar resultado
+          RESULT="=== DADOS ATUAIS ===
+$DADOS
 
-raw = sys.stdin.read()
-try:
-    data = json.loads(raw)
-except:
-    print('')
-    sys.exit(0)
+=== BACKUPS (database/backups) HTTP $HTTP_CODE ===
+$BODY
 
-# Supabase pode retornar lista direta ou objeto com campo 'backups'
-if isinstance(data, list):
-    backups = data
-elif isinstance(data, dict):
-    backups = data.get('backups', data.get('physical_backups', []))
-else:
-    backups = []
+=== BACKUPS (alt /backups) HTTP $HTTP2 ===
+$BODY2"
 
-cutoff = datetime(2026, 5, 6, 0, 32, 0, tzinfo=timezone.utc)
-
-valid = []
-for b in backups:
-    ts_str = b.get('inserted_at') or b.get('created_at') or b.get('snapshot_at') or ''
-    if not ts_str:
-        continue
-    ts_str = ts_str.replace('Z', '+00:00')
-    try:
-        ts = datetime.fromisoformat(ts_str)
-        if ts < cutoff:
-            valid.append((ts, b.get('id', b.get('backup_id', ''))))
-    except:
-        continue
-
-if valid:
-    valid.sort(reverse=True)
-    print(valid[0][1])
-else:
-    print('')
-")
-
-          echo "=== Backup selecionado: '$BACKUP_ID' ==="
-
-          if [ -z "$BACKUP_ID" ]; then
-            RESULT="ERRO: Nenhum backup encontrado antes de 06/05/2026 00:32 UTC.\nResposta da API: $BACKUPS"
-            echo "$RESULT"
-          else
-            echo "=== Iniciando restauração do backup $BACKUP_ID ==="
-            RESTORE_RESP=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-              -X POST \
-              "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/backups/${BACKUP_ID}/restore" \
-              -H "Authorization: Bearer ${SUPABASE_PAT}" \
-              -H "Content-Type: application/json" \
-              -d '{}')
-
-            HTTP_CODE=$(echo "$RESTORE_RESP" | grep "HTTP_STATUS:" | cut -d: -f2)
-            BODY=$(echo "$RESTORE_RESP" | grep -v "HTTP_STATUS:")
-            echo "HTTP: $HTTP_CODE | Resposta: $BODY"
-
-            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ] 2>/dev/null; then
-              RESULT="RESTORE INICIADO: HTTP $HTTP_CODE\nBackup ID: $BACKUP_ID\nResposta: $BODY\n\nAguardando 3 minutos para conclusão..."
-              echo "Restauração iniciada com sucesso! Aguardando..."
-              sleep 180
-              RESULT="$RESULT\nConcluido aguardo. Reaplicando migrações pós-restore..."
-            else
-              RESULT="ERRO na restauração: HTTP $HTTP_CODE\nBackup ID: $BACKUP_ID\nResposta: $BODY\nBackups disponíveis: $BACKUPS"
-            fi
-          fi
-
-          # Salvar resultado em arquivo via GitHub API
-          DEBUG_CONTENT=$(printf "%s" "$RESULT" 2>/dev/null | base64 -w0 || echo "$RESULT" | base64)
+          # Gravar debug-restore.txt via GitHub API
+          DEBUG_CONTENT=$(printf '%s' "$RESULT" | base64 -w0)
           FILE_SHA=$(curl -s \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-restore.txt?ref=${GITHUB_REF_NAME}" \
@@ -114,33 +71,106 @@ else:
             -H "Authorization: token ${GITHUB_TOKEN}" \
             -H "Content-Type: application/json" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-restore.txt" \
-            -d "{\"message\":\"debug: restore result [skip ci]\",\"content\":\"${DEBUG_CONTENT}\",\"branch\":\"${GITHUB_REF_NAME}\"${SHA_PARAM}"} || true
+            -d "{\"message\":\"debug: restore result [skip ci]\",\"content\":\"${DEBUG_CONTENT}\",\"branch\":\"${GITHUB_REF_NAME}\"${SHA_PARAM}}"
+          echo "Arquivo debug-restore.txt gravado."
+
+      - name: Restaurar backup mais recente (antes de 06/05/2026 00:32 UTC)
+        env:
+          SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BACKUPS=$(curl -s \
+            "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/backups" \
+            -H "Authorization: Bearer ${SUPABASE_PAT}")
+
+          BACKUP_ID=$(echo "$BACKUPS" | python3 - <<'PYEOF'
+import json, sys
+from datetime import datetime, timezone
+
+raw = """$BACKUPS"""
+
+# Tentar parsear o JSON dos backups
+try:
+    data = json.loads(raw)
+except:
+    sys.exit(0)
+
+backups = data if isinstance(data, list) else data.get('backups', data.get('data', []))
+
+cutoff = datetime(2026, 5, 6, 0, 32, 0, tzinfo=timezone.utc)
+valid = []
+
+for b in backups:
+    for key in ('inserted_at', 'created_at', 'snapshot_at', 'started_at'):
+        ts_str = b.get(key, '')
+        if ts_str:
+            try:
+                ts = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
+                if ts < cutoff:
+                    bid = b.get('id') or b.get('backup_id') or b.get('name', '')
+                    valid.append((ts, str(bid)))
+            except:
+                pass
+            break
+
+if valid:
+    valid.sort(reverse=True)
+    print(valid[0][1])
+PYEOF
+          )
+
+          echo "Backup ID selecionado: '$BACKUP_ID'"
+
+          if [ -z "$BACKUP_ID" ] || [ "$BACKUP_ID" = "None" ]; then
+            echo "Nenhum backup adequado encontrado. Abortando restore."
+            exit 0
+          fi
+
+          echo "Iniciando restore do backup $BACKUP_ID..."
+          RESTORE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -X POST \
+            "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/backups/${BACKUP_ID}/restore" \
+            -H "Authorization: Bearer ${SUPABASE_PAT}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          HTTP=$(echo "$RESTORE" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY=$(echo "$RESTORE" | grep -v "HTTP_STATUS:")
+          echo "Restore HTTP: $HTTP | $BODY"
+
+          if [ "$HTTP" -ge 200 ] && [ "$HTTP" -lt 300 ] 2>/dev/null; then
+            echo "Restore aceito! Aguardando 3 min..."
+            sleep 180
+          else
+            echo "Restore falhou: HTTP $HTTP"
+            exit 1
+          fi
 
       - name: Re-aplicar migrações pós-restore
         env:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "=== Re-aplicando STEP 24 e STEP 25 ==="
-          POST_SQL=$(cat sql/post-restore.sql)
-          PAYLOAD=$(python3 -c "import json,sys; print(json.dumps({'query': sys.stdin.read()}))" <<< "$POST_SQL")
-
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+          echo "Re-aplicando STEP 24 e 25..."
+          PAYLOAD=$(python3 -c "
+import json, sys
+sql = open('sql/post-restore.sql').read()
+print(json.dumps({'query': sql}))
+")
+          RESP=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             -X POST \
             "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query" \
             -H "Authorization: Bearer ${SUPABASE_PAT}" \
             -H "Content-Type: application/json" \
             --data "$PAYLOAD" \
             --max-time 60)
+          HTTP=$(echo "$RESP" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY=$(echo "$RESP" | grep -v "HTTP_STATUS:")
+          echo "Post-restore HTTP: $HTTP | $BODY"
 
-          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
-          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS:")
-          echo "Post-restore HTTP: $HTTP_CODE"
-          echo "Post-restore resultado: $BODY"
-
-          # Atualizar arquivo de debug com resultado final
-          FINAL="POST-RESTORE HTTP: $HTTP_CODE\n$BODY"
-          DEBUG_CONTENT=$(printf "%s" "$FINAL" | base64 -w0)
+          # Atualizar debug com resultado final
+          RESULT="POST-RESTORE HTTP: $HTTP
+$BODY"
+          DEBUG_CONTENT=$(printf '%s' "$RESULT" | base64 -w0)
           FILE_SHA=$(curl -s \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/debug-restore.txt?ref=${GITHUB_REF_NAME}" \
