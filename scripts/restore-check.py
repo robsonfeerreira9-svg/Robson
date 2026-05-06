@@ -72,13 +72,8 @@ elif isinstance(counts, dict):
 
 print('Vendas encontradas:', n_vendas)
 
-if n_vendas > 0:
-    write_debug(
-        'Banco OK — ' + str(n_vendas) + ' vendas encontradas. Nenhum restore necessário.\n'
-        'Counts: ' + json.dumps(counts)
-    )
-    print('Banco com dados. Pulando restore.')
-    sys.exit(0)
+# Sempre lista backups para diagnóstico, mesmo com dados
+print('Banco atual — vendas:', n_vendas, '| clientes atual pode ter sumido, listando backups...')
 
 # ── 2. Banco vazio — buscar backups ───────────────────────────────────────────
 print('=== Banco vazio. Buscando backups ===')
@@ -117,10 +112,24 @@ for b in backups:
 print('Backups válidos antes de 06/05:', valid)
 
 if not valid:
-    msg = ('ERRO: Banco vazio mas nenhum backup encontrado antes de 06/05/2026.\n'
-           'HTTP ' + http + '\nResposta: ' + body)
+    msg = ('RESULTADO: ' + str(n_vendas) + ' vendas no banco agora.\n'
+           'Nenhum backup encontrado antes de 06/05/2026 — dados irrecuperáveis via API.\n'
+           'HTTP ' + http + '\nResposta completa da API de backups:\n' + body)
     write_debug(msg)
     print(msg)
+    sys.exit(0)
+
+# Com dados no banco E backup disponível — mostrar o que existe antes de restaurar
+if n_vendas > 0:
+    write_debug(
+        'BANCO NAO VAZIO: ' + str(n_vendas) + ' vendas, 0 clientes.\n'
+        'Backup disponível: ' + str(valid[0]) + '\n'
+        'Total backups antes de 06/05: ' + str(len(valid)) + '\n'
+        'Counts: ' + json.dumps(counts) + '\n\n'
+        'Para forçar restore mesmo com dados existentes, ajuste o script.'
+    )
+    print('Banco tem', n_vendas, 'vendas mas 0 clientes. Backup disponível:', valid[0])
+    print('Não restaurando automaticamente para não sobrescrever dados atuais.')
     sys.exit(0)
 
 # ── 3. Restaurar backup mais recente ─────────────────────────────────────────
