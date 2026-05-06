@@ -1,0 +1,2 @@
+Banco OK — 10 vendas encontradas. Nenhum restore necessário.
+Counts: [{"vendas": 10, "clientes": 0, "mov": 33}]
