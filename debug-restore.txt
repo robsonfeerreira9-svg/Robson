@@ -1,2 +1,5 @@
-Banco OK — 10 vendas encontradas. Nenhum restore necessário.
-Counts: [{"vendas": 10, "clientes": 0, "mov": 33}]
+RESULTADO: 10 vendas no banco agora.
+Nenhum backup encontrado antes de 06/05/2026 — dados irrecuperáveis via API.
+HTTP 200
+Resposta completa da API de backups:
+{"region":"us-west-2","pitr_enabled":false,"walg_enabled":true,"backups":[],"physical_backup_data":{}}
