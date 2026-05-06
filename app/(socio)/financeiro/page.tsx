@@ -20,6 +20,7 @@ interface Movimentacao {
   valor: number
   vence_em: string | null
   pago: boolean
+  referencia_venda_id: string | null
   criado_em: string
 }
 
@@ -200,6 +201,105 @@ function MovimentacaoModal({
   )
 }
 
+// ── Modal de edição ───────────────────────────────────────────────────────────
+function EditModal({
+  mov, onClose, onSave,
+}: {
+  mov: Movimentacao
+  onClose: () => void
+  onSave: () => void
+}) {
+  const [form, setForm] = useState({
+    descricao: mov.descricao ?? '',
+    valor: String(mov.valor),
+    vence_em: mov.vence_em ?? '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
+
+  async function handleSalvar() {
+    if (!form.descricao.trim() || !form.valor) { setErro('Preencha todos os campos.'); return }
+    const valor = parseFloat(form.valor)
+    if (isNaN(valor) || valor <= 0) { setErro('Informe um valor válido.'); return }
+
+    setLoading(true)
+    const supabase = createClient()
+    const payload: Record<string, unknown> = {
+      descricao: form.descricao.trim(),
+      valor,
+      vence_em: form.vence_em || null,
+    }
+    // Saída: sem vencimento = pago imediato; com vencimento = pendente
+    if (mov.tipo === 'saida') {
+      payload.pago = !form.vence_em
+    }
+    const { error } = await supabase.from('movimentacao_caixa').update(payload).eq('id', mov.id)
+    setLoading(false)
+    if (error) { setErro(`Erro: ${error.message}`); return }
+    onSave()
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <Card className="w-full max-w-sm shadow-2xl">
+        <h3 className="font-bold text-[#F0F0F0] mb-1">Editar Lançamento</h3>
+        <p className="text-[10px] text-[#555555] mb-4">
+          {mov.tipo === 'entrada' ? 'Entrada' : 'Saída'} · {new Date(mov.criado_em).toLocaleDateString('pt-BR')}
+        </p>
+        <div className="flex flex-col gap-3">
+          <Input
+            label="Descrição"
+            placeholder="Ex: Aluguel, embalagens..."
+            value={form.descricao}
+            onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))}
+          />
+          <Input
+            label="Valor (R$)"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0,00"
+            value={form.valor}
+            onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))}
+          />
+          {mov.tipo === 'saida' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-[#888888] font-medium">
+                Data de Vencimento <span className="text-[#555555]">(opcional)</span>
+              </label>
+              <input
+                type="date"
+                value={form.vence_em}
+                onChange={(e) => setForm((f) => ({ ...f, vence_em: e.target.value }))}
+                className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+                style={{ colorScheme: 'dark' }}
+              />
+              {form.vence_em && (
+                <p className="text-[10px] text-[#F59E0B]">
+                  Conta ficará como <strong>Pendente</strong> até ser marcada como paga.
+                </p>
+              )}
+              {!form.vence_em && (
+                <p className="text-[10px] text-[#888888]">
+                  Sem vencimento = saída imediata do caixa.
+                </p>
+              )}
+            </div>
+          )}
+          {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+          <div className="flex gap-2 pt-1">
+            <Button variant="primary" fullWidth loading={loading} onClick={handleSalvar}>
+              Salvar
+            </Button>
+            <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+}
+
 // ── Bloco "Contas a Pagar" (pendentes) ────────────────────────────────────────
 function VenceSemana({ onPago }: { onPago: () => void }) {
   const { data: contas = [], isLoading } = useSWR('vence-semana', fetchVenceSemana, { refreshInterval: 30000 })
@@ -284,6 +384,7 @@ export default function FinanceiroPage() {
   const [dataFim,    setDataFim]    = useState(hoje)
   const [showModal, setShowModal] = useState<'entrada' | 'saida' | null>(null)
   const [pagandoInlineId, setPagandoInlineId] = useState<string | null>(null)
+  const [editingMov, setEditingMov] = useState<Movimentacao | null>(null)
 
   useEffect(() => {
     async function loadRole() {
@@ -333,7 +434,7 @@ export default function FinanceiroPage() {
     mutate('vence-semana')
   }
 
-  const colCount = isSocio ? 7 : 5
+  const colCount = isSocio ? 8 : 5
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] p-6">
@@ -454,6 +555,9 @@ export default function FinanceiroPage() {
                 {isSocio && (
                   <th className="text-center px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Status</th>
                 )}
+                {isSocio && (
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Ações</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -540,6 +644,21 @@ export default function FinanceiroPage() {
                           )}
                         </td>
                       )}
+                      {isSocio && (
+                        <td className="px-4 py-3 text-center">
+                          {!m.referencia_venda_id ? (
+                            <button
+                              onClick={() => setEditingMov(m)}
+                              className="text-xs font-bold px-2.5 py-1 rounded border border-[#2A2A2A] text-[#888888] hover:border-gold hover:text-gold transition-colors"
+                              title="Editar lançamento"
+                            >
+                              Editar
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-[#333333]">—</span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   )
                 })
@@ -558,6 +677,16 @@ export default function FinanceiroPage() {
           tipo={showModal}
           onClose={() => setShowModal(null)}
           onSave={handleSaved}
+        />
+      )}
+      {editingMov && (
+        <EditModal
+          mov={editingMov}
+          onClose={() => setEditingMov(null)}
+          onSave={() => {
+            mutate(cacheKey)
+            mutate('vence-semana')
+          }}
         />
       )}
     </div>
