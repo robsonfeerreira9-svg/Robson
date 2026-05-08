@@ -14,9 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Exportar dados, limpar antigos e enviar email
+      - name: Exportar dados, verificar tokens e enviar email
         env:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: python3 scripts/backup.py

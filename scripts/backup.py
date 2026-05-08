@@ -1,21 +1,23 @@
 """
 Exporta vendas, clientes, movimentacao_caixa, itens_venda e comissoes
 para backups/YYYY-MM-DD.json, commita no repositório, limpa backups
-antigos (>30 dias) e envia resumo por email via Resend API.
+antigos (>30 dias), verifica saúde dos tokens e envia resumo por email.
 """
 import json, subprocess, os, sys
 from datetime import datetime, timezone, timedelta
 
-PAT        = os.environ['SUPABASE_PAT']
-GHTOKEN    = os.environ['GITHUB_TOKEN']
-RESEND_KEY = os.environ.get('RESEND_API_KEY', '')
-REPO       = os.environ.get('GITHUB_REPOSITORY', '')
-BRANCH     = os.environ.get('GITHUB_REF_NAME', '')
-REF        = 'eaovtnotwfzuxgtqpkay'
-API        = 'https://api.supabase.com/v1/projects/' + REF
-TODAY      = datetime.now(timezone.utc).strftime('%Y-%m-%d')
-PATH       = 'backups/' + TODAY + '.json'
-EMAIL_TO   = 'Robsonfeerreira9@gmail.com'
+PAT          = os.environ['SUPABASE_PAT']
+GHTOKEN      = os.environ['GITHUB_TOKEN']
+RESEND_KEY   = os.environ.get('RESEND_API_KEY', '')
+VERCEL_TOKEN = os.environ.get('VERCEL_TOKEN', '')
+VERCEL_ORG   = 'team_NRmTqJ7tXyq4AOLENBGyFHsa'
+REPO         = os.environ.get('GITHUB_REPOSITORY', '')
+BRANCH       = os.environ.get('GITHUB_REF_NAME', '')
+REF          = 'eaovtnotwfzuxgtqpkay'
+API          = 'https://api.supabase.com/v1/projects/' + REF
+TODAY        = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+PATH         = 'backups/' + TODAY + '.json'
+EMAIL_TO     = 'Robsonfeerreira9@gmail.com'
 
 
 # ── 0. Keepalive: evita que Supabase pause o projeto (free tier) ──────────────
@@ -114,7 +116,7 @@ def cleanup_old_backups():
         date_str = name.replace('.json', '')
         try:
             file_date = datetime.strptime(date_str, '%Y-%m-%d').replace(tzinfo=timezone.utc)
-        except ValueError:
+        except Exception:
             continue
         if file_date < cutoff:
             delete_file(item['path'], item['sha'], 'backup: remove antigo ' + date_str + ' [skip ci]')
@@ -122,8 +124,58 @@ def cleanup_old_backups():
     print(f'Limpeza: {deleted} backup(s) removido(s) (>30 dias)')
 
 
-# ── 6. Enviar email via Resend API ────────────────────────────────────────────
-def send_email(counts):
+# ── 6. Verificação de saúde dos tokens e serviços ────────────────────────────
+def check_health():
+    alerts = []
+
+    # Supabase PAT — testa acesso ao projeto
+    r = subprocess.run(
+        ['curl', '-s', '-o', '/dev/null', '-w', '%{http_code}',
+         '-H', 'Authorization: Bearer ' + PAT,
+         'https://api.supabase.com/v1/projects/' + REF,
+         '--max-time', '15'],
+        capture_output=True, text=True)
+    code = r.stdout.strip()
+    if code != '200':
+        alerts.append(f'SUPABASE_PAT invalido ou expirado (HTTP {code}) — atualize em github.com/robsonfeerreira9-svg/Robson/settings/secrets/actions')
+    print(f'Supabase PAT: HTTP {code}')
+
+    # Supabase — projeto ativo (não pausado)
+    r2 = subprocess.run(
+        ['curl', '-s',
+         '-H', 'Authorization: Bearer ' + PAT,
+         'https://api.supabase.com/v1/projects/' + REF,
+         '--max-time', '15'],
+        capture_output=True, text=True)
+    try:
+        proj = json.loads(r2.stdout)
+        status = proj.get('status', 'unknown')
+        if status != 'ACTIVE_HEALTHY':
+            alerts.append(f'Projeto Supabase está com status "{status}" — pode estar pausado! Acesse app.supabase.com e ative o projeto.')
+        print(f'Supabase projeto status: {status}')
+    except Exception:
+        pass
+
+    # Vercel Token — só verifica se foi configurado
+    if VERCEL_TOKEN:
+        r3 = subprocess.run(
+            ['curl', '-s', '-o', '/dev/null', '-w', '%{http_code}',
+             '-H', 'Authorization: Bearer ' + VERCEL_TOKEN,
+             f'https://api.vercel.com/v9/projects/hg-grifes-erp?teamId={VERCEL_ORG}',
+             '--max-time', '15'],
+            capture_output=True, text=True)
+        vcode = r3.stdout.strip()
+        if vcode not in ('200', '404'):
+            alerts.append(f'VERCEL_TOKEN invalido ou expirado (HTTP {vcode}) — gere novo em vercel.com/account/tokens e atualize o secret no GitHub.')
+        print(f'Vercel Token: HTTP {vcode}')
+    else:
+        print('Vercel Token: não configurado no backup (ok)')
+
+    return alerts
+
+
+# ── 7. Enviar email via Resend API ────────────────────────────────────────────
+def send_email(counts, alerts):
     if not RESEND_KEY:
         print('RESEND_API_KEY não configurado — email pulado')
         return
@@ -134,30 +186,48 @@ def send_email(counts):
         for t, c in counts.items()
     )
 
+    alert_block = ''
+    if alerts:
+        items_html = ''.join(f'<li style="margin:4px 0;color:#c0392b">{a}</li>' for a in alerts)
+        alert_block = f"""
+<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:12px 16px;margin:16px 0">
+  <b style="color:#856404">⚠ Atenção — Ação necessária:</b>
+  <ul style="margin:8px 0 0 0;padding-left:20px">{items_html}</ul>
+</div>"""
+
+    status_color = '#27ae60' if not alerts else '#e67e22'
+    status_text  = 'Tudo funcionando normalmente' if not alerts else f'{len(alerts)} alerta(s) detectado(s)'
+
     html = f"""
-<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto">
-  <h2 style="color:#1a1a2e">HG Grifes ERP — Backup Diário</h2>
-  <p>Backup de <b>{TODAY}</b> realizado com sucesso.</p>
-  <table style="width:100%;border-collapse:collapse;margin:16px 0">
-    <thead>
-      <tr style="background:#f0f0f0">
-        <th style="padding:8px 12px;text-align:left">Tabela</th>
-        <th style="padding:8px 12px;text-align:right">Registros</th>
-      </tr>
-    </thead>
-    <tbody>{rows}</tbody>
-  </table>
-  <p style="color:#666;font-size:12px">
-    Arquivo salvo em <code>backups/{TODAY}.json</code> no repositório GitHub.<br>
-    Backups são mantidos por 30 dias.
-  </p>
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto">
+  <div style="background:{status_color};color:#fff;padding:12px 20px;border-radius:6px 6px 0 0">
+    <h2 style="margin:0;font-size:18px">HG Grifes ERP — Backup Diário</h2>
+    <p style="margin:4px 0 0;font-size:13px">{status_text}</p>
+  </div>
+  <div style="border:1px solid #ddd;border-top:none;padding:16px 20px;border-radius:0 0 6px 6px">
+    <p>Backup de <b>{TODAY}</b> realizado com sucesso.</p>
+    {alert_block}
+    <table style="width:100%;border-collapse:collapse;margin:12px 0">
+      <thead>
+        <tr style="background:#f5f5f5">
+          <th style="padding:8px 12px;text-align:left;font-size:13px">Tabela</th>
+          <th style="padding:8px 12px;text-align:right;font-size:13px">Registros</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+    <p style="color:#888;font-size:11px;margin:12px 0 0">
+      Arquivo: <code>backups/{TODAY}.json</code> · Mantido por 30 dias · HG Grifes ERP
+    </p>
+  </div>
 </div>
 """
 
+    subject = f'{"⚠ ALERTA — " if alerts else ""}Backup HG Grifes — {TODAY}'
     payload = {
         'from': 'HG Grifes ERP <onboarding@resend.dev>',
         'to': [EMAIL_TO],
-        'subject': f'Backup HG Grifes — {TODAY}',
+        'subject': subject,
         'html': html,
     }
     r = subprocess.run(
@@ -204,4 +274,12 @@ print('Backup concluido:', PATH)
 
 cleanup_old_backups()
 
-send_email(counts)
+print('=== Verificacao de saude ===')
+alerts = check_health()
+
+if alerts:
+    print('ALERTAS:')
+    for a in alerts:
+        print(' -', a)
+
+send_email(counts, alerts)
