@@ -11,4 +11,5 @@ jobs:
       - name: Testar envio de email
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/teste-email.py
