@@ -1505,3 +1505,53 @@ DROP TRIGGER IF EXISTS trg_log_delete_comissoes ON public.comissoes;
 CREATE TRIGGER trg_log_delete_comissoes
   BEFORE DELETE ON public.comissoes
   FOR EACH ROW EXECUTE FUNCTION public.fn_log_delete();
+
+
+-- ─────────────────────────────────────────────────────
+-- STEP 27: Histórico de edições (UPDATE) nas tabelas críticas
+-- Quando qualquer campo de um cliente/venda/produto for editado,
+-- a versão ANTERIOR fica salva em audit_delete_log com operacao='UPDATE'
+-- ─────────────────────────────────────────────────────
+
+-- Adiciona coluna operacao (DELETE ou UPDATE) se ainda não existe
+ALTER TABLE public.audit_delete_log
+  ADD COLUMN IF NOT EXISTS operacao TEXT NOT NULL DEFAULT 'DELETE';
+
+-- Função que salva o estado ANTES da edição
+CREATE OR REPLACE FUNCTION public.fn_log_update()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF OLD IS DISTINCT FROM NEW THEN
+    INSERT INTO public.audit_delete_log (tabela, registro_id, dados, operacao, usuario_id)
+    VALUES (TG_TABLE_NAME, OLD.id, to_jsonb(OLD), 'UPDATE', auth.uid());
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+-- Histórico de edições em clientes
+DROP TRIGGER IF EXISTS trg_log_update_clientes ON public.clientes;
+CREATE TRIGGER trg_log_update_clientes
+  BEFORE UPDATE ON public.clientes
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_update();
+
+-- Histórico de edições em vendas
+DROP TRIGGER IF EXISTS trg_log_update_vendas ON public.vendas;
+CREATE TRIGGER trg_log_update_vendas
+  BEFORE UPDATE ON public.vendas
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_update();
+
+-- Histórico de edições em movimentacao_caixa
+DROP TRIGGER IF EXISTS trg_log_update_movimentacao ON public.movimentacao_caixa;
+CREATE TRIGGER trg_log_update_movimentacao
+  BEFORE UPDATE ON public.movimentacao_caixa
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_update();
+
+-- Histórico de edições em produtos
+DROP TRIGGER IF EXISTS trg_log_update_produtos ON public.produtos;
+CREATE TRIGGER trg_log_update_produtos
+  BEFORE UPDATE ON public.produtos
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_update();

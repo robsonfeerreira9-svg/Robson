@@ -486,8 +486,10 @@ tables = {
     'movimentacao_caixa': 'SELECT * FROM public.movimentacao_caixa ORDER BY criado_em',
     'itens_venda':        'SELECT * FROM public.itens_venda',
     'comissoes':          'SELECT * FROM public.comissoes ORDER BY criado_em',
-    'produtos':           'SELECT id, nome, tamanho, numero, preco_venda FROM public.produtos ORDER BY nome',
+    'produtos':           'SELECT * FROM public.produtos ORDER BY nome',
+    'estoque':            'SELECT * FROM public.estoque',
     'usuarios':           'SELECT id, email, nome, role, ativo FROM public.usuarios',
+    'audit_log':          'SELECT * FROM public.audit_delete_log ORDER BY deletado_em DESC LIMIT 5000',
 }
 
 backup = {'data': TODAY, 'tabelas': {}}
