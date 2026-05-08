@@ -1,0 +1,1211 @@
+{
+  "data": "2026-05-08",
+  "tabelas": {
+    "vendas": [
+      {
+        "id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "260.00",
+        "desconto_aplicado": "18.20",
+        "total_final": "241.80",
+        "criado_em": "2026-04-01 10:30:00+00"
+      },
+      {
+        "id": "0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "whatsapp",
+        "metodo_pagamento": "pix",
+        "subtotal": "320.00",
+        "desconto_aplicado": "22.40",
+        "total_final": "297.60",
+        "criado_em": "2026-04-02 14:15:00+00"
+      },
+      {
+        "id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "credito",
+        "subtotal": "220.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "220.00",
+        "criado_em": "2026-04-03 11:00:00+00"
+      },
+      {
+        "id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "195.00",
+        "desconto_aplicado": "13.65",
+        "total_final": "181.35",
+        "criado_em": "2026-04-04 15:45:00+00"
+      },
+      {
+        "id": "e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "credito",
+        "subtotal": "380.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "380.00",
+        "criado_em": "2026-04-05 16:20:00+00"
+      },
+      {
+        "id": "aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "debito",
+        "subtotal": "390.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "390.00",
+        "criado_em": "2026-04-06 13:00:00+00"
+      },
+      {
+        "id": "721675f5-4344-4822-9064-45e30a8b97d7",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "350.00",
+        "desconto_aplicado": "24.50",
+        "total_final": "325.50",
+        "criado_em": "2026-04-07 10:00:00+00"
+      },
+      {
+        "id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "credito",
+        "subtotal": "540.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "540.00",
+        "criado_em": "2026-04-08 17:30:00+00"
+      },
+      {
+        "id": "ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "whatsapp",
+        "metodo_pagamento": "pix",
+        "subtotal": "415.00",
+        "desconto_aplicado": "29.05",
+        "total_final": "385.95",
+        "criado_em": "2026-04-09 09:15:00+00"
+      },
+      {
+        "id": "69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "whatsapp",
+        "metodo_pagamento": "pix",
+        "subtotal": "260.00",
+        "desconto_aplicado": "18.20",
+        "total_final": "241.80",
+        "criado_em": "2026-04-09 11:40:00+00"
+      }
+    ],
+    "clientes": [],
+    "movimentacao_caixa": [
+      {
+        "id": "1cce4a6c-50a0-417c-865b-ec48e2ad13d7",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Pagamento Sistema",
+        "valor": "110.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-08 09:00:00+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "cf435a18-a3fa-46fe-8def-5417fb480af4",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Blusa",
+        "valor": "100.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-09 22:38:41.962119+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "7ffc4b84-be58-4a27-abbb-b36142da209b",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "ALUGUEL",
+        "valor": "2430.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-10 21:38:17.577537+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "111bab2c-7bb6-4133-9a51-88b85e87494d",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Contabilidade",
+        "valor": "350.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-15 09:00:00+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "7b0be9c9-a435-416a-9ff0-9ab7c8060b73",
+        "tipo": "entrada",
+        "categoria": "outro",
+        "descricao": "Saldo Mês Anterior",
+        "valor": "1580.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:34:33.753668+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "82fdc85b-ce9b-4967-9b91-39316f91b075",
+        "tipo": "entrada",
+        "categoria": "outro",
+        "descricao": "NOVO INVESTIMENTO HG",
+        "valor": "10500.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:35:06.993157+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "63dc3247-4cda-410f-817f-df2ed0f2bc53",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Pagamento Ciara",
+        "valor": "1030.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:36:35.839676+00",
+        "vence_em": "2026-05-01",
+        "pago": true
+      },
+      {
+        "id": "3a9618a7-92fe-436e-b096-3ed2830495bd",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Pagamento Camilly",
+        "valor": "550.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:38:13.182484+00",
+        "vence_em": "2026-05-01",
+        "pago": true
+      },
+      {
+        "id": "77a99072-0c57-49eb-a2d0-7137d74b6075",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Reposição 14 Polos Lançamento",
+        "valor": "756.98",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:40:10.489512+00",
+        "vence_em": "2026-05-02",
+        "pago": true
+      },
+      {
+        "id": "f959130f-313a-447c-83c4-7c2b9ffeaa7f",
+        "tipo": "saida",
+        "categoria": "outro",
+        "descricao": "Emprestimo Mercado Pago (Hugo)",
+        "valor": "356.10",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-03 17:26:47.353583+00",
+        "vence_em": "2026-05-06",
+        "pago": false
+      },
+      {
+        "id": "c84906d3-1d7a-46fa-999c-3a1e08bbc273",
+        "tipo": "saida",
+        "categoria": "outro",
+        "descricao": "Emprestimo Mercado Pago HG 1/6",
+        "valor": "649.54",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:55:36.081505+00",
+        "vence_em": "2026-05-13",
+        "pago": false
+      },
+      {
+        "id": "5c527cbe-9ba8-456e-930f-fe37b7d7d019",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Adiantamento Ciara",
+        "valor": "600.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:56:02.334716+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "7b0bf8bd-e986-4fbb-844f-addba4095dc2",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Adiantamento Camilly",
+        "valor": "280.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:58:29.325244+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "851cd365-43f5-4d6a-9c89-9bdb88bd3c2a",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Agua e Luz (Media)",
+        "valor": "420.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:59:29.470471+00",
+        "vence_em": "2026-05-10",
+        "pago": false
+      },
+      {
+        "id": "f38b93ef-8ae8-469a-a599-0b05fa4cfb48",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Contabilidade HG",
+        "valor": "350.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:59:55.455759+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "45addf6d-c928-4e09-9049-9a296e10263d",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Marketing",
+        "valor": "500.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:00:30.525685+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "e1f7c55e-71f5-4243-a9bd-d98e160e71fb",
+        "tipo": "saida",
+        "categoria": "outro",
+        "descricao": "Compra Loja",
+        "valor": "347.57",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:02:26.251858+00",
+        "vence_em": "2026-05-01",
+        "pago": true
+      },
+      {
+        "id": "89037063-f39b-4096-9bbf-160ec41818f6",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Internet",
+        "valor": "110.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:03:00.080932+00",
+        "vence_em": "2026-05-10",
+        "pago": false
+      },
+      {
+        "id": "dfcb8ff3-a417-4f5e-81de-41d65fcb1d91",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Aluguel",
+        "valor": "2440.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:04:39.805938+00",
+        "vence_em": "2026-05-10",
+        "pago": false
+      },
+      {
+        "id": "4b231633-4c54-40e2-a217-24fc74bb5b48",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Parcela Hugo (Devolução Acordada) 1/11",
+        "valor": "1350.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:06:45.583568+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "e10f972d-85da-4962-9e63-28caf970bf07",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Reposição Calça BROW",
+        "valor": "1285.18",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-05 08:56:50.658494+00",
+        "vence_em": "2026-05-05",
+        "pago": true
+      },
+      {
+        "id": "8d978f28-7046-41b9-b390-55b7213a4a25",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Reposição 33 Malhas+Frete",
+        "valor": "1884.59",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-05 08:58:11.978024+00",
+        "vence_em": "2026-05-04",
+        "pago": true
+      },
+      {
+        "id": "d6408420-8bea-4320-b2d9-d32b2fd04613",
+        "tipo": "saida",
+        "categoria": "outro",
+        "descricao": "Restante Aluguel anterior+Agua",
+        "valor": "630.39",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-05 13:22:52.832743+00",
+        "vence_em": "2026-05-05",
+        "pago": true
+      },
+      {
+        "id": "235a03a2-af6f-4d27-a348-0951d06fef4a",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "valor": "390.00",
+        "referencia_venda_id": "aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "1a348957-1eea-4fc4-9e17-7a5d2f1017cf",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #721675f5-4344-4822-9064-45e30a8b97d7",
+        "valor": "325.50",
+        "referencia_venda_id": "721675f5-4344-4822-9064-45e30a8b97d7",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "91db1de7-5077-4bee-926c-fa3ac936efff",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "valor": "540.00",
+        "referencia_venda_id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "2249c0d3-82ee-430b-ad4a-b0a4a388f03c",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "valor": "385.95",
+        "referencia_venda_id": "ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "6973a7f3-5031-4d35-9219-5c9beebe2f72",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "valor": "241.80",
+        "referencia_venda_id": "69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "89f2dfc3-9877-4278-9243-37d8e29f249b",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "valor": "297.60",
+        "referencia_venda_id": "0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "f0663d7d-9ee6-4267-b3e3-498b71ca68b3",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "valor": "241.80",
+        "referencia_venda_id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "fd818b38-0944-48b4-a79c-08debab3dd95",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "valor": "220.00",
+        "referencia_venda_id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "5f376ec6-3000-4fcd-8f24-ac691280f8ac",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "valor": "181.35",
+        "referencia_venda_id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "60e7c3fe-0290-4ff1-8208-2ce4eb0a3aa9",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "valor": "380.00",
+        "referencia_venda_id": "e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "573efb57-d566-40f1-a2cd-b4da70b09fb0",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "ND",
+        "valor": "1.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-07 00:19:39.944777+00",
+        "vence_em": "2026-05-06",
+        "pago": false
+      },
+      {
+        "id": "89b53ce3-dfb6-4fd5-9346-d0d4c522d742",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Reposição DWD+Frete",
+        "valor": "4238.47",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-07 00:21:40.057714+00",
+        "vence_em": "2026-05-06",
+        "pago": true
+      }
+    ],
+    "itens_venda": [],
+    "comissoes": [
+      {
+        "id": "1de16396-972f-424f-a339-197395d1dec0",
+        "venda_id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "27.00",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "3528bde7-4d8a-407d-b2a8-f8c849d8a433",
+        "venda_id": "ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "19.30",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "47968a47-3686-44c1-b127-616640a78041",
+        "venda_id": "0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "14.88",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "4cd86268-d2d8-4533-aac6-cc64650551cf",
+        "venda_id": "aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "19.50",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "55a07b84-00e1-4326-b90f-f1c92ba67f95",
+        "venda_id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "11.00",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "6292f198-929b-4ddc-8fdc-d8fbe2af44df",
+        "venda_id": "721675f5-4344-4822-9064-45e30a8b97d7",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "16.28",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "685d5a4f-8c04-4b3a-8c44-a60c07c7f2bc",
+        "venda_id": "69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "12.09",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "addfb50a-8ae7-4aad-ba7f-e56991f06818",
+        "venda_id": "e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "19.00",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "bb10252e-5155-4ae7-954f-1f59fef9b9fe",
+        "venda_id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "12.09",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "bded0411-25dd-4fa0-bed6-d0ac36599537",
+        "venda_id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "9.07",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      }
+    ],
+    "produtos": [
+      {
+        "id": "016386c4-795c-45c1-b374-78481a7a46e1",
+        "nome": "AQUALAND Meia Lua Aço",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "ea80bafa-9560-4b4f-b5e4-e4a07d62879f",
+        "nome": "AQUALAND Meia Lua Borracha",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "189.90"
+      },
+      {
+        "id": "9ea992b5-f598-4c15-8661-c3fee9836b66",
+        "nome": "Bag Importada Multimarcas",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "7dee7cae-5c48-4e68-8de8-db3f1bd74674",
+        "nome": "Bermuda FREEBONG/ acinzentada",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "e42f225a-1ebd-477a-b87e-31eb55bea2b4",
+        "nome": "Bermuda FREEBONG/ detalhada",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "5731f20d-2775-45c6-903a-73f35b4ab710",
+        "nome": "Bermuda FREEBONG/ preto",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "dd498434-ba02-4727-a13c-e216d7563390",
+        "nome": "Boné Lacoste Sport basic",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "75.00"
+      },
+      {
+        "id": "6b4a4595-a69a-49cc-86c8-d47874747958",
+        "nome": "Bonés multimarcas",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "75.00"
+      },
+      {
+        "id": "a1702a39-ac90-45e4-b038-b77c64f9ad1d",
+        "nome": "Calça BROW jogador",
+        "tamanho": "UNICO",
+        "numero": "42,44",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "a77452ad-3e27-4924-8f6b-b603f9b1a148",
+        "nome": "Calça FREEBONG",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "209.90"
+      },
+      {
+        "id": "0cdd750d-9007-42db-9e23-04f6ebc11569",
+        "nome": "Camisa Dry",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "d52e0f9c-2662-4c14-a431-55341d796f62",
+        "nome": "Camisa Lacoste Gola",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "c5a24ebf-e6cf-4a4b-8519-2bfaeaf69c54",
+        "nome": "Camisa seleção brasileira",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "190.00"
+      },
+      {
+        "id": "310591a6-96c9-400f-b87a-04198e8d1f05",
+        "nome": "Camisa ZARA",
+        "tamanho": "GG",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "7396acee-6f65-4ae4-bb55-c78a9f62e21c",
+        "nome": "Cinto catracado multimarca",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "69.90"
+      },
+      {
+        "id": "689df861-2261-45de-a68f-829dc7ee6c7f",
+        "nome": "Conjuntos Djokovic Lacoste",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "350.00"
+      },
+      {
+        "id": "63cd9d11-b0bf-4697-9fd0-6e1aabc6edc2",
+        "nome": "Cuecas Pac/3",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "75.00"
+      },
+      {
+        "id": "d6b13e84-0f4b-465a-abb8-77f26b61e21d",
+        "nome": "Dry Fit 🐊",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "79.90"
+      },
+      {
+        "id": "a8a1baa7-b7e2-4183-8b4e-a5cb3b034b8f",
+        "nome": "Dry Fit 🐊🥎",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "79.90"
+      },
+      {
+        "id": "616b2e45-6b84-4213-8584-3546d67065fb",
+        "nome": "Dry Fit Big Croc",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "79.90"
+      },
+      {
+        "id": "bc068541-3815-457c-a0c2-cac1387a9785",
+        "nome": "Dry Fit Roland Basic",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "79.90"
+      },
+      {
+        "id": "5f749fdc-015d-4fb5-b16b-b5115b74188f",
+        "nome": "Dry Fit Roland Garros",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "79.90"
+      },
+      {
+        "id": "d662689a-3bc3-4ec2-91f7-629c9826050b",
+        "nome": "Jaqueta Courino ZARA",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "259.90"
+      },
+      {
+        "id": "0dd9c237-311e-4e3a-b379-4eed9e80b6ea",
+        "nome": "Lacoste T-clip",
+        "tamanho": "UNICO",
+        "numero": "43",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "2bc301b5-8ee4-49a2-972d-235a1004f8ec",
+        "nome": "Lacoste T-clip",
+        "tamanho": "UNICO",
+        "numero": "41",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "e8726cd6-6184-4f9f-99ea-4f709bd3bb96",
+        "nome": "Lacoste T-clip",
+        "tamanho": "UNICO",
+        "numero": "40",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "c50e1a90-436d-4c7e-873e-87473c2f47c8",
+        "nome": "Lacoste T-Clip",
+        "tamanho": "UNICO",
+        "numero": "39",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "1d7df8f0-09f1-45d8-9b78-a14f5d8be781",
+        "nome": "Malha Basic 🐊",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "7c6591ca-2ee7-4dec-a23b-c786faddef95",
+        "nome": "Malha Basic PRADA",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "c126b1f4-4e1b-43d1-93d5-e4d988ec8fc6",
+        "nome": "Malha Basic PRADA",
+        "tamanho": "G",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "cc7df1da-bfb7-4807-93ed-375c3d5c972f",
+        "nome": "Malha Cotton Broocksfield",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "966b106d-c37b-414f-bf06-a9aa595d1d9e",
+        "nome": "Malha Cotton Lacoste 🐊",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "67137bec-c450-47da-bb83-35baba27481a",
+        "nome": "Malha Fred Perry",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "2eeb5593-94f2-4bf4-b665-34d87049f842",
+        "nome": "Malha Lacoste 🐊",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "f161a9fa-adc4-4585-a6c0-a3ef8c1ddada",
+        "nome": "Malha Lacoste Djokovic",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "22859813-cd37-4c5b-b151-19d6d95e7c22",
+        "nome": "Malha Lacoste Gola",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "510435b1-9de2-4c02-91f9-2c3087f9311b",
+        "nome": "Malha Peruana Faixa🐊",
+        "tamanho": "G",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "3432c874-0167-4025-9320-870ed1c95899",
+        "nome": "Malha Peruana Faixa🐊",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "9d24f061-b4da-43e4-917f-c5076a393a69",
+        "nome": "Malha Peruana Faixa🐊",
+        "tamanho": "GG",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "5a279157-220e-4f09-92e5-92618ef5ebd0",
+        "nome": "Malha Texturizada",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "129.90"
+      },
+      {
+        "id": "de0e0903-00bc-4f45-920e-c302d23ccb8c",
+        "nome": "Mizuno PROPHECY 15",
+        "tamanho": "UNICO",
+        "numero": "40",
+        "preco_venda": "549.90"
+      },
+      {
+        "id": "2d1e184a-4a56-448a-8341-596bcc88e2dd",
+        "nome": "Mizuno PROPHECY 15",
+        "tamanho": "UNICO",
+        "numero": "41",
+        "preco_venda": "549.90"
+      },
+      {
+        "id": "5cfbdec2-3b0d-48c2-91bd-f210746de8f2",
+        "nome": "Mizuno PROPHECY 15",
+        "tamanho": "UNICO",
+        "numero": "40",
+        "preco_venda": "549.90"
+      },
+      {
+        "id": "3bf4ec88-b9b9-4058-b8e4-2eb75f1cb72a",
+        "nome": "Mizuno PROPHECY 15",
+        "tamanho": "UNICO",
+        "numero": "42",
+        "preco_venda": "549.90"
+      },
+      {
+        "id": "0cbb4df2-8759-4490-be3f-804ee511d2f1",
+        "nome": "Mizuno PROPHECY 15",
+        "tamanho": "UNICO",
+        "numero": "41",
+        "preco_venda": "549.90"
+      },
+      {
+        "id": "56c84773-3548-4628-9ee7-488c20acd017",
+        "nome": "New Balance 9060",
+        "tamanho": "UNICO",
+        "numero": "41",
+        "preco_venda": "209.90"
+      },
+      {
+        "id": "fd65fa04-d3f0-4cd1-b016-d2a1ba3838d8",
+        "nome": "New Balance 9060",
+        "tamanho": "UNICO",
+        "numero": "40",
+        "preco_venda": "209.90"
+      },
+      {
+        "id": "2b72d65a-ec26-4e00-9538-145f1b944126",
+        "nome": "New Balance 9060",
+        "tamanho": "UNICO",
+        "numero": "42",
+        "preco_venda": "209.99"
+      },
+      {
+        "id": "c4848a66-c85c-4470-8924-1957cd3572ab",
+        "nome": "New Balance 9060",
+        "tamanho": "UNICO",
+        "numero": "39",
+        "preco_venda": "209.90"
+      },
+      {
+        "id": "ed285204-b26c-44c1-a42c-5a8ccc8c1c05",
+        "nome": "Papete Mizuno",
+        "tamanho": "UNICO",
+        "numero": "39",
+        "preco_venda": "99.90"
+      },
+      {
+        "id": "a87c7759-b552-4b48-9b5c-f1f195f852d5",
+        "nome": "Perfume Malbec Black",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "259.90"
+      },
+      {
+        "id": "bad23b86-198c-4743-91fa-e3c8af9cbf9f",
+        "nome": "Perfume Malbec Tradicional",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "259.90"
+      },
+      {
+        "id": "891ad081-d54c-48db-a502-b7748dbd471f",
+        "nome": "Polo Chinesa",
+        "tamanho": "G",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "872b2a5e-e8ce-4f91-98cb-77d5475367d7",
+        "nome": "Polo Lacoste Sport",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "894ec19b-a553-47bf-ba99-465c223748c3",
+        "nome": "Polo Lacoste Sport",
+        "tamanho": "G",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "1d500f27-7875-4ac2-8d6d-3395cd655109",
+        "nome": "Polo Lacoste Sport",
+        "tamanho": "GG",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "22a50b38-fb3c-4563-a9fd-fae99bb10bd1",
+        "nome": "Polo Lacoste Sport lançamento",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "a3fa7bc7-8840-46f9-a69d-91f05e649c6d",
+        "nome": "Polo Monograma",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "96093f72-bbe7-4800-a926-4c1f9c7b3385",
+        "nome": "Polo piquet",
+        "tamanho": "G",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "6e97dbcf-cbc7-4c86-bc41-eebccc8220b2",
+        "nome": "Polo piquet",
+        "tamanho": "GG",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "03d5623b-c14a-4560-b55d-95ec3271e576",
+        "nome": "Polo piquet",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "3cb8da5b-3f5d-4e38-837a-dfbb2ca797f2",
+        "nome": "Polo Raquete zíper",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "bc54a8cd-6f45-40b9-ade2-ee73620a9169",
+        "nome": "Polo Raquete Zíper",
+        "tamanho": "GG",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "564fc0a3-ecfb-4d18-9db0-06ff16e60b5f",
+        "nome": "Polo Recorte V 🐊",
+        "tamanho": "M",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "ac42c96f-bda5-4ecf-b704-81192f3ba004",
+        "nome": "Polo Recorte V 🐊",
+        "tamanho": "G",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "fa900352-cc8c-4731-ab78-2076fa3c0d1d",
+        "nome": "Polo Recorte V 🐊",
+        "tamanho": "GG",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "e355ed77-3faa-4370-9be7-3c2197a96aca",
+        "nome": "Puma BMW Branco",
+        "tamanho": "UNICO",
+        "numero": "UNICO",
+        "preco_venda": "449.90"
+      },
+      {
+        "id": "13322b72-effe-466b-a02a-e235826f7778",
+        "nome": "Puma BMW Mercedes",
+        "tamanho": "UNICO",
+        "numero": "42",
+        "preco_venda": "449.90"
+      },
+      {
+        "id": "9c71c504-3c7a-4ca7-b156-679aba2ad522",
+        "nome": "Puma BMW Preto",
+        "tamanho": "UNICO",
+        "numero": "40",
+        "preco_venda": "449.90"
+      },
+      {
+        "id": "9e6e43e6-45ae-4644-ab2f-353101ce4aa8",
+        "nome": "Puma BMW Preto",
+        "tamanho": "UNICO",
+        "numero": "42",
+        "preco_venda": "449.90"
+      },
+      {
+        "id": "77da209e-b626-4cb0-93ad-b041bd1bed95",
+        "nome": "Puma Mercedes Preto",
+        "tamanho": "UNICO",
+        "numero": "41",
+        "preco_venda": "449.90"
+      },
+      {
+        "id": "e2997907-5e82-4239-b729-5185d5651d96",
+        "nome": "Relógio Armani",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "3a17983c-2ed4-4621-9d26-e296fd7d3d96",
+        "nome": "Relógio ECO-DRIVE",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "219.90"
+      },
+      {
+        "id": "ff2e1c9e-447a-49a3-a236-a388c0468893",
+        "nome": "Relógio Lacoste Color",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "149.90"
+      },
+      {
+        "id": "d3b0281a-c078-4e69-92b9-ad4f3e5b7eab",
+        "nome": "Relógio Lacoste Premium",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "179.90"
+      },
+      {
+        "id": "2071e205-930c-4948-bc2a-539c173552c3",
+        "nome": "Relógio OLCA",
+        "tamanho": "UNICO",
+        "numero": null,
+        "preco_venda": "169.90"
+      },
+      {
+        "id": "4c314d3a-e84a-40f4-9326-a5574301ddda",
+        "nome": "Slide Lacoste/ branco",
+        "tamanho": "UNICO",
+        "numero": "41",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "706351d0-8e62-4735-a95f-8bf12049a0d2",
+        "nome": "Slide Lacoste/ Branco",
+        "tamanho": "UNICO",
+        "numero": "39",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "39418a3e-3535-4bef-b5d9-3ef7110884d7",
+        "nome": "Slide Lacoste/ preto",
+        "tamanho": "UNICO",
+        "numero": "43",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "188061fb-5fc0-4d72-a7b5-ca7f5ff0eb6d",
+        "nome": "Tênis Nike Dunk",
+        "tamanho": "UNICO",
+        "numero": "42",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "98ee5669-cd00-44a5-a802-9f3705f7ab73",
+        "nome": "Tênis Nike Dunk",
+        "tamanho": "UNICO",
+        "numero": "41",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "86eb6faf-41a3-4343-bbe3-5e84782c9cbe",
+        "nome": "Tênis Nike Dunk",
+        "tamanho": "UNICO",
+        "numero": "40",
+        "preco_venda": "199.90"
+      },
+      {
+        "id": "72ace549-cfe1-47b0-a835-7393ee2d972b",
+        "nome": "Tênis Nike Dunk",
+        "tamanho": "UNICO",
+        "numero": "39",
+        "preco_venda": "199.90"
+      }
+    ],
+    "usuarios": [
+      {
+        "id": "8d115475-4af8-479b-9760-7ae48ddf42e7",
+        "email": "socio@hggrifes.com",
+        "nome": "Admin Sócio",
+        "role": "socio",
+        "ativo": true
+      },
+      {
+        "id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "email": "camilly@hggrifes.com",
+        "nome": "Camilly",
+        "role": "funcionario",
+        "ativo": true
+      },
+      {
+        "id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "email": "ciara@hggrifes.com",
+        "nome": "Ciara",
+        "role": "funcionario",
+        "ativo": true
+      },
+      {
+        "id": "d508d49c-899f-464e-83a3-163c92ed64b3",
+        "email": "func1@hggrifes.com",
+        "nome": "Funcionário Teste",
+        "role": "funcionario",
+        "ativo": false
+      }
+    ]
+  }
+}
