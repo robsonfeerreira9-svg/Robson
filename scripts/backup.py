@@ -2,12 +2,15 @@
 Exporta dados para backup, gera relatório gerencial diário e envia
 por email para os sócios. Roda 2x por dia via GitHub Actions.
 """
-import json, subprocess, os
+import json, subprocess, os, smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone, timedelta
 
 PAT          = os.environ['SUPABASE_PAT']
 GHTOKEN      = os.environ['GITHUB_TOKEN']
-RESEND_KEY   = os.environ.get('RESEND_API_KEY', '')
+GMAIL_USER   = os.environ.get('GMAIL_USER', '')
+GMAIL_PASS   = os.environ.get('GMAIL_APP_PASSWORD', '')
 VERCEL_TOKEN = os.environ.get('VERCEL_TOKEN', '')
 VERCEL_ORG   = 'team_NRmTqJ7tXyq4AOLENBGyFHsa'
 REPO         = os.environ.get('GITHUB_REPOSITORY', '')
@@ -455,24 +458,25 @@ def send_email(counts, alerts, report):
 """
 
     subject = f'{"ALERTA — " if alerts else ""}HG Grifes {TODAY_BR} — {vh["qtd"]} venda(s) · {brl(vh["total"])}'
-    payload = {
-        'from': 'HG Grifes ERP <onboarding@resend.dev>',
-        'to': EMAILS,
-        'subject': subject,
-        'html': html,
-    }
-    r = subprocess.run(
-        ['curl', '-s', '-X', 'POST', 'https://api.resend.com/emails',
-         '-H', 'Authorization: Bearer ' + RESEND_KEY,
-         '-H', 'Content-Type: application/json',
-         '--data', json.dumps(payload),
-         '--max-time', '15'],
-        capture_output=True, text=True)
-    resp = json.loads(r.stdout) if r.stdout else {}
-    if resp.get('id'):
-        print('Email enviado para', EMAILS, '— id:', resp['id'])
-    else:
-        print('Erro ao enviar email:', r.stdout[:300])
+
+    if not GMAIL_USER or not GMAIL_PASS:
+        print('GMAIL_USER ou GMAIL_APP_PASSWORD não configurados — email pulado')
+        return
+
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From']    = f'HG Grifes ERP <{GMAIL_USER}>'
+        msg['To']      = ', '.join(EMAILS)
+        msg.attach(MIMEText(html, 'html'))
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(GMAIL_USER, GMAIL_PASS)
+            server.sendmail(GMAIL_USER, EMAILS, msg.as_string())
+
+        print('Email enviado para', EMAILS)
+    except Exception as e:
+        print('Erro ao enviar email:', str(e))
 
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
