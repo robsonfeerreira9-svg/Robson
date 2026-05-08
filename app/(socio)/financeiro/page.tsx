@@ -85,6 +85,27 @@ const CATEGORIAS_ENTRADA: { value: CategoriaMovimentacao; label: string }[] = [
   { value: 'outro', label: 'Aporte / Outros' },
 ]
 
+// ── Helpers de contas recorrentes ─────────────────────────────────────────────
+const MAX_REPETICOES: Record<string, number> = { mensal: 24, quinzenal: 52, semanal: 104 }
+
+function gerarDatas(base: string, freq: string, n: number): string[] {
+  const datas = []
+  for (let i = 0; i < n; i++) {
+    const d = new Date(base + 'T12:00:00')
+    if (freq === 'mensal') d.setMonth(d.getMonth() + i)
+    else if (freq === 'quinzenal') d.setDate(d.getDate() + 15 * i)
+    else d.setDate(d.getDate() + 7 * i)
+    datas.push(d.toISOString().slice(0, 10))
+  }
+  return datas
+}
+
+function labelFreq(freq: string): string {
+  if (freq === 'mensal') return 'mensais'
+  if (freq === 'quinzenal') return 'quinzenais'
+  return 'semanais'
+}
+
 // ── Modal de movimentação ─────────────────────────────────────────────────────
 function MovimentacaoModal({
   tipo, onClose, onSave,
@@ -100,11 +121,29 @@ function MovimentacaoModal({
     valor: '',
     vence_em: '',
   })
+  const [recorrente, setRecorrente] = useState(false)
+  const [frequencia, setFrequencia] = useState<'mensal' | 'quinzenal' | 'semanal'>('mensal')
+  const [repeticoes, setRepeticoes] = useState(12)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 
   const isEntrada = tipo === 'entrada'
   const temVencimento = !isEntrada && form.vence_em !== ''
+  const maxRep = MAX_REPETICOES[frequencia]
+
+  // Clamp repetições ao máximo da frequência selecionada
+  function handleFrequencia(novaFreq: 'mensal' | 'quinzenal' | 'semanal') {
+    setFrequencia(novaFreq)
+    setRepeticoes((prev: number) => Math.min(prev, MAX_REPETICOES[novaFreq]))
+  }
+
+  // Data final calculada automaticamente
+  const datasPreview = temVencimento && recorrente && repeticoes > 0
+    ? gerarDatas(form.vence_em, frequencia, repeticoes)
+    : []
+  const dataFinalPreview = datasPreview.length > 0
+    ? new Date(datasPreview[datasPreview.length - 1] + 'T12:00:00').toLocaleDateString('pt-BR')
+    : null
 
   async function handleSalvar() {
     if (!form.descricao.trim() || !form.valor) { setErro('Preencha todos os campos.'); return }
@@ -113,18 +152,35 @@ function MovimentacaoModal({
 
     setLoading(true)
     const supabase = createClient()
-    const payload: Record<string, unknown> = {
-      tipo,
-      categoria: form.categoria,
-      descricao: form.descricao.trim(),
-      valor,
-      // Saída com vencimento = pendente (não sai do caixa ainda)
-      // Saída sem vencimento = saiu agora (pago=true, default do banco)
-      ...(temVencimento ? { vence_em: form.vence_em, pago: false } : {}),
+
+    if (temVencimento && recorrente && repeticoes > 0) {
+      const datas = gerarDatas(form.vence_em, frequencia, repeticoes)
+      const payloads = datas.map((vence_em) => ({
+        tipo,
+        categoria: form.categoria,
+        descricao: form.descricao.trim(),
+        valor,
+        vence_em,
+        pago: false,
+      }))
+      const { error } = await supabase.from('movimentacao_caixa').insert(payloads)
+      setLoading(false)
+      if (error) { setErro(`Erro: ${error.message}`); return }
+    } else {
+      const payload: Record<string, unknown> = {
+        tipo,
+        categoria: form.categoria,
+        descricao: form.descricao.trim(),
+        valor,
+        // Saída com vencimento = pendente (não sai do caixa ainda)
+        // Saída sem vencimento = saiu agora (pago=true, default do banco)
+        ...(temVencimento ? { vence_em: form.vence_em, pago: false } : {}),
+      }
+      const { error } = await supabase.from('movimentacao_caixa').insert(payload)
+      setLoading(false)
+      if (error) { setErro(`Erro: ${error.message}`); return }
     }
-    const { error } = await supabase.from('movimentacao_caixa').insert(payload)
-    setLoading(false)
-    if (error) { setErro(`Erro: ${error.message}`); return }
+
     onSave()
     onClose()
   }
@@ -170,7 +226,7 @@ function MovimentacaoModal({
                 className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
                 style={{ colorScheme: 'dark' }}
               />
-              {temVencimento && (
+              {temVencimento && !recorrente && (
                 <p className="text-[10px] text-[#F59E0B]">
                   Esta conta ficará como <strong>Pendente</strong> até você marcar como paga.
                 </p>
@@ -179,6 +235,62 @@ function MovimentacaoModal({
                 <p className="text-[10px] text-[#888888]">
                   Sem vencimento = saída imediata do caixa.
                 </p>
+              )}
+            </div>
+          )}
+          {/* Repetir conta — apenas saídas com vencimento */}
+          {temVencimento && !isEntrada && (
+            <div className="flex flex-col gap-2 border border-[#2A2A2A] rounded p-3">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={recorrente}
+                  onChange={(e) => setRecorrente(e.target.checked)}
+                  className="accent-gold w-4 h-4"
+                />
+                <span className="text-sm text-[#F0F0F0]">Repetir conta</span>
+              </label>
+              {recorrente && (
+                <div className="flex flex-col gap-2 mt-1">
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 flex-1">
+                      <label className="text-xs text-[#888888] font-medium">Frequência</label>
+                      <select
+                        value={frequencia}
+                        onChange={(e) => handleFrequencia(e.target.value as 'mensal' | 'quinzenal' | 'semanal')}
+                        className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+                      >
+                        <option value="mensal">Mensal</option>
+                        <option value="quinzenal">Quinzenal</option>
+                        <option value="semanal">Semanal</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-1 w-24">
+                      <label className="text-xs text-[#888888] font-medium">Repetições</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={maxRep}
+                        value={repeticoes}
+                        onChange={(e) => {
+                          const v = Math.max(1, Math.min(maxRep, parseInt(e.target.value) || 1))
+                          setRepeticoes(v)
+                        }}
+                        className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold text-center"
+                      />
+                    </div>
+                  </div>
+                  {dataFinalPreview && (
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-[10px] text-[#888888]">
+                        Duração: até {datasPreview[datasPreview.length - 1]}
+                      </p>
+                      <p className="text-[10px] text-[#F59E0B]">
+                        Criará <strong>{repeticoes}</strong> lançamentos {labelFreq(frequencia)} até <strong>{dataFinalPreview}</strong>
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -191,7 +303,13 @@ function MovimentacaoModal({
               onClick={handleSalvar}
               className={isEntrada ? '' : 'bg-danger border-danger'}
             >
-              {isEntrada ? 'Registrar Entrada' : temVencimento ? 'Lançar como Pendente' : 'Registrar Saída'}
+              {isEntrada
+                ? 'Registrar Entrada'
+                : temVencimento && recorrente
+                  ? `Lançar ${repeticoes} Parcelas`
+                  : temVencimento
+                    ? 'Lançar como Pendente'
+                    : 'Registrar Saída'}
             </Button>
             <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           </div>

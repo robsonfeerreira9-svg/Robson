@@ -53,13 +53,12 @@ async function fetchVendas(mes: string, vendedorFiltro: string): Promise<VendaRo
   return (data as VendaRow[]) ?? []
 }
 
-async function fetchFuncionarias() {
+async function fetchUsuarios() {
   const supabase = createClient()
   const { data } = await supabase
     .from('usuarios')
     .select('id, nome')
     .eq('ativo', true)
-    .eq('role', 'funcionario')
     .order('nome')
   return data ?? []
 }
@@ -70,6 +69,160 @@ const LABEL_CANAL: Record<string, string> = {
 }
 const LABEL_METODO: Record<string, string> = {
   pix: 'PIX', credito: 'Crédito', debito: 'Débito', dinheiro: 'Dinheiro',
+}
+
+const CANAL_OPTIONS = [
+  { value: 'fisico', label: 'Loja' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'instagram', label: 'Instagram' },
+]
+const METODO_OPTIONS = [
+  { value: 'pix', label: 'PIX' },
+  { value: 'credito', label: 'Crédito' },
+  { value: 'debito', label: 'Débito' },
+  { value: 'dinheiro', label: 'Dinheiro' },
+]
+
+// ── Modal de edição ───────────────────────────────────────────────────────────
+function ModalEditar({
+  venda,
+  onClose,
+  onSaved,
+}: {
+  venda: VendaRow
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [canal, setCanal] = useState(venda.canal_venda)
+  const [metodo, setMetodo] = useState(venda.metodo_pagamento)
+  const [data, setData] = useState(venda.criado_em.slice(0, 16))
+  const [desconto, setDesconto] = useState(String(Number(venda.desconto_aplicado)))
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
+
+  const subtotal = Number(venda.subtotal)
+  const descontoNum = parseFloat(desconto) || 0
+  const totalFinal = Math.max(subtotal - descontoNum, 0)
+
+  const selectClass =
+    'w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold'
+
+  async function handleSalvar() {
+    setLoading(true)
+    setErro('')
+    const supabase = createClient()
+
+    const { error: errVenda } = await supabase
+      .from('vendas')
+      .update({
+        canal_venda: canal,
+        metodo_pagamento: metodo,
+        criado_em: new Date(data).toISOString(),
+        desconto_aplicado: descontoNum,
+        total_final: totalFinal,
+      })
+      .eq('id', venda.id)
+
+    if (errVenda) {
+      setErro(`Erro ao salvar venda: ${errVenda.message}`)
+      setLoading(false)
+      return
+    }
+
+    const { error: errCaixa } = await supabase
+      .from('movimentacao_caixa')
+      .update({ valor: totalFinal })
+      .eq('referencia_venda_id', venda.id)
+
+    setLoading(false)
+    if (errCaixa) {
+      setErro(`Venda salva, mas erro ao atualizar caixa: ${errCaixa.message}`)
+      return
+    }
+
+    onSaved()
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <Card className="w-full max-w-md shadow-2xl">
+        <h3 className="font-bold text-[#F0F0F0] mb-4">Editar Venda</h3>
+
+        <div className="flex flex-col gap-4">
+          {/* Canal */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-[#888888] font-medium">Canal de Venda</label>
+            <select value={canal} onChange={(e) => setCanal(e.target.value)} className={selectClass}>
+              {CANAL_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value} className="bg-[#1A1A1A]">{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Método */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-[#888888] font-medium">Método de Pagamento</label>
+            <select value={metodo} onChange={(e) => setMetodo(e.target.value)} className={selectClass}>
+              {METODO_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value} className="bg-[#1A1A1A]">{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Data */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-[#888888] font-medium">Data</label>
+            <input
+              type="datetime-local"
+              value={data}
+              onChange={(e) => setData(e.target.value)}
+              className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+              style={{ colorScheme: 'dark' }}
+            />
+          </div>
+
+          {/* Desconto */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-[#888888] font-medium">Desconto (R$)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={desconto}
+              onChange={(e) => setDesconto(e.target.value)}
+              className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+            />
+          </div>
+
+          {/* Resumo */}
+          <div className="bg-[#0D0D0D] rounded-lg p-3 flex flex-col gap-1 text-xs">
+            <div className="flex justify-between">
+              <span className="text-[#888888]">Subtotal</span>
+              <span className="text-[#F0F0F0]">{formatarMoeda(subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#888888]">Desconto</span>
+              <span className="text-[#F0F0F0]">- {formatarMoeda(descontoNum)}</span>
+            </div>
+            <div className="flex justify-between font-bold border-t border-[#2A2A2A] pt-1 mt-1">
+              <span className="text-[#888888]">Total Final</span>
+              <span className="text-gold">{formatarMoeda(totalFinal)}</span>
+            </div>
+          </div>
+        </div>
+
+        {erro && <p className="text-xs text-danger mt-3">{erro}</p>}
+
+        <div className="flex gap-2 mt-4">
+          <Button variant="primary" fullWidth loading={loading} onClick={handleSalvar}>
+            Salvar
+          </Button>
+          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+        </div>
+      </Card>
+    </div>
+  )
 }
 
 // ── Modal confirmação de exclusão ─────────────────────────────────────────────
@@ -133,9 +286,11 @@ function ModalExcluir({
 function VendaRow({
   venda,
   onDelete,
+  onEdit,
 }: {
   venda: VendaRow
   onDelete: (v: VendaRow) => void
+  onEdit: (v: VendaRow) => void
 }) {
   const [expandida, setExpandida] = useState(false)
   const temDesconto = Number(venda.desconto_aplicado) > 0
@@ -176,12 +331,20 @@ function VendaRow({
           </div>
         </td>
         <td className="px-4 py-3 text-center">
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(venda) }}
-            className="text-xs text-danger hover:text-white border border-danger/40 hover:border-danger hover:bg-danger/10 rounded px-2 py-1 transition-colors"
-          >
-            Excluir
-          </button>
+          <div className="flex items-center justify-center gap-1.5">
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit(venda) }}
+              className="text-xs text-[#888888] hover:text-[#F0F0F0] border border-[#2A2A2A] hover:border-[#555555] hover:bg-[#2A2A2A] rounded px-2 py-1 transition-colors"
+            >
+              Editar
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(venda) }}
+              className="text-xs text-danger hover:text-white border border-danger/40 hover:border-danger hover:bg-danger/10 rounded px-2 py-1 transition-colors"
+            >
+              Excluir
+            </button>
+          </div>
         </td>
       </tr>
       {expandida && (
@@ -220,6 +383,7 @@ export default function VendasPage() {
   })
   const [vendedorFiltro, setVendedorFiltro] = useState('')
   const [modalExcluir, setModalExcluir] = useState<VendaRow | null>(null)
+  const [modalEditar, setModalEditar] = useState<VendaRow | null>(null)
 
   const cacheKey = ['vendas', mes, vendedorFiltro]
   const { data: vendas = [], isLoading } = useSWR(
@@ -227,12 +391,16 @@ export default function VendasPage() {
     () => fetchVendas(mes, vendedorFiltro),
     { refreshInterval: 60000 }
   )
-  const { data: funcionarias = [] } = useSWR('funcionarias-vendas', fetchFuncionarias)
+  const { data: funcionarias = [] } = useSWR('usuarios-vendas', fetchUsuarios)
 
   const totalMes = vendas.reduce((a, v) => a + Number(v.total_final), 0)
   const qtdVendas = vendas.length
 
   function handleDeleted() {
+    mutate(cacheKey)
+  }
+
+  function handleEdited() {
     mutate(cacheKey)
   }
 
@@ -313,7 +481,7 @@ export default function VendasPage() {
                 </tr>
               ) : (
                 vendas.map((v) => (
-                  <VendaRow key={v.id} venda={v} onDelete={setModalExcluir} />
+                  <VendaRow key={v.id} venda={v} onDelete={setModalExcluir} onEdit={setModalEditar} />
                 ))
               )}
             </tbody>
@@ -330,6 +498,14 @@ export default function VendasPage() {
           venda={modalExcluir}
           onClose={() => setModalExcluir(null)}
           onConfirm={handleDeleted}
+        />
+      )}
+
+      {modalEditar && (
+        <ModalEditar
+          venda={modalEditar}
+          onClose={() => setModalEditar(null)}
+          onSaved={handleEdited}
         />
       )}
     </div>

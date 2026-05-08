@@ -1,0 +1,21 @@
+name: Backup Diário de Dados
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 03:00 horário de Brasília (UTC-3)
+  workflow_dispatch:        # Permite rodar manualmente
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Exportar dados para backup
+        env:
+          SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/backup.py
