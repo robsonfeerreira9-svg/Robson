@@ -59,89 +59,85 @@ if not VERCEL_TOKEN:
 
 print('=== Verificando token Vercel atual ===')
 
-# Verifica token atual
+secrets_url = f'https://github.com/{REPO}/settings/secrets/actions/VERCEL_TOKEN'
+
+if not VERCEL_TOKEN:
+    print('VERCEL_TOKEN não configurado.')
+    sys.exit(1)
+
+# Verifica conta e tokens existentes
 me = vercel('GET', '/v2/user')
 username = me.get('user', {}).get('username', 'desconhecido')
 print(f'Usuário Vercel: {username}')
 
-# Lista tokens existentes para verificar expiração do atual
 tokens_resp = vercel('GET', '/v3/user/tokens')
 tokens = tokens_resp.get('tokens', [])
-current_info = None
+
+expiring_soon = []
 for t in tokens:
-    # Tenta identificar o token atual pelo nome
-    expires = t.get('expiresAt')
-    print(f'  Token: {t.get("name","?")} | Expira: {expires or "nunca"}')
-    if expires:
-        current_info = t
+    expires_ms = t.get('expiresAt')
+    name = t.get('name', '?')
+    if expires_ms:
+        expires_dt = datetime.fromtimestamp(int(expires_ms) / 1000, tz=timezone.utc)
+        days_left = (expires_dt - datetime.now(timezone.utc)).days
+        print(f'  Token: {name} | Expira: {expires_dt.strftime("%Y-%m-%d")} ({days_left} dias)')
+        if days_left < 60:
+            expiring_soon.append({'name': name, 'days': days_left, 'date': expires_dt.strftime('%d/%m/%Y')})
+    else:
+        print(f'  Token: {name} | Expira: nunca (permanente)')
 
 print()
-print('=== Criando novo token permanente ===')
 
-# Cria novo token sem expiração
-new_token_resp = vercel('POST', '/v3/user/tokens', {
-    'name': TOKEN_NAME,
-    # Sem "expiresAt" = permanente
-})
-
-new_token = new_token_resp.get('token', {}).get('token') or new_token_resp.get('token')
-token_id   = new_token_resp.get('token', {}).get('id', '')
-
-if not new_token:
-    print('Erro ao criar token:', json.dumps(new_token_resp, indent=2))
+if not expiring_soon:
+    print('Todos os tokens estão OK — nenhum expira em menos de 60 dias.')
     send_email(
-        '❌ Falha ao renovar VERCEL_TOKEN — HG Grifes',
-        f'<p>Não foi possível criar um novo token Vercel automaticamente.</p>'
-        f'<p>Erro: <pre>{json.dumps(new_token_resp, indent=2)}</pre></p>'
-        f'<p>Acesse <a href="https://vercel.com/account/tokens">vercel.com/account/tokens</a> '
-        f'e crie manualmente um token sem expiração.</p>'
+        'Vercel Token OK — HG Grifes ERP',
+        f"""
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto">
+  <div style="background:#27ae60;color:#fff;padding:14px 20px;border-radius:6px 6px 0 0">
+    <h2 style="margin:0;font-size:18px">HG Grifes ERP — Token Vercel OK</h2>
+  </div>
+  <div style="border:1px solid #ddd;border-top:none;padding:16px 20px;border-radius:0 0 6px 6px">
+    <p>Verificação realizada em <b>{TODAY}</b>.</p>
+    <p>Nenhum token Vercel expira nos próximos 60 dias. Sistema funcionando normalmente.</p>
+  </div>
+</div>"""
     )
-    sys.exit(1)
+    sys.exit(0)
 
-print(f'Novo token criado: {TOKEN_NAME}')
-
-# ── Monta email com instruções claras ─────────────────────────────────────────
-secrets_url = f'https://github.com/{REPO}/settings/secrets/actions/VERCEL_TOKEN'
+# Há tokens expirando em breve — monta alerta
+items_html = ''.join(
+    f'<li><b>{t["name"]}</b> — expira em {t["date"]} ({t["days"]} dias)</li>'
+    for t in expiring_soon
+)
 
 html = f"""
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
-  <div style="background:#0070f3;color:#fff;padding:16px 24px;border-radius:8px 8px 0 0">
-    <h2 style="margin:0;font-size:20px">HG Grifes ERP — Novo Token Vercel</h2>
-    <p style="margin:6px 0 0;font-size:13px;opacity:.85">Gerado em {TODAY} · Sem data de expiração</p>
+  <div style="background:#e67e22;color:#fff;padding:16px 24px;border-radius:8px 8px 0 0">
+    <h2 style="margin:0;font-size:20px">HG Grifes ERP — Token Vercel expirando!</h2>
+    <p style="margin:6px 0 0;font-size:13px;opacity:.85">Ação necessária nos próximos dias</p>
   </div>
   <div style="border:1px solid #ddd;border-top:none;padding:20px 24px;border-radius:0 0 8px 8px">
+    <p>Os seguintes tokens Vercel vão expirar em breve:</p>
+    <ul style="color:#c0392b">{items_html}</ul>
 
-    <p>Um novo token Vercel permanente foi gerado automaticamente.</p>
-    <p><b>Faça apenas 3 cliques para ativar:</b></p>
+    <p><b>Para criar um novo token permanente (2 minutos):</b></p>
+    <ol>
+      <li>Acesse <a href="https://vercel.com/account/tokens">vercel.com/account/tokens</a></li>
+      <li>Clique em <b>Create Token</b></li>
+      <li>Nome: <code>HG-Grifes-ERP</code> · Scope: <code>{username}</code> · Expiration: <b>No expiration</b></li>
+      <li>Copie o token gerado</li>
+      <li>Acesse <a href="{secrets_url}">{secrets_url}</a></li>
+      <li>Clique em <b>Update</b> → cole o token → <b>Update secret</b></li>
+    </ol>
 
-    <div style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:14px 18px;margin:16px 0">
-      <p style="margin:0 0 8px;font-size:13px;color:#57606a">Passo 1 — Abra este link:</p>
-      <a href="{secrets_url}" style="color:#0070f3;font-size:13px;word-break:break-all">{secrets_url}</a>
-
-      <p style="margin:16px 0 8px;font-size:13px;color:#57606a">Passo 2 — Clique no botão <b>Update</b> e cole o token abaixo:</p>
-      <div style="background:#fff;border:2px solid #0070f3;border-radius:4px;padding:12px;font-family:monospace;font-size:13px;word-break:break-all;color:#1a1a2e">
-        {new_token}
-      </div>
-
-      <p style="margin:16px 0 8px;font-size:13px;color:#57606a">Passo 3 — Clique em <b>Update secret</b></p>
-    </div>
-
-    <p style="color:#57606a;font-size:12px;margin:16px 0 0">
-      Este token não tem data de expiração e funcionará indefinidamente.<br>
-      Nome do token: <code>{TOKEN_NAME}</code>
-    </p>
-
-    <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
-    <p style="color:#888;font-size:11px;margin:0">HG Grifes ERP · Backup automático de segurança</p>
+    <p style="color:#888;font-size:11px;margin:16px 0 0">HG Grifes ERP · Monitoramento automático</p>
   </div>
 </div>
 """
 
-send_email(f'🔑 Novo VERCEL_TOKEN gerado — cole no GitHub', html)
-print()
-print('=' * 60)
-print(f'NOVO TOKEN CRIADO COM SUCESSO')
-print(f'Nome: {TOKEN_NAME}')
-print(f'Email enviado para: {EMAIL_TO}')
-print(f'Atualize o secret em: {secrets_url}')
-print('=' * 60)
+send_email('⚠ VERCEL_TOKEN expirando — renovar em breve — HG Grifes', html)
+print('ALERTA: tokens expirando em breve enviado para', EMAIL_TO)
+print('Acesse vercel.com/account/tokens para renovar.')
+# Não faz exit(1) — o alerta foi enviado com sucesso
+sys.exit(0)
