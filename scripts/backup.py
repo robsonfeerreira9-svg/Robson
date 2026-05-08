@@ -15,21 +15,34 @@ REPO         = os.environ.get('GITHUB_REPOSITORY', '')
 BRANCH       = os.environ.get('GITHUB_REF_NAME', '')
 REF          = 'eaovtnotwfzuxgtqpkay'
 API          = 'https://api.supabase.com/v1/projects/' + REF
+SUPABASE_URL = 'https://eaovtnotwfzuxgtqpkay.supabase.co'
+ANON_KEY     = 'sb_publishable_MhNCcezzMUbC7eEXfKByEA_xrFfZnl_'
 TODAY        = datetime.now(timezone.utc).strftime('%Y-%m-%d')
 PATH         = 'backups/' + TODAY + '.json'
 EMAIL_TO     = 'Robsonfeerreira9@gmail.com'
 
 
-# ── 0. Keepalive: evita que Supabase pause o projeto (free tier) ──────────────
+# ── 0. Keepalive duplo: evita que Supabase pause o projeto (free tier) ────────
 def keepalive():
-    r = subprocess.run(
+    # Ping 1: Management API
+    r1 = subprocess.run(
         ['curl', '-s', '-X', 'POST', API + '/database/query',
          '-H', 'Authorization: Bearer ' + PAT,
          '-H', 'Content-Type: application/json',
          '--data', json.dumps({'query': 'SELECT 1'}),
          '--max-time', '15'],
         capture_output=True, text=True)
-    print('Keepalive:', r.stdout[:80].strip())
+    print('Keepalive Management API:', r1.stdout[:60].strip())
+
+    # Ping 2: REST API (usa anon key — mais eficaz contra o pause do free tier)
+    r2 = subprocess.run(
+        ['curl', '-s', '-o', '/dev/null', '-w', '%{http_code}',
+         SUPABASE_URL + '/rest/v1/',
+         '-H', 'apikey: ' + ANON_KEY,
+         '-H', 'Authorization: Bearer ' + ANON_KEY,
+         '--max-time', '15'],
+        capture_output=True, text=True)
+    print('Keepalive REST API: HTTP', r2.stdout.strip())
 
 
 # ── 1. Query Supabase ─────────────────────────────────────────────────────────

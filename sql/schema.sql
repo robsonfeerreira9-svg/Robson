@@ -1439,3 +1439,69 @@ SELECT routine_name FROM information_schema.routines
 
 SELECT email, role, ativo FROM public.usuarios ORDER BY role;
 -- Esperado: camilly, ciara, func1 (funcionario) + socio (socio)
+
+
+-- ─────────────────────────────────────────────────────
+-- STEP 26: Auditoria de exclusões — guarda cópia de TUDO que for deletado
+-- Tabela de log + triggers nas tabelas críticas
+-- ─────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.audit_delete_log (
+  id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  tabela      TEXT        NOT NULL,
+  registro_id UUID,
+  dados       JSONB       NOT NULL,
+  deletado_em TIMESTAMPTZ DEFAULT NOW(),
+  usuario_id  UUID
+);
+
+ALTER TABLE public.audit_delete_log ENABLE ROW LEVEL SECURITY;
+
+-- Só o sócio pode ler o log de auditoria
+CREATE POLICY IF NOT EXISTS "socio_select_audit" ON public.audit_delete_log
+  FOR SELECT TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.usuarios WHERE id = auth.uid() AND role = 'socio')
+  );
+
+-- Ninguém apaga o log de auditoria via app
+CREATE POLICY IF NOT EXISTS "bloquear_delete_audit" ON public.audit_delete_log
+  FOR DELETE TO authenticated
+  USING (false);
+
+-- Função que copia o registro deletado para o log
+CREATE OR REPLACE FUNCTION public.fn_log_delete()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  INSERT INTO public.audit_delete_log (tabela, registro_id, dados, usuario_id)
+  VALUES (TG_TABLE_NAME, OLD.id, to_jsonb(OLD), auth.uid());
+  RETURN OLD;
+END;
+$$;
+
+-- Trigger em vendas
+DROP TRIGGER IF EXISTS trg_log_delete_vendas ON public.vendas;
+CREATE TRIGGER trg_log_delete_vendas
+  BEFORE DELETE ON public.vendas
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_delete();
+
+-- Trigger em clientes
+DROP TRIGGER IF EXISTS trg_log_delete_clientes ON public.clientes;
+CREATE TRIGGER trg_log_delete_clientes
+  BEFORE DELETE ON public.clientes
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_delete();
+
+-- Trigger em movimentacao_caixa
+DROP TRIGGER IF EXISTS trg_log_delete_movimentacao ON public.movimentacao_caixa;
+CREATE TRIGGER trg_log_delete_movimentacao
+  BEFORE DELETE ON public.movimentacao_caixa
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_delete();
+
+-- Trigger em comissoes
+DROP TRIGGER IF EXISTS trg_log_delete_comissoes ON public.comissoes;
+CREATE TRIGGER trg_log_delete_comissoes
+  BEFORE DELETE ON public.comissoes
+  FOR EACH ROW EXECUTE FUNCTION public.fn_log_delete();

@@ -2,8 +2,9 @@ name: Backup Diário de Dados
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # 03:00 horário de Brasília (UTC-3)
-  workflow_dispatch:        # Permite rodar manualmente
+    - cron: '0 6 * * *'    # 03:00 horário de Brasília (UTC-3) — manhã
+    - cron: '0 18 * * *'   # 15:00 horário de Brasília (UTC-3) — tarde
+  workflow_dispatch:         # Permite rodar manualmente
 
 jobs:
   backup:

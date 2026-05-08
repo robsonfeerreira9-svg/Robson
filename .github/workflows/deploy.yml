@@ -31,7 +31,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/restore-check.py
 
-      # ── 1. Migration via Supabase Management API ──────────
+      # ── 1a. Segurança: bloquear deploy se schema.sql tem DELETE perigoso ────
+      - name: Verificar segurança do schema.sql
+        run: python3 scripts/check-schema-safety.py
+
+      # ── 1b. Migration via Supabase Management API ──────────
       - name: Migration SQL no Supabase
         env:
           SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
