@@ -2,14 +2,11 @@ PROJECT_ID=prj_nYWT5NJoSZVnutPDrAsoN7Tf0Dvo
 DEPLOY_EXIT=0
 Retrieving project…
 Deploying robsons-projects-4e5d04b5/hg-grifes-erp
-Uploading [--------------------] (0.0B/61.3KB)
-Uploading [=======-------------] (22.5KB/61.3KB)
-Uploading [============--------] (39.3KB/61.3KB)
-Uploading [==================--] (55.3KB/61.3KB)
-Uploading [====================] (61.3KB/61.3KB)
-Inspect: https://vercel.com/robsons-projects-4e5d04b5/hg-grifes-erp/HrThdoCXj2noTMuXpWN8YwfZHzuz [3s]
-Production: https://hg-grifes-ivwgu0fmd-robsons-projects-4e5d04b5.vercel.app [3s]
-https://hg-grifes-ivwgu0fmd-robsons-projects-4e5d04b5.vercel.appBuilding...
+Uploading [--------------------] (0.0B/268B)
+Uploading [====================] (268.0B/268B)
+Inspect: https://vercel.com/robsons-projects-4e5d04b5/hg-grifes-erp/HUnd1tBmeY6v1KXFKiE6y3dcZudV [3s]
+Production: https://hg-grifes-blp4z9lbe-robsons-projects-4e5d04b5.vercel.app [3s]
+https://hg-grifes-blp4z9lbe-robsons-projects-4e5d04b5.vercel.appBuilding...
 Building...
 Building: Running build in Washington, D.C., USA (East) – iad1
 Building: Build machine configuration: 2 cores, 8 GB
@@ -19,7 +16,7 @@ Building: Restored build cache from previous deployment (4hfKnwWFdmQHwo4VJeubfgd
 Building: Running "vercel build"
 Building: Vercel CLI 53.2.0
 Building: Installing dependencies...
-Building: up to date in 1s
+Building: up to date in 887ms
 Building: 154 packages are looking for funding
 Building: run `npm fund` for details
 Building: Detected Next.js version: 14.2.15
@@ -59,11 +56,11 @@ Building: ├ chunks/fd9d1056-ec0cb47af3834cd2.js  53.6 kB
 Building: └ other shared chunks (total)          2.04 kB
 Building: ƒ Middleware                             79.3 kB
 Building: ○  (Static)  prerendered as static content
-Building: Traced Next.js server files in: 59.935ms
-Building: Created all serverless functions in: 101.866ms
-Building: Collected static files (public/, static/, .next/static): 4.183ms
+Building: Traced Next.js server files in: 69.139ms
+Building: Created all serverless functions in: 123.54ms
+Building: Collected static files (public/, static/, .next/static): 4.094ms
 Building: Build Completed in /vercel/output [18s]
 Building: Deploying outputs...
-[2K[1A[2K[GProduction: https://hg-grifes-ivwgu0fmd-robsons-projects-4e5d04b5.vercel.app [42s]
+[2K[1A[2K[GProduction: https://hg-grifes-blp4z9lbe-robsons-projects-4e5d04b5.vercel.app [34s]
 Completing...
-Aliased: https://hg-grifes-erp.vercel.app [42s]
+Aliased: https://hg-grifes-erp.vercel.app [34s]
