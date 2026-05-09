@@ -1,0 +1,20 @@
+name: Deletar Lançamento Financeiro
+
+on:
+  workflow_dispatch:
+    inputs:
+      data:
+        description: 'Data do lançamento a deletar (YYYY-MM-DD)'
+        required: true
+        default: '2026-05-05'
+
+jobs:
+  deletar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deletar lançamento da data informada
+        env:
+          SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+          DATA_LANCAMENTO: ${{ github.event.inputs.data }}
+        run: python3 scripts/deletar-lancamento.py
