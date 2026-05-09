@@ -11,6 +11,7 @@ PAT          = os.environ['SUPABASE_PAT']
 GHTOKEN      = os.environ['GITHUB_TOKEN']
 GMAIL_USER   = os.environ.get('GMAIL_USER', '')
 GMAIL_PASS   = os.environ.get('GMAIL_APP_PASSWORD', '')
+RESEND_KEY   = os.environ.get('RESEND_API_KEY', '')
 VERCEL_TOKEN = os.environ.get('VERCEL_TOKEN', '')
 VERCEL_ORG   = 'team_NRmTqJ7tXyq4AOLENBGyFHsa'
 REPO         = os.environ.get('GITHUB_REPOSITORY', '')
@@ -22,7 +23,8 @@ ANON_KEY     = 'sb_publishable_MhNCcezzMUbC7eEXfKByEA_xrFfZnl_'
 TODAY        = datetime.now(timezone.utc).strftime('%Y-%m-%d')
 TODAY_BR     = datetime.now(timezone.utc).strftime('%d/%m/%Y')
 PATH         = 'backups/' + TODAY + '.json'
-EMAILS       = ['Robsonfeerreira9@gmail.com', 'hugobrener1@gmail.com']
+EMAILS_ALL   = ['Robsonfeerreira9@gmail.com', 'hugobrener1@gmail.com']
+EMAIL_OWNER  = 'Robsonfeerreira9@gmail.com'
 
 
 # ── Keepalive duplo ───────────────────────────────────────────────────────────
@@ -459,24 +461,46 @@ def send_email(counts, alerts, report):
 
     subject = f'{"ALERTA — " if alerts else ""}HG Grifes {TODAY_BR} — {vh["qtd"]} venda(s) · {brl(vh["total"])}'
 
-    if not GMAIL_USER or not GMAIL_PASS:
-        print('GMAIL_USER ou GMAIL_APP_PASSWORD não configurados — email pulado')
+    # ── Opção 1: Gmail SMTP (envia para todos, incluindo hugobrener1) ─────────
+    if GMAIL_USER and GMAIL_PASS:
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From']    = f'HG Grifes ERP <{GMAIL_USER}>'
+            msg['To']      = ', '.join(EMAILS_ALL)
+            msg.attach(MIMEText(html, 'html'))
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                server.login(GMAIL_USER, GMAIL_PASS)
+                server.sendmail(GMAIL_USER, EMAILS_ALL, msg.as_string())
+            print('Email (Gmail) enviado para', EMAILS_ALL)
+            return
+        except Exception as e:
+            print('Erro Gmail SMTP:', str(e), '— tentando Resend...')
+
+    # ── Opção 2: Resend (fallback — só envia para o dono da conta) ────────────
+    if RESEND_KEY:
+        payload = {
+            'from': 'HG Grifes ERP <onboarding@resend.dev>',
+            'to': [EMAIL_OWNER],
+            'subject': subject + ' (apenas Robson — configure Gmail para Hugo também)',
+            'html': html,
+        }
+        r = subprocess.run(
+            ['curl', '-s', '-X', 'POST', 'https://api.resend.com/emails',
+             '-H', 'Authorization: Bearer ' + RESEND_KEY,
+             '-H', 'Content-Type: application/json',
+             '--data', json.dumps(payload),
+             '--max-time', '15'],
+            capture_output=True, text=True)
+        resp = json.loads(r.stdout) if r.stdout else {}
+        if resp.get('id'):
+            print('Email (Resend) enviado para', EMAIL_OWNER, '— id:', resp['id'])
+            print('AVISO: hugobrener1@gmail.com NAO recebeu — configure GMAIL_USER e GMAIL_APP_PASSWORD')
+        else:
+            print('Erro Resend:', r.stdout[:200])
         return
 
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From']    = f'HG Grifes ERP <{GMAIL_USER}>'
-        msg['To']      = ', '.join(EMAILS)
-        msg.attach(MIMEText(html, 'html'))
-
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(GMAIL_USER, GMAIL_PASS)
-            server.sendmail(GMAIL_USER, EMAILS, msg.as_string())
-
-        print('Email enviado para', EMAILS)
-    except Exception as e:
-        print('Erro ao enviar email:', str(e))
+    print('Nenhum metodo de email configurado (GMAIL_USER ou RESEND_API_KEY necessario)')
 
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
