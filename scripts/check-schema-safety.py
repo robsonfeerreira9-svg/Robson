@@ -6,8 +6,12 @@ import re, sys
 
 sql = open('sql/schema.sql').read()
 
-# Remove tudo dentro de $$ ... $$ (stored procedures, functions, DO blocks)
-sql_stripped = re.sub(r'\$\$.*?\$\$', '$$REMOVED$$', sql, flags=re.DOTALL)
+# Remove apenas CREATE FUNCTION/PROCEDURE $$ blocks (não executam imediatamente)
+# DO $$ blocks são mantidos pois executam IMEDIATAMENTE no deploy
+sql_stripped = re.sub(
+    r'CREATE\s+(?:OR\s+REPLACE\s+)?(?:FUNCTION|PROCEDURE)\s+[^$]*\$\$.*?\$\$',
+    '$$REMOVED$$', sql, flags=re.DOTALL | re.IGNORECASE
+)
 
 # Remove comentários de linha
 sql_stripped = re.sub(r'--[^\n]*', '', sql_stripped)

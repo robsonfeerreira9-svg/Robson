@@ -888,37 +888,7 @@ END $$;
 -- STEP 19 e 20 removidos — eram scripts de limpeza one-shot que não devem rodar no deploy automático
 
 
--- ─────────────────────────────────────────────────────
--- STEP 18: Limpar produtos sem foto (apaga na ordem correta)
--- Rodar uma única vez no Supabase SQL Editor
--- ─────────────────────────────────────────────────────
-DO $$
-DECLARE
-  ids UUID[];
-  total INT;
-BEGIN
-  SELECT ARRAY_AGG(id) INTO ids
-  FROM public.produtos
-  WHERE foto_url IS NULL OR foto_url = '';
-
-  IF ids IS NULL OR array_length(ids, 1) = 0 THEN
-    RAISE NOTICE 'Nenhum produto sem foto encontrado.';
-    RETURN;
-  END IF;
-
-  total := array_length(ids, 1);
-
-  -- 1. Remove itens de venda que referenciam esses produtos
-  DELETE FROM public.itens_venda WHERE produto_id = ANY(ids);
-
-  -- 2. Remove estoque
-  DELETE FROM public.estoque WHERE produto_id = ANY(ids);
-
-  -- 3. Remove os produtos
-  DELETE FROM public.produtos WHERE id = ANY(ids);
-
-  RAISE NOTICE '% produto(s) sem foto removido(s).', total;
-END $$;
+-- STEP 18: REMOVIDO — apagava produtos sem foto a cada deploy (perigo!)
 
 
 -- ─────────────────────────────────────────────────────
