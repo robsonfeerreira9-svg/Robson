@@ -19,11 +19,27 @@ def sql(query):
 
 print(f'=== Deletando lancamentos do dia {DATA} ===')
 
-sql(f"SELECT id, descricao, tipo, valor, vence_em, criado_em FROM public.movimentacao_caixa WHERE criado_em::date = '{DATA}' OR vence_em::text = '{DATA}' ORDER BY criado_em")
+# Mostra o que sera deletado (considera fuso Brasil UTC-3)
+sql(f"""
+SELECT id, descricao, tipo, valor,
+       criado_em,
+       (criado_em AT TIME ZONE 'America/Sao_Paulo')::date AS data_brasil
+FROM public.movimentacao_caixa
+WHERE (criado_em AT TIME ZONE 'America/Sao_Paulo')::date = '{DATA}'
+   OR criado_em::date = '{DATA}'
+   OR vence_em::text = '{DATA}'
+ORDER BY criado_em
+""")
 
 sql('ALTER TABLE public.movimentacao_caixa DISABLE TRIGGER ALL')
 
-sql(f"DELETE FROM public.movimentacao_caixa WHERE criado_em::date = '{DATA}' OR vence_em::text = '{DATA}'")
+# Deleta usando fuso horario Brasil + UTC como fallback
+sql(f"""
+DELETE FROM public.movimentacao_caixa
+WHERE (criado_em AT TIME ZONE 'America/Sao_Paulo')::date = '{DATA}'
+   OR criado_em::date = '{DATA}'
+   OR vence_em::text = '{DATA}'
+""")
 
 sql('ALTER TABLE public.movimentacao_caixa ENABLE TRIGGER ALL')
 

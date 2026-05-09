@@ -1458,16 +1458,21 @@ CREATE TABLE IF NOT EXISTS public.audit_delete_log (
 ALTER TABLE public.audit_delete_log ENABLE ROW LEVEL SECURITY;
 
 -- Só o sócio pode ler o log de auditoria
-CREATE POLICY IF NOT EXISTS "socio_select_audit" ON public.audit_delete_log
-  FOR SELECT TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.usuarios WHERE id = auth.uid() AND role = 'socio')
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'socio_select_audit' AND tablename = 'audit_delete_log') THEN
+    CREATE POLICY "socio_select_audit" ON public.audit_delete_log
+      FOR SELECT TO authenticated
+      USING (EXISTS (SELECT 1 FROM public.usuarios WHERE id = auth.uid() AND role = 'socio'));
+  END IF;
+END $$;
 
--- Ninguém apaga o log de auditoria via app
-CREATE POLICY IF NOT EXISTS "bloquear_delete_audit" ON public.audit_delete_log
-  FOR DELETE TO authenticated
-  USING (false);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'bloquear_delete_audit' AND tablename = 'audit_delete_log') THEN
+    CREATE POLICY "bloquear_delete_audit" ON public.audit_delete_log
+      FOR DELETE TO authenticated
+      USING (false);
+  END IF;
+END $$;
 
 -- Função que copia o registro deletado para o log
 CREATE OR REPLACE FUNCTION public.fn_log_delete()
