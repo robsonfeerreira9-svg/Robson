@@ -1,0 +1,17 @@
+name: Zerar Financeiro
+
+on:
+  workflow_dispatch:
+
+jobs:
+  zerar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apagar registros de movimentacao_caixa
+        env:
+          SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/zerar-financeiro.py
