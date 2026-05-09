@@ -1,32 +1,2553 @@
 {
   "data": "2026-05-09",
   "tabelas": {
-    "vendas": {
-      "message": "Unauthorized"
-    },
-    "clientes": {
-      "message": "Unauthorized"
-    },
-    "movimentacao_caixa": {
-      "message": "Unauthorized"
-    },
-    "itens_venda": {
-      "message": "Unauthorized"
-    },
-    "comissoes": {
-      "message": "Unauthorized"
-    },
-    "produtos": {
-      "message": "Unauthorized"
-    },
-    "estoque": {
-      "message": "Unauthorized"
-    },
-    "usuarios": {
-      "message": "Unauthorized"
-    },
+    "vendas": [
+      {
+        "id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "260.00",
+        "desconto_aplicado": "18.20",
+        "total_final": "241.80",
+        "criado_em": "2026-04-01 10:30:00+00"
+      },
+      {
+        "id": "0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "whatsapp",
+        "metodo_pagamento": "pix",
+        "subtotal": "320.00",
+        "desconto_aplicado": "22.40",
+        "total_final": "297.60",
+        "criado_em": "2026-04-02 14:15:00+00"
+      },
+      {
+        "id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "credito",
+        "subtotal": "220.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "220.00",
+        "criado_em": "2026-04-03 11:00:00+00"
+      },
+      {
+        "id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "195.00",
+        "desconto_aplicado": "13.65",
+        "total_final": "181.35",
+        "criado_em": "2026-04-04 15:45:00+00"
+      },
+      {
+        "id": "e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "credito",
+        "subtotal": "380.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "380.00",
+        "criado_em": "2026-04-05 16:20:00+00"
+      },
+      {
+        "id": "aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "debito",
+        "subtotal": "390.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "390.00",
+        "criado_em": "2026-04-06 13:00:00+00"
+      },
+      {
+        "id": "721675f5-4344-4822-9064-45e30a8b97d7",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "350.00",
+        "desconto_aplicado": "24.50",
+        "total_final": "325.50",
+        "criado_em": "2026-04-07 10:00:00+00"
+      },
+      {
+        "id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "credito",
+        "subtotal": "540.00",
+        "desconto_aplicado": "0.00",
+        "total_final": "540.00",
+        "criado_em": "2026-04-08 17:30:00+00"
+      },
+      {
+        "id": "ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "whatsapp",
+        "metodo_pagamento": "pix",
+        "subtotal": "415.00",
+        "desconto_aplicado": "29.05",
+        "total_final": "385.95",
+        "criado_em": "2026-04-09 09:15:00+00"
+      },
+      {
+        "id": "69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "whatsapp",
+        "metodo_pagamento": "pix",
+        "subtotal": "260.00",
+        "desconto_aplicado": "18.20",
+        "total_final": "241.80",
+        "criado_em": "2026-04-09 11:40:00+00"
+      },
+      {
+        "id": "b01df4f6-3218-43da-8d7e-4cc2f7e0f16e",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": "4fcca2cd-b7d9-44f2-b7ef-064d4687f1f2",
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "149.90",
+        "desconto_aplicado": "0.00",
+        "total_final": "149.90",
+        "criado_em": "2026-05-08 15:00:00+00"
+      },
+      {
+        "id": "2988f6b2-7877-4f63-b7b9-80fb24d58d80",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": "4fcca2cd-b7d9-44f2-b7ef-064d4687f1f2",
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "189.90",
+        "desconto_aplicado": "0.00",
+        "total_final": "189.90",
+        "criado_em": "2026-05-09 15:04:46.091429+00"
+      },
+      {
+        "id": "40b76740-5cad-4574-9e48-d793cdbe9dd0",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": "4fcca2cd-b7d9-44f2-b7ef-064d4687f1f2",
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "79.90",
+        "desconto_aplicado": "0.00",
+        "total_final": "79.90",
+        "criado_em": "2026-05-09 16:19:41.715092+00"
+      },
+      {
+        "id": "4fdfd5c2-78ef-41f6-80e2-f1c74064f377",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": "4fcca2cd-b7d9-44f2-b7ef-064d4687f1f2",
+        "canal_venda": "fisico",
+        "metodo_pagamento": "debito",
+        "subtotal": "599.60",
+        "desconto_aplicado": "0.00",
+        "total_final": "599.60",
+        "criado_em": "2026-05-09 16:28:33.09977+00"
+      },
+      {
+        "id": "888f2542-99be-42bd-af2d-193444946e29",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "credito",
+        "subtotal": "79.90",
+        "desconto_aplicado": "0.00",
+        "total_final": "79.90",
+        "criado_em": "2026-05-09 20:09:10.435709+00"
+      },
+      {
+        "id": "7a3ee035-de60-46de-942b-7efbcbf235d0",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "cliente_id": null,
+        "canal_venda": "fisico",
+        "metodo_pagamento": "pix",
+        "subtotal": "99.90",
+        "desconto_aplicado": "35.00",
+        "total_final": "64.90",
+        "criado_em": "2026-05-09 23:27:00+00"
+      }
+    ],
+    "clientes": [
+      {
+        "id": "4fcca2cd-b7d9-44f2-b7ef-064d4687f1f2",
+        "cpf": "12345678900",
+        "nome": "marcos",
+        "telefone": "31123456789",
+        "data_nascimento": "2006-01-01",
+        "criado_em": "2026-05-09 14:45:48.542311+00"
+      }
+    ],
+    "movimentacao_caixa": [
+      {
+        "id": "1cce4a6c-50a0-417c-865b-ec48e2ad13d7",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Pagamento Sistema",
+        "valor": "110.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-08 09:00:00+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "cf435a18-a3fa-46fe-8def-5417fb480af4",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Blusa",
+        "valor": "100.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-09 22:38:41.962119+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "7ffc4b84-be58-4a27-abbb-b36142da209b",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "ALUGUEL",
+        "valor": "2430.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-10 21:38:17.577537+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "111bab2c-7bb6-4133-9a51-88b85e87494d",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Contabilidade",
+        "valor": "350.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-04-15 09:00:00+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "7b0be9c9-a435-416a-9ff0-9ab7c8060b73",
+        "tipo": "entrada",
+        "categoria": "outro",
+        "descricao": "Saldo Mês Anterior",
+        "valor": "1580.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:34:33.753668+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "82fdc85b-ce9b-4967-9b91-39316f91b075",
+        "tipo": "entrada",
+        "categoria": "outro",
+        "descricao": "NOVO INVESTIMENTO HG",
+        "valor": "10500.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:35:06.993157+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "63dc3247-4cda-410f-817f-df2ed0f2bc53",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Pagamento Ciara",
+        "valor": "1030.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:36:35.839676+00",
+        "vence_em": "2026-05-01",
+        "pago": true
+      },
+      {
+        "id": "3a9618a7-92fe-436e-b096-3ed2830495bd",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Pagamento Camilly",
+        "valor": "550.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:38:13.182484+00",
+        "vence_em": "2026-05-01",
+        "pago": true
+      },
+      {
+        "id": "77a99072-0c57-49eb-a2d0-7137d74b6075",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Reposição 14 Polos Lançamento",
+        "valor": "756.98",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-02 22:40:10.489512+00",
+        "vence_em": "2026-05-02",
+        "pago": true
+      },
+      {
+        "id": "f959130f-313a-447c-83c4-7c2b9ffeaa7f",
+        "tipo": "saida",
+        "categoria": "outro",
+        "descricao": "Emprestimo Mercado Pago (Hugo)",
+        "valor": "356.10",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-03 17:26:47.353583+00",
+        "vence_em": "2026-05-06",
+        "pago": false
+      },
+      {
+        "id": "c84906d3-1d7a-46fa-999c-3a1e08bbc273",
+        "tipo": "saida",
+        "categoria": "outro",
+        "descricao": "Emprestimo Mercado Pago HG 1/6",
+        "valor": "649.54",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:55:36.081505+00",
+        "vence_em": "2026-05-13",
+        "pago": false
+      },
+      {
+        "id": "5c527cbe-9ba8-456e-930f-fe37b7d7d019",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Adiantamento Ciara",
+        "valor": "600.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:56:02.334716+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "7b0bf8bd-e986-4fbb-844f-addba4095dc2",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Adiantamento Camilly",
+        "valor": "280.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:58:29.325244+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "851cd365-43f5-4d6a-9c89-9bdb88bd3c2a",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Agua e Luz (Media)",
+        "valor": "420.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:59:29.470471+00",
+        "vence_em": "2026-05-10",
+        "pago": false
+      },
+      {
+        "id": "f38b93ef-8ae8-469a-a599-0b05fa4cfb48",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Contabilidade HG",
+        "valor": "350.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 10:59:55.455759+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "45addf6d-c928-4e09-9049-9a296e10263d",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Marketing",
+        "valor": "500.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:00:30.525685+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "e1f7c55e-71f5-4243-a9bd-d98e160e71fb",
+        "tipo": "saida",
+        "categoria": "outro",
+        "descricao": "Compra Loja",
+        "valor": "347.57",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:02:26.251858+00",
+        "vence_em": "2026-05-01",
+        "pago": true
+      },
+      {
+        "id": "89037063-f39b-4096-9bbf-160ec41818f6",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Internet",
+        "valor": "110.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:03:00.080932+00",
+        "vence_em": "2026-05-10",
+        "pago": false
+      },
+      {
+        "id": "dfcb8ff3-a417-4f5e-81de-41d65fcb1d91",
+        "tipo": "saida",
+        "categoria": "custo_operacional",
+        "descricao": "Aluguel",
+        "valor": "2440.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:04:39.805938+00",
+        "vence_em": "2026-05-10",
+        "pago": false
+      },
+      {
+        "id": "4b231633-4c54-40e2-a217-24fc74bb5b48",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Parcela Hugo (Devolução Acordada) 1/11",
+        "valor": "1350.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-04 11:06:45.583568+00",
+        "vence_em": "2026-05-15",
+        "pago": false
+      },
+      {
+        "id": "89f2dfc3-9877-4278-9243-37d8e29f249b",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "valor": "297.60",
+        "referencia_venda_id": "0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "f0663d7d-9ee6-4267-b3e3-498b71ca68b3",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "valor": "241.80",
+        "referencia_venda_id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "fd818b38-0944-48b4-a79c-08debab3dd95",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "valor": "220.00",
+        "referencia_venda_id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "5f376ec6-3000-4fcd-8f24-ac691280f8ac",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "valor": "181.35",
+        "referencia_venda_id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "60e7c3fe-0290-4ff1-8208-2ce4eb0a3aa9",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "valor": "380.00",
+        "referencia_venda_id": "e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "235a03a2-af6f-4d27-a348-0951d06fef4a",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "valor": "390.00",
+        "referencia_venda_id": "aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "1a348957-1eea-4fc4-9e17-7a5d2f1017cf",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #721675f5-4344-4822-9064-45e30a8b97d7",
+        "valor": "325.50",
+        "referencia_venda_id": "721675f5-4344-4822-9064-45e30a8b97d7",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "91db1de7-5077-4bee-926c-fa3ac936efff",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "valor": "540.00",
+        "referencia_venda_id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "2249c0d3-82ee-430b-ad4a-b0a4a388f03c",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "valor": "385.95",
+        "referencia_venda_id": "ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "6973a7f3-5031-4d35-9219-5c9beebe2f72",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "valor": "241.80",
+        "referencia_venda_id": "69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "criado_em": "2026-05-06 00:37:17.799922+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "573efb57-d566-40f1-a2cd-b4da70b09fb0",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "ND",
+        "valor": "1.00",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-07 00:19:39.944777+00",
+        "vence_em": "2026-05-06",
+        "pago": false
+      },
+      {
+        "id": "89b53ce3-dfb6-4fd5-9346-d0d4c522d742",
+        "tipo": "saida",
+        "categoria": "compra_estoque",
+        "descricao": "Reposição DWD+Frete",
+        "valor": "4238.47",
+        "referencia_venda_id": null,
+        "criado_em": "2026-05-07 00:21:40.057714+00",
+        "vence_em": "2026-05-06",
+        "pago": true
+      },
+      {
+        "id": "b14899f6-c91d-4973-8965-5f4749e29fff",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #b01df4f6-3218-43da-8d7e-4cc2f7e0f16e",
+        "valor": "149.90",
+        "referencia_venda_id": "b01df4f6-3218-43da-8d7e-4cc2f7e0f16e",
+        "criado_em": "2026-05-08 15:00:00+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "595b37f6-ff2b-47f3-920e-d9289d96f640",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #2988f6b2-7877-4f63-b7b9-80fb24d58d80",
+        "valor": "189.90",
+        "referencia_venda_id": "2988f6b2-7877-4f63-b7b9-80fb24d58d80",
+        "criado_em": "2026-05-09 15:04:46.091429+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "482ee41e-6a82-4d32-b92e-8e624552c1c6",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #40b76740-5cad-4574-9e48-d793cdbe9dd0",
+        "valor": "79.90",
+        "referencia_venda_id": "40b76740-5cad-4574-9e48-d793cdbe9dd0",
+        "criado_em": "2026-05-09 16:19:41.715092+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "de452e2e-9852-4aba-a32e-366e5c496298",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #4fdfd5c2-78ef-41f6-80e2-f1c74064f377",
+        "valor": "599.60",
+        "referencia_venda_id": "4fdfd5c2-78ef-41f6-80e2-f1c74064f377",
+        "criado_em": "2026-05-09 16:28:33.09977+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "5feabfbc-6b15-4f34-9321-2d38fa4ff2d1",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #888f2542-99be-42bd-af2d-193444946e29",
+        "valor": "79.90",
+        "referencia_venda_id": "888f2542-99be-42bd-af2d-193444946e29",
+        "criado_em": "2026-05-09 20:09:10.435709+00",
+        "vence_em": null,
+        "pago": true
+      },
+      {
+        "id": "4f96d3de-c81e-430a-b158-abbc45ddc75b",
+        "tipo": "entrada",
+        "categoria": "venda",
+        "descricao": "Venda #7a3ee035-de60-46de-942b-7efbcbf235d0",
+        "valor": "64.90",
+        "referencia_venda_id": "7a3ee035-de60-46de-942b-7efbcbf235d0",
+        "criado_em": "2026-05-09 20:27:17.020696+00",
+        "vence_em": null,
+        "pago": true
+      }
+    ],
+    "itens_venda": [
+      {
+        "id": "0c203531-d38a-4a46-9149-e29f47a1fcf8",
+        "venda_id": "b01df4f6-3218-43da-8d7e-4cc2f7e0f16e",
+        "produto_id": "e2997907-5e82-4239-b729-5185d5651d96",
+        "quantidade": 1,
+        "preco_unitario": "149.90",
+        "subtotal_item": "149.90"
+      },
+      {
+        "id": "efe6081e-a51f-4b26-955f-9b7bc63039c7",
+        "venda_id": "2988f6b2-7877-4f63-b7b9-80fb24d58d80",
+        "produto_id": "ea80bafa-9560-4b4f-b5e4-e4a07d62879f",
+        "quantidade": 1,
+        "preco_unitario": "189.90",
+        "subtotal_item": "189.90"
+      },
+      {
+        "id": "8ce50385-774f-4b1e-b4f4-3725c4590235",
+        "venda_id": "40b76740-5cad-4574-9e48-d793cdbe9dd0",
+        "produto_id": "5f749fdc-015d-4fb5-b16b-b5115b74188f",
+        "quantidade": 1,
+        "preco_unitario": "79.90",
+        "subtotal_item": "79.90"
+      },
+      {
+        "id": "12e95187-463c-467e-9029-90ffd4de2f70",
+        "venda_id": "4fdfd5c2-78ef-41f6-80e2-f1c74064f377",
+        "produto_id": "891ad081-d54c-48db-a502-b7748dbd471f",
+        "quantidade": 1,
+        "preco_unitario": "149.90",
+        "subtotal_item": "149.90"
+      },
+      {
+        "id": "b754f032-6266-4870-8e9d-50291079ee55",
+        "venda_id": "4fdfd5c2-78ef-41f6-80e2-f1c74064f377",
+        "produto_id": "abc9b6b2-f245-494c-9914-fcfc0018b5c6",
+        "quantidade": 1,
+        "preco_unitario": "149.90",
+        "subtotal_item": "149.90"
+      },
+      {
+        "id": "d5945590-3dd5-4e36-b194-36842a264ff2",
+        "venda_id": "4fdfd5c2-78ef-41f6-80e2-f1c74064f377",
+        "produto_id": "7dee7cae-5c48-4e68-8de8-db3f1bd74674",
+        "quantidade": 2,
+        "preco_unitario": "149.90",
+        "subtotal_item": "299.80"
+      },
+      {
+        "id": "2b01867e-9116-4c64-90fc-b788ed9d16ea",
+        "venda_id": "888f2542-99be-42bd-af2d-193444946e29",
+        "produto_id": "a8a1baa7-b7e2-4183-8b4e-a5cb3b034b8f",
+        "quantidade": 1,
+        "preco_unitario": "79.90",
+        "subtotal_item": "79.90"
+      },
+      {
+        "id": "3a1d5d57-f2f7-4a0d-93aa-52782041cd48",
+        "venda_id": "7a3ee035-de60-46de-942b-7efbcbf235d0",
+        "produto_id": "966b106d-c37b-414f-bf06-a9aa595d1d9e",
+        "quantidade": 1,
+        "preco_unitario": "99.90",
+        "subtotal_item": "99.90"
+      }
+    ],
+    "comissoes": [
+      {
+        "id": "1de16396-972f-424f-a339-197395d1dec0",
+        "venda_id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "27.00",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "3528bde7-4d8a-407d-b2a8-f8c849d8a433",
+        "venda_id": "ab0f318a-df23-4db6-952e-6cd58b710ccc",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "19.30",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "47968a47-3686-44c1-b127-616640a78041",
+        "venda_id": "0466ace0-e588-4f61-ba63-e5aeb42ead87",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "14.88",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "4cd86268-d2d8-4533-aac6-cc64650551cf",
+        "venda_id": "aec6ba8b-9ec4-41a1-bae3-97195495011a",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "19.50",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "55a07b84-00e1-4326-b90f-f1c92ba67f95",
+        "venda_id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "11.00",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "6292f198-929b-4ddc-8fdc-d8fbe2af44df",
+        "venda_id": "721675f5-4344-4822-9064-45e30a8b97d7",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "16.28",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "685d5a4f-8c04-4b3a-8c44-a60c07c7f2bc",
+        "venda_id": "69c61a07-b70f-4aa2-945b-88e8d73253e1",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "12.09",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "addfb50a-8ae7-4aad-ba7f-e56991f06818",
+        "venda_id": "e5d3b242-ebe4-4043-98ce-56cb08436363",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "19.00",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "bb10252e-5155-4ae7-954f-1f59fef9b9fe",
+        "venda_id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "12.09",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "bded0411-25dd-4fa0-bed6-d0ac36599537",
+        "venda_id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "9.07",
+        "pago": true,
+        "criado_em": "2026-05-06 00:37:17.799922+00"
+      },
+      {
+        "id": "36d655b3-7695-467b-9be7-ff10f2efed40",
+        "venda_id": "b01df4f6-3218-43da-8d7e-4cc2f7e0f16e",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "7.50",
+        "pago": false,
+        "criado_em": "2026-05-08 15:00:00+00"
+      },
+      {
+        "id": "05ba4327-1356-4c49-ab43-98157c2e06b6",
+        "venda_id": "2988f6b2-7877-4f63-b7b9-80fb24d58d80",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "9.50",
+        "pago": false,
+        "criado_em": "2026-05-09 15:04:46.091429+00"
+      },
+      {
+        "id": "41564f1b-303e-4cda-8d63-643caacca160",
+        "venda_id": "40b76740-5cad-4574-9e48-d793cdbe9dd0",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "4.00",
+        "pago": false,
+        "criado_em": "2026-05-09 16:19:41.715092+00"
+      },
+      {
+        "id": "2285e698-14be-4ed4-be98-f094a78508aa",
+        "venda_id": "4fdfd5c2-78ef-41f6-80e2-f1c74064f377",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "29.98",
+        "pago": false,
+        "criado_em": "2026-05-09 16:28:33.09977+00"
+      },
+      {
+        "id": "7c1428ed-0594-4cd5-9723-40100703738f",
+        "venda_id": "888f2542-99be-42bd-af2d-193444946e29",
+        "vendedor_id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "percentual": "5.00",
+        "valor_comissao": "4.00",
+        "pago": false,
+        "criado_em": "2026-05-09 20:09:10.435709+00"
+      },
+      {
+        "id": "d870277a-8791-45a2-bacc-562c66deaf72",
+        "venda_id": "7a3ee035-de60-46de-942b-7efbcbf235d0",
+        "vendedor_id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "percentual": "5.00",
+        "valor_comissao": "5.00",
+        "pago": false,
+        "criado_em": "2026-05-09 20:27:17.020696+00"
+      }
+    ],
+    "produtos": [
+      {
+        "id": "016386c4-795c-45c1-b374-78481a7a46e1",
+        "nome": "AQUALAND Meia Lua Aço",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776465840543.png",
+        "tamanho": "UNICO",
+        "custo": "80.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-17 22:44:03.48656+00",
+        "numero": null
+      },
+      {
+        "id": "ea80bafa-9560-4b4f-b5e4-e4a07d62879f",
+        "nome": "AQUALAND Meia Lua Borracha",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776465900094.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "189.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-17 22:45:02.969141+00",
+        "numero": null
+      },
+      {
+        "id": "9ea992b5-f598-4c15-8661-c3fee9836b66",
+        "nome": "Bag Importada Multimarcas",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776465707885.png",
+        "tamanho": "UNICO",
+        "custo": "55.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-17 22:41:50.306375+00",
+        "numero": null
+      },
+      {
+        "id": "7dee7cae-5c48-4e68-8de8-db3f1bd74674",
+        "nome": "Bermuda FREEBONG/ acinzentada",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947110678.png",
+        "tamanho": "UNICO",
+        "custo": "77.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:38:33.953726+00",
+        "numero": null
+      },
+      {
+        "id": "e42f225a-1ebd-477a-b87e-31eb55bea2b4",
+        "nome": "Bermuda FREEBONG/ detalhada",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947185024.png",
+        "tamanho": "UNICO",
+        "custo": "77.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:39:50.462877+00",
+        "numero": null
+      },
+      {
+        "id": "5731f20d-2775-45c6-903a-73f35b4ab710",
+        "nome": "Bermuda FREEBONG/ preto",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946996119.png",
+        "tamanho": "UNICO",
+        "custo": "77.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:36:41.311007+00",
+        "numero": null
+      },
+      {
+        "id": "dd498434-ba02-4727-a13c-e216d7563390",
+        "nome": "Boné Lacoste Sport basic",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776718230335.png",
+        "tamanho": "UNICO",
+        "custo": "30.00",
+        "preco_venda": "75.00",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-20 20:50:33.422895+00",
+        "numero": null
+      },
+      {
+        "id": "6b4a4595-a69a-49cc-86c8-d47874747958",
+        "nome": "Bonés multimarcas",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776719038220.png",
+        "tamanho": "UNICO",
+        "custo": "30.00",
+        "preco_venda": "75.00",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-20 21:04:01.557145+00",
+        "numero": null
+      },
+      {
+        "id": "a1702a39-ac90-45e4-b038-b77c64f9ad1d",
+        "nome": "Calça BROW jogador",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946723676.png",
+        "tamanho": "UNICO",
+        "custo": "90.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:32:06.697731+00",
+        "numero": "42,44"
+      },
+      {
+        "id": "a77452ad-3e27-4924-8f6b-b603f9b1a148",
+        "nome": "Calça FREEBONG",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1777760914983.png",
+        "tamanho": "UNICO",
+        "custo": "90.00",
+        "preco_venda": "209.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-02 22:28:37.022281+00",
+        "numero": null
+      },
+      {
+        "id": "d88f4d25-200f-493c-9085-29f50ff16b1d",
+        "nome": "Camisa 🐊 Estampa Costas",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778282872414.png",
+        "tamanho": "UNICO",
+        "custo": "55.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 23:27:54.657599+00",
+        "numero": null
+      },
+      {
+        "id": "5c6872b0-6a56-4782-a151-f5e482400cd8",
+        "nome": "Camisa 🐊 Estampa Tênis",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778282779123.png",
+        "tamanho": "UNICO",
+        "custo": "55.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 23:26:21.643032+00",
+        "numero": null
+      },
+      {
+        "id": "0cdd750d-9007-42db-9e23-04f6ebc11569",
+        "nome": "Camisa Dry",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778246491707.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 13:21:35.300316+00",
+        "numero": null
+      },
+      {
+        "id": "d52e0f9c-2662-4c14-a431-55341d796f62",
+        "nome": "Camisa Lacoste Gola",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775860636004.png",
+        "tamanho": "M",
+        "custo": "40.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:37:18.420457+00",
+        "numero": null
+      },
+      {
+        "id": "c5a24ebf-e6cf-4a4b-8519-2bfaeaf69c54",
+        "nome": "Camisa seleção brasileira",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776718340140.png",
+        "tamanho": "UNICO",
+        "custo": "95.00",
+        "preco_venda": "190.00",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-20 20:52:22.829806+00",
+        "numero": null
+      },
+      {
+        "id": "310591a6-96c9-400f-b87a-04198e8d1f05",
+        "nome": "Camisa ZARA",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775860462932.png",
+        "tamanho": "GG",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:34:25.626254+00",
+        "numero": null
+      },
+      {
+        "id": "7396acee-6f65-4ae4-bb55-c78a9f62e21c",
+        "nome": "Cinto catracado multimarca",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776464538284.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "69.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-17 22:22:21.127207+00",
+        "numero": null
+      },
+      {
+        "id": "689df861-2261-45de-a68f-829dc7ee6c7f",
+        "nome": "Conjuntos Djokovic Lacoste",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778244578597.jpeg",
+        "tamanho": "UNICO",
+        "custo": "150.00",
+        "preco_venda": "350.00",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 12:49:42.562399+00",
+        "numero": null
+      },
+      {
+        "id": "63cd9d11-b0bf-4697-9fd0-6e1aabc6edc2",
+        "nome": "Cuecas Pac/3",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1777651435977.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "75.00",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-01 16:03:59.313421+00",
+        "numero": null
+      },
+      {
+        "id": "d6b13e84-0f4b-465a-abb8-77f26b61e21d",
+        "nome": "Dry Fit 🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1777651848165.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "79.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-01 16:10:49.979509+00",
+        "numero": null
+      },
+      {
+        "id": "a8a1baa7-b7e2-4183-8b4e-a5cb3b034b8f",
+        "nome": "Dry Fit 🐊🥎",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1777760995546.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "79.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-02 22:29:57.40372+00",
+        "numero": null
+      },
+      {
+        "id": "616b2e45-6b84-4213-8584-3546d67065fb",
+        "nome": "Dry Fit Big Croc",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948190390.png",
+        "tamanho": "UNICO",
+        "custo": "40.00",
+        "preco_venda": "79.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:56:32.665915+00",
+        "numero": null
+      },
+      {
+        "id": "bc068541-3815-457c-a0c2-cac1387a9785",
+        "nome": "Dry Fit Roland Basic",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947977272.png",
+        "tamanho": "M",
+        "custo": "40.00",
+        "preco_venda": "79.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:52:59.905771+00",
+        "numero": null
+      },
+      {
+        "id": "5f749fdc-015d-4fb5-b16b-b5115b74188f",
+        "nome": "Dry Fit Roland Garros",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948077514.png",
+        "tamanho": "UNICO",
+        "custo": "40.00",
+        "preco_venda": "79.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:54:39.822275+00",
+        "numero": null
+      },
+      {
+        "id": "d662689a-3bc3-4ec2-91f7-629c9826050b",
+        "nome": "Jaqueta Courino ZARA",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778246400293.png",
+        "tamanho": "UNICO",
+        "custo": "100.00",
+        "preco_venda": "259.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 13:20:04.046697+00",
+        "numero": null
+      },
+      {
+        "id": "2bc301b5-8ee4-49a2-972d-235a1004f8ec",
+        "nome": "Lacoste T-clip",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947650506.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:47:32.047364+00",
+        "numero": "41"
+      },
+      {
+        "id": "e8726cd6-6184-4f9f-99ea-4f709bd3bb96",
+        "nome": "Lacoste T-clip",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947580631.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:46:24.7985+00",
+        "numero": "40"
+      },
+      {
+        "id": "0dd9c237-311e-4e3a-b379-4eed9e80b6ea",
+        "nome": "Lacoste T-clip",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947685735.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:48:07.054812+00",
+        "numero": "43"
+      },
+      {
+        "id": "c50e1a90-436d-4c7e-873e-87473c2f47c8",
+        "nome": "Lacoste T-Clip",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947506562.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:45:09.902501+00",
+        "numero": "39"
+      },
+      {
+        "id": "1e587fd7-6c53-4cad-8f28-550bdcf9d19b",
+        "nome": "Malha 🐊 Golf Estampa",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778282929332.png",
+        "tamanho": "UNICO",
+        "custo": "55.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 23:28:51.450925+00",
+        "numero": null
+      },
+      {
+        "id": "1d7df8f0-09f1-45d8-9b78-a14f5d8be781",
+        "nome": "Malha Basic 🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778246591374.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 13:23:14.045008+00",
+        "numero": null
+      },
+      {
+        "id": "c126b1f4-4e1b-43d1-93d5-e4d988ec8fc6",
+        "nome": "Malha Basic PRADA",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775861048330.png",
+        "tamanho": "G",
+        "custo": "40.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:44:09.340665+00",
+        "numero": null
+      },
+      {
+        "id": "7c6591ca-2ee7-4dec-a23b-c786faddef95",
+        "nome": "Malha Basic PRADA",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775861005564.png",
+        "tamanho": "M",
+        "custo": "40.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:43:27.394684+00",
+        "numero": null
+      },
+      {
+        "id": "cc7df1da-bfb7-4807-93ed-375c3d5c972f",
+        "nome": "Malha Cotton Broocksfield",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778246444762.png",
+        "tamanho": "UNICO",
+        "custo": "40.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 13:20:47.830795+00",
+        "numero": null
+      },
+      {
+        "id": "966b106d-c37b-414f-bf06-a9aa595d1d9e",
+        "nome": "Malha Cotton Lacoste 🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778246551223.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 13:22:33.35502+00",
+        "numero": null
+      },
+      {
+        "id": "67137bec-c450-47da-bb83-35baba27481a",
+        "nome": "Malha Fred Perry",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776546236963.png",
+        "tamanho": "UNICO",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-18 21:04:00.025254+00",
+        "numero": null
+      },
+      {
+        "id": "2eeb5593-94f2-4bf4-b665-34d87049f842",
+        "nome": "Malha Lacoste 🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775860946748.png",
+        "tamanho": "M",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:42:27.664367+00",
+        "numero": null
+      },
+      {
+        "id": "f161a9fa-adc4-4585-a6c0-a3ef8c1ddada",
+        "nome": "Malha Lacoste Djokovic",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775861711620.png",
+        "tamanho": "M",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:55:14.801319+00",
+        "numero": null
+      },
+      {
+        "id": "22859813-cd37-4c5b-b151-19d6d95e7c22",
+        "nome": "Malha Lacoste Gola",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776464794390.png",
+        "tamanho": "M",
+        "custo": "35.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-17 22:26:35.846307+00",
+        "numero": null
+      },
+      {
+        "id": "5c47de1f-35a1-4f05-adac-320e5758e911",
+        "nome": "Malha LV Estampada",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778282824835.png",
+        "tamanho": "UNICO",
+        "custo": "55.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 23:27:06.102563+00",
+        "numero": null
+      },
+      {
+        "id": "69758b41-4b06-44bd-85f1-6419e06c2c98",
+        "nome": "Malha Modelo Golf",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778270788303.png",
+        "tamanho": "UNICO",
+        "custo": "55.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-08 20:06:33.764392+00",
+        "numero": null
+      },
+      {
+        "id": "9d24f061-b4da-43e4-917f-c5076a393a69",
+        "nome": "Malha Peruana Faixa🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948852862.png",
+        "tamanho": "GG",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 23:07:34.566749+00",
+        "numero": null
+      },
+      {
+        "id": "510435b1-9de2-4c02-91f9-2c3087f9311b",
+        "nome": "Malha Peruana Faixa🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948811917.png",
+        "tamanho": "G",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 23:06:53.739144+00",
+        "numero": null
+      },
+      {
+        "id": "3432c874-0167-4025-9320-870ed1c95899",
+        "nome": "Malha Peruana Faixa🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948765201.png",
+        "tamanho": "M",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 23:06:07.735665+00",
+        "numero": null
+      },
+      {
+        "id": "5a279157-220e-4f09-92e5-92618ef5ebd0",
+        "nome": "Malha Texturizada",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776466045067.png",
+        "tamanho": "M",
+        "custo": "50.00",
+        "preco_venda": "129.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-17 22:47:27.433702+00",
+        "numero": null
+      },
+      {
+        "id": "5cfbdec2-3b0d-48c2-91bd-f210746de8f2",
+        "nome": "Mizuno PROPHECY 15",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946922680.png",
+        "tamanho": "UNICO",
+        "custo": "270.00",
+        "preco_venda": "549.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:35:24.975177+00",
+        "numero": "40"
+      },
+      {
+        "id": "2d1e184a-4a56-448a-8341-596bcc88e2dd",
+        "nome": "Mizuno PROPHECY 15",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947030614.png",
+        "tamanho": "UNICO",
+        "custo": "270.00",
+        "preco_venda": "549.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:37:13.143971+00",
+        "numero": "41"
+      },
+      {
+        "id": "de0e0903-00bc-4f45-920e-c302d23ccb8c",
+        "nome": "Mizuno PROPHECY 15",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948876697.png",
+        "tamanho": "UNICO",
+        "custo": "270.00",
+        "preco_venda": "549.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 23:08:00.605903+00",
+        "numero": "40"
+      },
+      {
+        "id": "0cbb4df2-8759-4490-be3f-804ee511d2f1",
+        "nome": "Mizuno PROPHECY 15",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948714758.png",
+        "tamanho": "UNICO",
+        "custo": "270.00",
+        "preco_venda": "549.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 23:05:17.805197+00",
+        "numero": "41"
+      },
+      {
+        "id": "3bf4ec88-b9b9-4058-b8e4-2eb75f1cb72a",
+        "nome": "Mizuno PROPHECY 15",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946765372.png",
+        "tamanho": "UNICO",
+        "custo": "270.00",
+        "preco_venda": "549.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:32:47.739598+00",
+        "numero": "42"
+      },
+      {
+        "id": "fd65fa04-d3f0-4cd1-b016-d2a1ba3838d8",
+        "nome": "New Balance 9060",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946945541.png",
+        "tamanho": "UNICO",
+        "custo": "65.00",
+        "preco_venda": "209.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:35:49.177162+00",
+        "numero": "40"
+      },
+      {
+        "id": "2b72d65a-ec26-4e00-9538-145f1b944126",
+        "nome": "New Balance 9060",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947054903.png",
+        "tamanho": "UNICO",
+        "custo": "65.00",
+        "preco_venda": "209.99",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:37:37.64259+00",
+        "numero": "42"
+      },
+      {
+        "id": "56c84773-3548-4628-9ee7-488c20acd017",
+        "nome": "New Balance 9060",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947004635.png",
+        "tamanho": "UNICO",
+        "custo": "65.00",
+        "preco_venda": "209.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:36:46.736087+00",
+        "numero": "41"
+      },
+      {
+        "id": "c4848a66-c85c-4470-8924-1957cd3572ab",
+        "nome": "New Balance 9060",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946776791.png",
+        "tamanho": "UNICO",
+        "custo": "65.00",
+        "preco_venda": "209.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:33:00.084734+00",
+        "numero": "39"
+      },
+      {
+        "id": "ed285204-b26c-44c1-a42c-5a8ccc8c1c05",
+        "nome": "Papete Mizuno",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946356400.png",
+        "tamanho": "UNICO",
+        "custo": "35.00",
+        "preco_venda": "99.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:25:59.401496+00",
+        "numero": "39"
+      },
+      {
+        "id": "a87c7759-b552-4b48-9b5c-f1f195f852d5",
+        "nome": "Perfume Malbec Black",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946446096.png",
+        "tamanho": "UNICO",
+        "custo": "157.00",
+        "preco_venda": "259.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:27:29.075146+00",
+        "numero": null
+      },
+      {
+        "id": "bad23b86-198c-4743-91fa-e3c8af9cbf9f",
+        "nome": "Perfume Malbec Tradicional",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946508988.png",
+        "tamanho": "UNICO",
+        "custo": "157.00",
+        "preco_venda": "259.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:28:31.84855+00",
+        "numero": null
+      },
+      {
+        "id": "891ad081-d54c-48db-a502-b7748dbd471f",
+        "nome": "Polo Chinesa",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775861151418.png",
+        "tamanho": "G",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:45:53.245656+00",
+        "numero": null
+      },
+      {
+        "id": "894ec19b-a553-47bf-ba99-465c223748c3",
+        "nome": "Polo Lacoste Sport",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947654786.png",
+        "tamanho": "G",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:47:36.603018+00",
+        "numero": null
+      },
+      {
+        "id": "872b2a5e-e8ce-4f91-98cb-77d5475367d7",
+        "nome": "Polo Lacoste Sport",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947545615.png",
+        "tamanho": "M",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:45:48.63746+00",
+        "numero": null
+      },
+      {
+        "id": "1d500f27-7875-4ac2-8d6d-3395cd655109",
+        "nome": "Polo Lacoste Sport",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947732301.png",
+        "tamanho": "GG",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:48:53.975255+00",
+        "numero": null
+      },
+      {
+        "id": "22a50b38-fb3c-4563-a9fd-fae99bb10bd1",
+        "nome": "Polo Lacoste Sport lançamento",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776546929941.png",
+        "tamanho": "UNICO",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-18 21:15:33.104078+00",
+        "numero": null
+      },
+      {
+        "id": "a3fa7bc7-8840-46f9-a69d-91f05e649c6d",
+        "nome": "Polo Monograma",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776527460299.png",
+        "tamanho": "UNICO",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-18 15:51:03.183963+00",
+        "numero": null
+      },
+      {
+        "id": "abc9b6b2-f245-494c-9914-fcfc0018b5c6",
+        "nome": "POLO Novak Djokovic",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1778343392714.png",
+        "tamanho": "UNICO",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-09 16:16:36.671383+00",
+        "numero": null
+      },
+      {
+        "id": "03d5623b-c14a-4560-b55d-95ec3271e576",
+        "nome": "Polo piquet",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947972357.png",
+        "tamanho": "M",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:52:56.565274+00",
+        "numero": null
+      },
+      {
+        "id": "96093f72-bbe7-4800-a926-4c1f9c7b3385",
+        "nome": "Polo piquet",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948035753.png",
+        "tamanho": "G",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:53:58.516164+00",
+        "numero": null
+      },
+      {
+        "id": "6e97dbcf-cbc7-4c86-bc41-eebccc8220b2",
+        "nome": "Polo piquet",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948086550.png",
+        "tamanho": "GG",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:54:49.469702+00",
+        "numero": null
+      },
+      {
+        "id": "3cb8da5b-3f5d-4e38-837a-dfbb2ca797f2",
+        "nome": "Polo Raquete zíper",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775860872762.png",
+        "tamanho": "M",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:41:14.070797+00",
+        "numero": null
+      },
+      {
+        "id": "bc54a8cd-6f45-40b9-ade2-ee73620a9169",
+        "nome": "Polo Raquete Zíper",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775860837713.png",
+        "tamanho": "GG",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-10 22:40:39.844206+00",
+        "numero": null
+      },
+      {
+        "id": "ac42c96f-bda5-4ecf-b704-81192f3ba004",
+        "nome": "Polo Recorte V 🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948001604.png",
+        "tamanho": "G",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:53:24.430823+00",
+        "numero": null
+      },
+      {
+        "id": "fa900352-cc8c-4731-ab78-2076fa3c0d1d",
+        "nome": "Polo Recorte V 🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948077448.png",
+        "tamanho": "GG",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:54:38.887014+00",
+        "numero": null
+      },
+      {
+        "id": "564fc0a3-ecfb-4d18-9db0-06ff16e60b5f",
+        "nome": "Polo Recorte V 🐊",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947860433.png",
+        "tamanho": "M",
+        "custo": "45.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:51:03.37654+00",
+        "numero": null
+      },
+      {
+        "id": "e355ed77-3faa-4370-9be7-3c2197a96aca",
+        "nome": "Puma BMW Branco",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947756440.png",
+        "tamanho": "UNICO",
+        "custo": "190.00",
+        "preco_venda": "449.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:49:18.385786+00",
+        "numero": "UNICO"
+      },
+      {
+        "id": "13322b72-effe-466b-a02a-e235826f7778",
+        "nome": "Puma BMW Mercedes",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947665432.png",
+        "tamanho": "UNICO",
+        "custo": "190.00",
+        "preco_venda": "449.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:47:46.835082+00",
+        "numero": "42"
+      },
+      {
+        "id": "9e6e43e6-45ae-4644-ab2f-353101ce4aa8",
+        "nome": "Puma BMW Preto",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947528071.png",
+        "tamanho": "UNICO",
+        "custo": "190.00",
+        "preco_venda": "449.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:45:29.750269+00",
+        "numero": "42"
+      },
+      {
+        "id": "9c71c504-3c7a-4ca7-b156-679aba2ad522",
+        "nome": "Puma BMW Preto",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947480926.png",
+        "tamanho": "UNICO",
+        "custo": "190.00",
+        "preco_venda": "449.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:44:43.442292+00",
+        "numero": "40"
+      },
+      {
+        "id": "77da209e-b626-4cb0-93ad-b041bd1bed95",
+        "nome": "Puma Mercedes Preto",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775947314471.png",
+        "tamanho": "UNICO",
+        "custo": "190.00",
+        "preco_venda": "449.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:41:56.984782+00",
+        "numero": "41"
+      },
+      {
+        "id": "e2997907-5e82-4239-b729-5185d5651d96",
+        "nome": "Relógio Armani",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776547346666.png",
+        "tamanho": "UNICO",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-18 21:22:29.251699+00",
+        "numero": null
+      },
+      {
+        "id": "3a17983c-2ed4-4621-9d26-e296fd7d3d96",
+        "nome": "Relógio ECO-DRIVE",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776547215220.png",
+        "tamanho": "UNICO",
+        "custo": "100.00",
+        "preco_venda": "219.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-18 21:20:18.525647+00",
+        "numero": null
+      },
+      {
+        "id": "ff2e1c9e-447a-49a3-a236-a388c0468893",
+        "nome": "Relógio Lacoste Color",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776467168737.png",
+        "tamanho": "UNICO",
+        "custo": "50.00",
+        "preco_venda": "149.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-17 23:06:10.661868+00",
+        "numero": null
+      },
+      {
+        "id": "d3b0281a-c078-4e69-92b9-ad4f3e5b7eab",
+        "nome": "Relógio Lacoste Premium",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1777761171201.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "179.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-05-02 22:32:52.404112+00",
+        "numero": null
+      },
+      {
+        "id": "2071e205-930c-4948-bc2a-539c173552c3",
+        "nome": "Relógio OLCA",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1776547391014.png",
+        "tamanho": "UNICO",
+        "custo": "70.00",
+        "preco_venda": "169.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-18 21:23:14.069009+00",
+        "numero": null
+      },
+      {
+        "id": "4c314d3a-e84a-40f4-9326-a5574301ddda",
+        "nome": "Slide Lacoste/ branco",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775948339520.png",
+        "tamanho": "UNICO",
+        "custo": "110.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:59:02.540929+00",
+        "numero": "41"
+      },
+      {
+        "id": "706351d0-8e62-4735-a95f-8bf12049a0d2",
+        "nome": "Slide Lacoste/ Branco",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946648931.png",
+        "tamanho": "UNICO",
+        "custo": "110.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:30:50.881784+00",
+        "numero": "39"
+      },
+      {
+        "id": "39418a3e-3535-4bef-b5d9-3ef7110884d7",
+        "nome": "Slide Lacoste/ preto",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946560453.png",
+        "tamanho": "UNICO",
+        "custo": "110.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:29:23.230225+00",
+        "numero": "43"
+      },
+      {
+        "id": "72ace549-cfe1-47b0-a835-7393ee2d972b",
+        "nome": "Tênis Nike Dunk",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946662039.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:31:04.015635+00",
+        "numero": "39"
+      },
+      {
+        "id": "98ee5669-cd00-44a5-a802-9f3705f7ab73",
+        "nome": "Tênis Nike Dunk",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946229291.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:23:52.234663+00",
+        "numero": "41"
+      },
+      {
+        "id": "188061fb-5fc0-4d72-a7b5-ca7f5ff0eb6d",
+        "nome": "Tênis Nike Dunk",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946485189.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:28:08.992429+00",
+        "numero": "42"
+      },
+      {
+        "id": "86eb6faf-41a3-4343-bbe3-5e84782c9cbe",
+        "nome": "Tênis Nike Dunk",
+        "foto_url": "https://eaovtnotwfzuxgtqpkay.supabase.co/storage/v1/object/public/produtos/1775946407077.png",
+        "tamanho": "UNICO",
+        "custo": "60.00",
+        "preco_venda": "199.90",
+        "markup_percentual": "100.00",
+        "canal": "ambos",
+        "criado_em": "2026-04-11 22:26:51.676402+00",
+        "numero": "40"
+      }
+    ],
+    "estoque": [
+      {
+        "id": "0c401f99-e390-463c-b955-7fa8bd817fcd",
+        "produto_id": "a77452ad-3e27-4924-8f6b-b603f9b1a148",
+        "quantidade": 3,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:28:37.463484+00"
+      },
+      {
+        "id": "22a4dcb2-34ae-43fa-9344-ebe8eeff37dd",
+        "produto_id": "d3b0281a-c078-4e69-92b9-ad4f3e5b7eab",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:32:52.693293+00"
+      },
+      {
+        "id": "da84af58-a4b4-48a6-8c2d-9c8d91a9ec36",
+        "produto_id": "69758b41-4b06-44bd-85f1-6419e06c2c98",
+        "quantidade": 9,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 20:06:34.181592+00"
+      },
+      {
+        "id": "989f4e78-8ca1-4314-a05c-bca838e35268",
+        "produto_id": "1e587fd7-6c53-4cad-8f28-550bdcf9d19b",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 23:28:51.774211+00"
+      },
+      {
+        "id": "f5187e99-d1d2-4bfa-a45a-50829acba41e",
+        "produto_id": "5f749fdc-015d-4fb5-b16b-b5115b74188f",
+        "quantidade": 4,
+        "ultima_venda_em": "2026-05-09 16:19:41.715092+00",
+        "atualizado_em": "2026-05-09 16:19:41.715092+00"
+      },
+      {
+        "id": "de162e2f-c1d2-4798-ad0e-014b1fd57092",
+        "produto_id": "0cdd750d-9007-42db-9e23-04f6ebc11569",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 13:21:35.686369+00"
+      },
+      {
+        "id": "b8f894c6-ddb8-45f3-bc6d-8d8849b4a342",
+        "produto_id": "510435b1-9de2-4c02-91f9-2c3087f9311b",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-03 15:08:08.758967+00"
+      },
+      {
+        "id": "ced0749c-5353-43b9-b2db-4f98d6189de4",
+        "produto_id": "689df861-2261-45de-a68f-829dc7ee6c7f",
+        "quantidade": 10,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 12:50:08.061+00"
+      },
+      {
+        "id": "fdcda661-aed6-48a7-8dfd-21912e77ead4",
+        "produto_id": "5c6872b0-6a56-4782-a151-f5e482400cd8",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 23:26:22.075635+00"
+      },
+      {
+        "id": "2bf20e54-8d0b-40c7-93ee-a6bbb35a6c7a",
+        "produto_id": "abc9b6b2-f245-494c-9914-fcfc0018b5c6",
+        "quantidade": 13,
+        "ultima_venda_em": "2026-05-09 16:28:33.09977+00",
+        "atualizado_em": "2026-05-09 16:28:33.09977+00"
+      },
+      {
+        "id": "6e83f00e-e374-4f12-88b1-0187c9035b9f",
+        "produto_id": "966b106d-c37b-414f-bf06-a9aa595d1d9e",
+        "quantidade": 0,
+        "ultima_venda_em": "2026-05-09 20:27:17.020696+00",
+        "atualizado_em": "2026-05-09 20:27:17.020696+00"
+      },
+      {
+        "id": "6dcb3a94-c47e-4134-bb55-c2d4cf3cc177",
+        "produto_id": "d662689a-3bc3-4ec2-91f7-629c9826050b",
+        "quantidade": 10,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 13:20:05.027613+00"
+      },
+      {
+        "id": "d9b346cc-7f50-4b90-814b-31a84c2821dc",
+        "produto_id": "1d7df8f0-09f1-45d8-9b78-a14f5d8be781",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 13:23:14.468591+00"
+      },
+      {
+        "id": "78f8a08b-45de-467e-8439-8155beddb4bb",
+        "produto_id": "5c47de1f-35a1-4f05-adac-320e5758e911",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 23:27:06.416623+00"
+      },
+      {
+        "id": "e543ac73-d25c-4f3f-9efb-bfbd4dd71780",
+        "produto_id": "e2997907-5e82-4239-b729-5185d5651d96",
+        "quantidade": 1,
+        "ultima_venda_em": "2026-05-08 15:00:00+00",
+        "atualizado_em": "2026-05-09 14:45:48.542311+00"
+      },
+      {
+        "id": "2de65c38-3c7c-4324-b468-5a2556a58f07",
+        "produto_id": "891ad081-d54c-48db-a502-b7748dbd471f",
+        "quantidade": 0,
+        "ultima_venda_em": "2026-05-09 16:28:33.09977+00",
+        "atualizado_em": "2026-05-09 16:28:33.09977+00"
+      },
+      {
+        "id": "7e3b5c06-4d83-43a8-bbba-99e1c70994d6",
+        "produto_id": "7dee7cae-5c48-4e68-8de8-db3f1bd74674",
+        "quantidade": 1,
+        "ultima_venda_em": "2026-05-09 16:28:33.09977+00",
+        "atualizado_em": "2026-05-09 16:28:33.09977+00"
+      },
+      {
+        "id": "6f1c7391-8002-4867-a55f-8cbaf971ff50",
+        "produto_id": "3432c874-0167-4025-9320-870ed1c95899",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-30 21:09:50.355585+00"
+      },
+      {
+        "id": "e24706b8-c394-491e-898c-b022460543f6",
+        "produto_id": "22a50b38-fb3c-4563-a9fd-fae99bb10bd1",
+        "quantidade": 14,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-18 21:15:33.512351+00"
+      },
+      {
+        "id": "6029b1a8-98f0-4b6d-a746-10ce923a3a40",
+        "produto_id": "2071e205-930c-4948-bc2a-539c173552c3",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-18 21:23:14.412359+00"
+      },
+      {
+        "id": "e33ebaa5-f1f9-46b9-9893-8e670c2884ed",
+        "produto_id": "72ace549-cfe1-47b0-a835-7393ee2d972b",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:31:04.381421+00"
+      },
+      {
+        "id": "574c75c2-6caf-4724-ba0c-a3b803659407",
+        "produto_id": "3a17983c-2ed4-4621-9d26-e296fd7d3d96",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-18 21:20:18.994995+00"
+      },
+      {
+        "id": "b7f5de3f-870a-4ae7-94a0-7c1f4c76d38a",
+        "produto_id": "2eeb5593-94f2-4bf4-b665-34d87049f842",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:07:47.48881+00"
+      },
+      {
+        "id": "10d4870a-21ac-44f3-9c0b-56a01e2f39e2",
+        "produto_id": "7c6591ca-2ee7-4dec-a23b-c786faddef95",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:12:37.866926+00"
+      },
+      {
+        "id": "20ca28b6-01dc-4d06-b446-0f9347c5da68",
+        "produto_id": "0cbb4df2-8759-4490-be3f-804ee511d2f1",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:22:18.764449+00"
+      },
+      {
+        "id": "82f6c496-1eeb-4bb4-be45-9478e80ddd41",
+        "produto_id": "310591a6-96c9-400f-b87a-04198e8d1f05",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:23:57.592968+00"
+      },
+      {
+        "id": "cb97228e-f2c7-4940-bec7-40242fa13804",
+        "produto_id": "86eb6faf-41a3-4343-bbe3-5e84782c9cbe",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:29:55.090677+00"
+      },
+      {
+        "id": "2e1463c0-144c-499d-bad8-7f3e8504f644",
+        "produto_id": "22859813-cd37-4c5b-b151-19d6d95e7c22",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:29:55.090677+00"
+      },
+      {
+        "id": "2ecdfd08-bb5d-46b6-aa1f-a49ca903da14",
+        "produto_id": "39418a3e-3535-4bef-b5d9-3ef7110884d7",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:34:38.023122+00"
+      },
+      {
+        "id": "d36f28d2-0a0d-4bab-9edd-8c914fd89d8f",
+        "produto_id": "9c71c504-3c7a-4ca7-b156-679aba2ad522",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-18 00:29:01.057048+00"
+      },
+      {
+        "id": "6f058737-e49e-4cc1-84e2-fca52e2b8461",
+        "produto_id": "a1702a39-ac90-45e4-b038-b77c64f9ad1d",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-18 00:29:01.057048+00"
+      },
+      {
+        "id": "fec56796-5dbb-4c73-a438-c381286d6f02",
+        "produto_id": "a87c7759-b552-4b48-9b5c-f1f195f852d5",
+        "quantidade": 8,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:27:29.595623+00"
+      },
+      {
+        "id": "341252fb-2db5-4c3d-bfd6-5c632659d620",
+        "produto_id": "188061fb-5fc0-4d72-a7b5-ca7f5ff0eb6d",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:28:09.452661+00"
+      },
+      {
+        "id": "c5db8b2f-40bf-4d1e-b198-ff38493ef57f",
+        "produto_id": "bad23b86-198c-4743-91fa-e3c8af9cbf9f",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:28:32.240384+00"
+      },
+      {
+        "id": "5c41831a-3127-4213-877f-bc50ca54ea2c",
+        "produto_id": "c4848a66-c85c-4470-8924-1957cd3572ab",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:33:00.548602+00"
+      },
+      {
+        "id": "eb512a63-05b6-4dc5-9580-97c196f36b10",
+        "produto_id": "fd65fa04-d3f0-4cd1-b016-d2a1ba3838d8",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:35:49.999568+00"
+      },
+      {
+        "id": "4c8cbe2a-d716-489f-9401-bde4f8951702",
+        "produto_id": "56c84773-3548-4628-9ee7-488c20acd017",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:36:47.098849+00"
+      },
+      {
+        "id": "8e6aebf0-cb7b-49bd-9f45-aec8d28ac1ac",
+        "produto_id": "2b72d65a-ec26-4e00-9538-145f1b944126",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:37:38.176035+00"
+      },
+      {
+        "id": "cd77dcf1-9044-4580-8b28-20008ba03fcb",
+        "produto_id": "d52e0f9c-2662-4c14-a431-55341d796f62",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-14 22:58:03.7345+00"
+      },
+      {
+        "id": "d27efc14-136b-48d3-9f60-4bea0f659de4",
+        "produto_id": "c50e1a90-436d-4c7e-873e-87473c2f47c8",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:45:10.291232+00"
+      },
+      {
+        "id": "7c6aa068-6508-4a73-b12e-ffbe48be97db",
+        "produto_id": "894ec19b-a553-47bf-ba99-465c223748c3",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:06:52.828+00"
+      },
+      {
+        "id": "847aa8a6-6468-47ed-8a8f-e3dc70c8f473",
+        "produto_id": "63cd9d11-b0bf-4697-9fd0-6e1aabc6edc2",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 18:00:44.411599+00"
+      },
+      {
+        "id": "8b116a51-0ec0-4107-a33f-30bc4eb41109",
+        "produto_id": "3cb8da5b-3f5d-4e38-837a-dfbb2ca797f2",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:09:19.842+00"
+      },
+      {
+        "id": "a71994bf-5054-4eb9-bf9d-829880ac7568",
+        "produto_id": "96093f72-bbe7-4800-a926-4c1f9c7b3385",
+        "quantidade": 8,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:10:41.146+00"
+      },
+      {
+        "id": "30dafb20-7e1f-4561-9ece-654e260ba01b",
+        "produto_id": "03d5623b-c14a-4560-b55d-95ec3271e576",
+        "quantidade": 3,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:11:08.336+00"
+      },
+      {
+        "id": "4c259837-3d4a-4e62-a789-cde6ce19493f",
+        "produto_id": "13322b72-effe-466b-a02a-e235826f7778",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:12:29.877+00"
+      },
+      {
+        "id": "0f94d1d1-a31e-481d-9af0-7403ffa0feae",
+        "produto_id": "e355ed77-3faa-4370-9be7-3c2197a96aca",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:14:21.91+00"
+      },
+      {
+        "id": "d8ed4b2b-3ed7-42ca-876f-aa19ebea2250",
+        "produto_id": "9e6e43e6-45ae-4644-ab2f-353101ce4aa8",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:15:20.47+00"
+      },
+      {
+        "id": "00dd18f1-a0bf-4ef5-945f-2807bf75dd7a",
+        "produto_id": "a3fa7bc7-8840-46f9-a69d-91f05e649c6d",
+        "quantidade": 11,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 21:44:13.144278+00"
+      },
+      {
+        "id": "5589121a-06ee-4026-a278-b6ddbdc4a2b5",
+        "produto_id": "016386c4-795c-45c1-b374-78481a7a46e1",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 21:47:34.04+00"
+      },
+      {
+        "id": "55be7d09-0897-4df9-8321-7f95235b33b6",
+        "produto_id": "e42f225a-1ebd-477a-b87e-31eb55bea2b4",
+        "quantidade": 4,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 21:49:35.387+00"
+      },
+      {
+        "id": "2c67ff99-a2a2-40b8-9a7f-fcdc802eb3df",
+        "produto_id": "5731f20d-2775-45c6-903a-73f35b4ab710",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 21:49:52.177+00"
+      },
+      {
+        "id": "0c9a92dd-dfc8-4565-b1de-0951390d45b6",
+        "produto_id": "7396acee-6f65-4ae4-bb55-c78a9f62e21c",
+        "quantidade": 9,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 21:51:00.17+00"
+      },
+      {
+        "id": "ec4f9d4e-0ef5-4269-8d34-ece7f1430aef",
+        "produto_id": "616b2e45-6b84-4213-8584-3546d67065fb",
+        "quantidade": 6,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 21:52:02.637+00"
+      },
+      {
+        "id": "b9d66f6d-c45c-42bf-acac-55fe029d68eb",
+        "produto_id": "f161a9fa-adc4-4585-a6c0-a3ef8c1ddada",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 21:56:59.085+00"
+      },
+      {
+        "id": "199f6329-e3ce-40de-ba62-9f6fd06261ea",
+        "produto_id": "dd498434-ba02-4727-a13c-e216d7563390",
+        "quantidade": 5,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-20 20:50:33.923397+00"
+      },
+      {
+        "id": "30a48599-1630-4256-9752-35afb3dc083a",
+        "produto_id": "ff2e1c9e-447a-49a3-a236-a388c0468893",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 23:34:27.697168+00"
+      },
+      {
+        "id": "9ec06332-4392-4ec5-bb21-e394a889644a",
+        "produto_id": "564fc0a3-ecfb-4d18-9db0-06ff16e60b5f",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-30 21:09:50.355585+00"
+      },
+      {
+        "id": "738cceef-95da-4ada-b548-92368178d74f",
+        "produto_id": "c5a24ebf-e6cf-4a4b-8519-2bfaeaf69c54",
+        "quantidade": 4,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-20 20:52:23.256591+00"
+      },
+      {
+        "id": "cc910a46-6d75-4c55-98a2-5e90592f8e95",
+        "produto_id": "77da209e-b626-4cb0-93ad-b041bd1bed95",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:15:37.428+00"
+      },
+      {
+        "id": "202b7bdc-dd97-44b1-88f3-86b32d5a79bc",
+        "produto_id": "6e97dbcf-cbc7-4c86-bc41-eebccc8220b2",
+        "quantidade": 3,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-14 15:22:41.855999+00"
+      },
+      {
+        "id": "6ebf1833-8cda-434a-a0b6-c22505c67d5d",
+        "produto_id": "de0e0903-00bc-4f45-920e-c302d23ccb8c",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 23:08:01.078442+00"
+      },
+      {
+        "id": "bb197eeb-9ff6-4cbd-a564-72554039467d",
+        "produto_id": "bc54a8cd-6f45-40b9-ade2-ee73620a9169",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-10 22:40:40.137409+00"
+      },
+      {
+        "id": "41d83131-0a38-40ab-85f1-f6a78256c041",
+        "produto_id": "c126b1f4-4e1b-43d1-93d5-e4d988ec8fc6",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-10 22:44:09.755276+00"
+      },
+      {
+        "id": "02da4bb7-fa07-4fc0-8102-48be2e043f7f",
+        "produto_id": "ed285204-b26c-44c1-a42c-5a8ccc8c1c05",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:26:00.023604+00"
+      },
+      {
+        "id": "29e08f3e-2dfd-48d5-a6e6-29643a85f4b9",
+        "produto_id": "706351d0-8e62-4735-a95f-8bf12049a0d2",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:16:17.369+00"
+      },
+      {
+        "id": "c7a664f1-237e-4125-99a2-9ef238a7b38f",
+        "produto_id": "5a279157-220e-4f09-92e5-92618ef5ebd0",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 22:50:48.010074+00"
+      },
+      {
+        "id": "3379f931-e311-4d0d-9027-f4653230665b",
+        "produto_id": "9ea992b5-f598-4c15-8661-c3fee9836b66",
+        "quantidade": 4,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-17 23:09:51.058367+00"
+      },
+      {
+        "id": "554b6831-f994-464c-92d2-758d934f57fa",
+        "produto_id": "2d1e184a-4a56-448a-8341-596bcc88e2dd",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:01:21.413+00"
+      },
+      {
+        "id": "237854c2-73eb-4747-8c93-6cb22a0d6f94",
+        "produto_id": "5cfbdec2-3b0d-48c2-91bd-f210746de8f2",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:01:31.946+00"
+      },
+      {
+        "id": "cc1a03f5-2d69-4a00-8cb4-43087c4554bd",
+        "produto_id": "6b4a4595-a69a-49cc-86c8-d47874747958",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-20 21:04:02.040812+00"
+      },
+      {
+        "id": "142d2403-3ef8-409e-a40c-89aac24b742d",
+        "produto_id": "98ee5669-cd00-44a5-a802-9f3705f7ab73",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:19:40.19+00"
+      },
+      {
+        "id": "b5eb3a3a-df5e-4cd6-9148-2dded5763ced",
+        "produto_id": "e8726cd6-6184-4f9f-99ea-4f709bd3bb96",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:46:25.362246+00"
+      },
+      {
+        "id": "ce8bc5fc-640d-47b3-bce6-5d22f04a817b",
+        "produto_id": "2bc301b5-8ee4-49a2-972d-235a1004f8ec",
+        "quantidade": 3,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:47:32.436671+00"
+      },
+      {
+        "id": "5a3c8287-211b-41d7-8ae1-414a3000171a",
+        "produto_id": "0dd9c237-311e-4e3a-b379-4eed9e80b6ea",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:48:07.564865+00"
+      },
+      {
+        "id": "d04e7dda-65df-42dc-965e-339312a7c7b5",
+        "produto_id": "bc068541-3815-457c-a0c2-cac1387a9785",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:53:00.32436+00"
+      },
+      {
+        "id": "89718b3f-1bba-4c96-93d3-e7eac45609bd",
+        "produto_id": "ac42c96f-bda5-4ecf-b704-81192f3ba004",
+        "quantidade": 5,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:53:24.918845+00"
+      },
+      {
+        "id": "a6853a68-a746-44d7-9659-599b0a53c01b",
+        "produto_id": "fa900352-cc8c-4731-ab78-2076fa3c0d1d",
+        "quantidade": 5,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 22:54:39.468759+00"
+      },
+      {
+        "id": "4e2053c0-fb95-47f0-a6e5-f5f18e007d35",
+        "produto_id": "9d24f061-b4da-43e4-917f-c5076a393a69",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-04-11 23:07:34.970854+00"
+      },
+      {
+        "id": "907accd7-0776-407b-97d9-9a2692503c5d",
+        "produto_id": "3bf4ec88-b9b9-4058-b8e4-2eb75f1cb72a",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:01:45.095+00"
+      },
+      {
+        "id": "7b870c48-4e46-414a-8760-eafe42adc279",
+        "produto_id": "872b2a5e-e8ce-4f91-98cb-77d5475367d7",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:04:42.067+00"
+      },
+      {
+        "id": "1e611845-3e8a-4383-a77a-5e41f38ce0d1",
+        "produto_id": "d6b13e84-0f4b-465a-abb8-77f26b61e21d",
+        "quantidade": 3,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 22:24:35.088+00"
+      },
+      {
+        "id": "a99f6f9f-1bfd-42c8-b1cc-73005bb29f8e",
+        "produto_id": "1d500f27-7875-4ac2-8d6d-3395cd655109",
+        "quantidade": 2,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 23:05:25.9569+00"
+      },
+      {
+        "id": "488bd8c0-5bd3-4f3b-b0c2-ec5eb9780e9c",
+        "produto_id": "67137bec-c450-47da-bb83-35baba27481a",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-02 23:05:25.9569+00"
+      },
+      {
+        "id": "3caeba88-a34f-4e3a-9b32-1ab00ef5b292",
+        "produto_id": "4c314d3a-e84a-40f4-9326-a5574301ddda",
+        "quantidade": 0,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-05 21:50:18.577679+00"
+      },
+      {
+        "id": "2ece5ff8-0ed9-48b4-8916-da4259f28671",
+        "produto_id": "cc7df1da-bfb7-4807-93ed-375c3d5c972f",
+        "quantidade": 9,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 13:20:48.365266+00"
+      },
+      {
+        "id": "6d3c4e29-a7d6-43cc-9dd6-d68691de86c7",
+        "produto_id": "d88f4d25-200f-493c-9085-29f50ff16b1d",
+        "quantidade": 1,
+        "ultima_venda_em": null,
+        "atualizado_em": "2026-05-08 23:27:54.978443+00"
+      },
+      {
+        "id": "83543d49-882d-4b47-a154-005fe0694b5e",
+        "produto_id": "ea80bafa-9560-4b4f-b5e4-e4a07d62879f",
+        "quantidade": 0,
+        "ultima_venda_em": "2026-05-09 15:04:46.091429+00",
+        "atualizado_em": "2026-05-09 15:04:46.091429+00"
+      },
+      {
+        "id": "3d366a90-5ce0-456b-8e50-f51263dda2b2",
+        "produto_id": "a8a1baa7-b7e2-4183-8b4e-a5cb3b034b8f",
+        "quantidade": 4,
+        "ultima_venda_em": "2026-05-09 20:09:10.435709+00",
+        "atualizado_em": "2026-05-09 20:09:10.435709+00"
+      }
+    ],
+    "usuarios": [
+      {
+        "id": "8d115475-4af8-479b-9760-7ae48ddf42e7",
+        "email": "socio@hggrifes.com",
+        "nome": "Admin Sócio",
+        "role": "socio",
+        "ativo": true
+      },
+      {
+        "id": "beb9a234-fe6b-4aeb-8382-a23b1ecd7610",
+        "email": "camilly@hggrifes.com",
+        "nome": "Camilly",
+        "role": "funcionario",
+        "ativo": true
+      },
+      {
+        "id": "a3f6478e-8c9d-4d67-8b74-a23085413d25",
+        "email": "ciara@hggrifes.com",
+        "nome": "Ciara",
+        "role": "funcionario",
+        "ativo": true
+      },
+      {
+        "id": "d508d49c-899f-464e-83a3-163c92ed64b3",
+        "email": "func1@hggrifes.com",
+        "nome": "Funcionário Teste",
+        "role": "funcionario",
+        "ativo": false
+      }
+    ],
     "audit_log": {
-      "message": "Unauthorized"
+      "message": "Failed to run sql query: ERROR:  42P01: relation \"public.audit_delete_log\" does not exist\nLINE 1: SELECT * FROM public.audit_delete_log ORDER BY deletado_em DESC LIMIT 5000\n                      ^\n"
     }
   }
 }
