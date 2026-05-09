@@ -1,0 +1,32 @@
+{
+  "data": "2026-05-09",
+  "tabelas": {
+    "vendas": {
+      "message": "Unauthorized"
+    },
+    "clientes": {
+      "message": "Unauthorized"
+    },
+    "movimentacao_caixa": {
+      "message": "Unauthorized"
+    },
+    "itens_venda": {
+      "message": "Unauthorized"
+    },
+    "comissoes": {
+      "message": "Unauthorized"
+    },
+    "produtos": {
+      "message": "Unauthorized"
+    },
+    "estoque": {
+      "message": "Unauthorized"
+    },
+    "usuarios": {
+      "message": "Unauthorized"
+    },
+    "audit_log": {
+      "message": "Unauthorized"
+    }
+  }
+}
