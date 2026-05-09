@@ -1,5 +1,5 @@
-RESULTADO: 0 vendas no banco agora.
+RESULTADO: 16 vendas no banco agora.
 Nenhum backup encontrado antes de 06/05/2026 — dados irrecuperáveis via API.
-HTTP 401
+HTTP 200
 Resposta completa da API de backups:
-{"message":"Unauthorized"}
+{"region":"us-west-2","pitr_enabled":false,"walg_enabled":true,"backups":[],"physical_backup_data":{}}
