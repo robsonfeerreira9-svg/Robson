@@ -1,2 +1,2 @@
-HTTP: 400
-{"message":"Failed to run sql query: ERROR:  42601: syntax error at or near \"NOT\"\nLINE 1461: CREATE POLICY IF NOT EXISTS \"socio_select_audit\" ON public.audit_delete_log\n                            ^\n"}
+HTTP: 201
+[{"email":"socio@hggrifes.com","role":"socio","ativo":true},{"email":"camilly@hggrifes.com","role":"funcionario","ativo":true},{"email":"ciara@hggrifes.com","role":"funcionario","ativo":true},{"email":"func1@hggrifes.com","role":"funcionario","ativo":false}]
