@@ -411,116 +411,6 @@
         "pago": false
       },
       {
-        "id": "89f2dfc3-9877-4278-9243-37d8e29f249b",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #0466ace0-e588-4f61-ba63-e5aeb42ead87",
-        "valor": "297.60",
-        "referencia_venda_id": "0466ace0-e588-4f61-ba63-e5aeb42ead87",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "f0663d7d-9ee6-4267-b3e3-498b71ca68b3",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #cc3b8cfd-d3df-4581-a8f6-aa3783185721",
-        "valor": "241.80",
-        "referencia_venda_id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "fd818b38-0944-48b4-a79c-08debab3dd95",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #a1d22c82-28e7-45f0-be18-43b4e9d16c12",
-        "valor": "220.00",
-        "referencia_venda_id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "5f376ec6-3000-4fcd-8f24-ac691280f8ac",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
-        "valor": "181.35",
-        "referencia_venda_id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "60e7c3fe-0290-4ff1-8208-2ce4eb0a3aa9",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #e5d3b242-ebe4-4043-98ce-56cb08436363",
-        "valor": "380.00",
-        "referencia_venda_id": "e5d3b242-ebe4-4043-98ce-56cb08436363",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "235a03a2-af6f-4d27-a348-0951d06fef4a",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #aec6ba8b-9ec4-41a1-bae3-97195495011a",
-        "valor": "390.00",
-        "referencia_venda_id": "aec6ba8b-9ec4-41a1-bae3-97195495011a",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "1a348957-1eea-4fc4-9e17-7a5d2f1017cf",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #721675f5-4344-4822-9064-45e30a8b97d7",
-        "valor": "325.50",
-        "referencia_venda_id": "721675f5-4344-4822-9064-45e30a8b97d7",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "91db1de7-5077-4bee-926c-fa3ac936efff",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
-        "valor": "540.00",
-        "referencia_venda_id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "2249c0d3-82ee-430b-ad4a-b0a4a388f03c",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #ab0f318a-df23-4db6-952e-6cd58b710ccc",
-        "valor": "385.95",
-        "referencia_venda_id": "ab0f318a-df23-4db6-952e-6cd58b710ccc",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
-        "id": "6973a7f3-5031-4d35-9219-5c9beebe2f72",
-        "tipo": "entrada",
-        "categoria": "venda",
-        "descricao": "Venda #69c61a07-b70f-4aa2-945b-88e8d73253e1",
-        "valor": "241.80",
-        "referencia_venda_id": "69c61a07-b70f-4aa2-945b-88e8d73253e1",
-        "criado_em": "2026-05-06 00:37:17.799922+00",
-        "vence_em": null,
-        "pago": true
-      },
-      {
         "id": "573efb57-d566-40f1-a2cd-b4da70b09fb0",
         "tipo": "saida",
         "categoria": "compra_estoque",
@@ -2546,8 +2436,197 @@
         "ativo": false
       }
     ],
-    "audit_log": {
-      "message": "Failed to run sql query: ERROR:  42P01: relation \"public.audit_delete_log\" does not exist\nLINE 1: SELECT * FROM public.audit_delete_log ORDER BY deletado_em DESC LIMIT 5000\n                      ^\n"
-    }
+    "audit_log": [
+      {
+        "id": "8e013359-7bd3-4062-9341-2f0582110022",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "f0663d7d-9ee6-4267-b3e3-498b71ca68b3",
+        "dados": {
+          "id": "f0663d7d-9ee6-4267-b3e3-498b71ca68b3",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 241.8,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #cc3b8cfd-d3df-4581-a8f6-aa3783185721",
+          "referencia_venda_id": "cc3b8cfd-d3df-4581-a8f6-aa3783185721"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "f6cb9060-e81c-4a43-945d-20ac613b14e7",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "89f2dfc3-9877-4278-9243-37d8e29f249b",
+        "dados": {
+          "id": "89f2dfc3-9877-4278-9243-37d8e29f249b",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 297.6,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #0466ace0-e588-4f61-ba63-e5aeb42ead87",
+          "referencia_venda_id": "0466ace0-e588-4f61-ba63-e5aeb42ead87"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "34433c4e-ce1b-4922-9f9d-3468907b61f8",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "fd818b38-0944-48b4-a79c-08debab3dd95",
+        "dados": {
+          "id": "fd818b38-0944-48b4-a79c-08debab3dd95",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 220,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #a1d22c82-28e7-45f0-be18-43b4e9d16c12",
+          "referencia_venda_id": "a1d22c82-28e7-45f0-be18-43b4e9d16c12"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "46435d05-d90a-4df1-8bc5-cde352ded241",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "5f376ec6-3000-4fcd-8f24-ac691280f8ac",
+        "dados": {
+          "id": "5f376ec6-3000-4fcd-8f24-ac691280f8ac",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 181.35,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #5d3939f8-5fa5-444b-9f6e-feb6b39ace65",
+          "referencia_venda_id": "5d3939f8-5fa5-444b-9f6e-feb6b39ace65"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "c01d6384-6930-4420-ac6e-baf563481144",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "60e7c3fe-0290-4ff1-8208-2ce4eb0a3aa9",
+        "dados": {
+          "id": "60e7c3fe-0290-4ff1-8208-2ce4eb0a3aa9",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 380,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #e5d3b242-ebe4-4043-98ce-56cb08436363",
+          "referencia_venda_id": "e5d3b242-ebe4-4043-98ce-56cb08436363"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "5c6f6c90-29a7-4031-8009-729f12dbad79",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "235a03a2-af6f-4d27-a348-0951d06fef4a",
+        "dados": {
+          "id": "235a03a2-af6f-4d27-a348-0951d06fef4a",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 390,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #aec6ba8b-9ec4-41a1-bae3-97195495011a",
+          "referencia_venda_id": "aec6ba8b-9ec4-41a1-bae3-97195495011a"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "7ad18e81-e9ca-4293-9a7c-eb1e1888e8b4",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "1a348957-1eea-4fc4-9e17-7a5d2f1017cf",
+        "dados": {
+          "id": "1a348957-1eea-4fc4-9e17-7a5d2f1017cf",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 325.5,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #721675f5-4344-4822-9064-45e30a8b97d7",
+          "referencia_venda_id": "721675f5-4344-4822-9064-45e30a8b97d7"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "ab7fd0df-9bda-4c16-83a1-14438bb1df83",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "91db1de7-5077-4bee-926c-fa3ac936efff",
+        "dados": {
+          "id": "91db1de7-5077-4bee-926c-fa3ac936efff",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 540,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #da29bbd5-4dc1-43b3-b440-d5c8157dd8b1",
+          "referencia_venda_id": "da29bbd5-4dc1-43b3-b440-d5c8157dd8b1"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "3834fc28-1a8b-4254-8509-c76c11ca4098",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "2249c0d3-82ee-430b-ad4a-b0a4a388f03c",
+        "dados": {
+          "id": "2249c0d3-82ee-430b-ad4a-b0a4a388f03c",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 385.95,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #ab0f318a-df23-4db6-952e-6cd58b710ccc",
+          "referencia_venda_id": "ab0f318a-df23-4db6-952e-6cd58b710ccc"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      },
+      {
+        "id": "4ddbfcb9-98e0-4085-a16a-9381fc8bd3fb",
+        "tabela": "movimentacao_caixa",
+        "registro_id": "6973a7f3-5031-4d35-9219-5c9beebe2f72",
+        "dados": {
+          "id": "6973a7f3-5031-4d35-9219-5c9beebe2f72",
+          "pago": true,
+          "tipo": "entrada",
+          "valor": 241.8,
+          "vence_em": null,
+          "categoria": "venda",
+          "criado_em": "2026-05-06T00:37:17.799922+00:00",
+          "descricao": "Venda #69c61a07-b70f-4aa2-945b-88e8d73253e1",
+          "referencia_venda_id": "69c61a07-b70f-4aa2-945b-88e8d73253e1"
+        },
+        "deletado_em": "2026-05-09 21:44:59.546472+00",
+        "usuario_id": null,
+        "operacao": "DELETE"
+      }
+    ]
   }
 }
