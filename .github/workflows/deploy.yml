@@ -102,6 +102,8 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_NRmTqJ7tXyq4AOLENBGyFHsa
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set +e  # Capturar erros manualmente
 
@@ -138,6 +140,12 @@ jobs:
             --token "$VERCEL_TOKEN" --force 2>/dev/null || true
           echo "${SUPABASE_ANON_KEY}" | npx vercel@latest env add \
             NEXT_PUBLIC_SUPABASE_ANON_KEY production \
+            --token "$VERCEL_TOKEN" --force 2>/dev/null || true
+          echo "${RESEND_API_KEY}" | npx vercel@latest env add \
+            RESEND_API_KEY production \
+            --token "$VERCEL_TOKEN" --force 2>/dev/null || true
+          echo "${SUPABASE_SERVICE_ROLE_KEY}" | npx vercel@latest env add \
+            SUPABASE_SERVICE_ROLE_KEY production \
             --token "$VERCEL_TOKEN" --force 2>/dev/null || true
 
           # Deploy

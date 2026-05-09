@@ -391,6 +391,9 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
         return
       }
 
+      // Dispara relatório por email em background (não bloqueia o fluxo)
+      fetch('/api/relatorio-venda', { method: 'POST' }).catch(() => {})
+
       // Guarda dados para o comprovante antes de limpar o estado
       const vendedorNome = vendedores.find((v) => v.id === vendedorId)?.nome ?? ''
       const campanhaNome = campanhaSelecionada?.nome ?? null
