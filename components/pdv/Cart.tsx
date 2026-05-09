@@ -337,6 +337,13 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
   // ── Finalizar venda ──────────────────────────────────────────────────────
   async function handleFinalizarVenda() {
     if (items.length === 0 || !vendedorId) return
+
+    // Impede finalizar se digitou no campo de busca mas não selecionou cliente da lista
+    if (!clienteId && !cliente.nome.trim() && buscaCliente.trim()) {
+      show('Selecione o cliente da lista ou preencha o nome no campo abaixo', 'error')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -421,6 +428,7 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
     setDescontoManualPct('')
     setDescontoTipo('percent')
     setDataVenda(new Date().toISOString().slice(0, 10))
+    setVendedorId('')
   }
 
   return (
@@ -853,6 +861,26 @@ export default function Cart({ items, onUpdateQty, onRemove, onClear, onVendaRea
             <span className="text-gold">{formatarMoeda(totalFinal)}</span>
           </div>
         </div>
+
+        {/* Resumo de cliente selecionado — confirmação visual antes de finalizar */}
+        {clienteId && cliente.nome && (
+          <div className="flex items-center justify-between bg-gold/10 border border-gold/30 rounded-lg px-3 py-2 text-xs">
+            <span className="text-[#888888]">Cliente confirmado</span>
+            <span className="text-gold font-bold">{cliente.nome}</span>
+          </div>
+        )}
+        {!clienteId && cliente.nome.trim() && (
+          <div className="flex items-center justify-between bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-3 py-2 text-xs">
+            <span className="text-[#888888]">Novo cliente</span>
+            <span className="text-[#F0F0F0] font-semibold">{cliente.nome.trim()}</span>
+          </div>
+        )}
+        {!clienteId && !cliente.nome.trim() && buscaCliente.trim() && (
+          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-xs text-red-400">
+            <span>⚠</span>
+            <span>Selecione o cliente da lista ou preencha o nome abaixo</span>
+          </div>
+        )}
 
         <Button
           variant="primary"
