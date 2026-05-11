@@ -2,6 +2,9 @@ name: Limpar Produtos Sem Foto e Zerados
 
 on:
   workflow_dispatch:
+  push:
+    branches: [claude/setup-rls-tables-QA4Za]
+    paths: ['.github/workflows/limpar-produtos-sem-foto.yml']
 
 env:
   SUPABASE_REF: eaovtnotwfzuxgtqpkay
