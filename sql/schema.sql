@@ -624,13 +624,7 @@ BEGIN
   SELECT t.nome, t.tam::tamanho_produto, t.canal::canal_produto,
          t.custo::NUMERIC, t.markup::NUMERIC, t.preco::NUMERIC
   FROM (VALUES
-    ('Camiseta Basic Oversize Preta',  'M',     'ambos',  45.00, 166.67, 120.00),
-    ('Camiseta Basic Oversize Branca', 'P',     'ambos',  45.00, 166.67, 120.00),
-    ('Camiseta Basic Oversize Cinza',  'G',     'ambos',  45.00, 166.67, 120.00),
-    ('Camiseta Basic Oversize Preta',  'G',     'ambos',  45.00, 166.67, 120.00),
-    ('Camiseta Gola Alta Preta',       'M',     'ambos',  55.00, 172.73, 150.00),
-    ('Camiseta Estampada HG Logo',     'M',     'fisico', 60.00, 183.33, 170.00),
-    ('Camiseta Estampada HG Logo',     'G',     'fisico', 60.00, 183.33, 170.00),
+    -- Produtos removidos a pedido (12/05/2026): Basic Oversize P/G/M, Estampada HG G/M, Gola Alta Preta M
     ('Camiseta Polo Preta',            'M',     'ambos',  70.00, 171.43, 190.00),
     ('Camiseta Polo Branca',           'G',     'ambos',  70.00, 171.43, 190.00),
     ('Camiseta Manga Longa Preta',     'M',     'ambos',  65.00, 169.23, 175.00),
@@ -682,13 +676,7 @@ BEGIN
   SELECT p.id, dados.qty::INTEGER
   FROM public.produtos p
   JOIN (VALUES
-    ('Camiseta Basic Oversize Preta',  'M',      8),
-    ('Camiseta Basic Oversize Branca', 'P',      6),
-    ('Camiseta Basic Oversize Cinza',  'G',      5),
-    ('Camiseta Basic Oversize Preta',  'G',      7),
-    ('Camiseta Gola Alta Preta',       'M',      4),
-    ('Camiseta Estampada HG Logo',     'M',      6),
-    ('Camiseta Estampada HG Logo',     'G',      5),
+    -- Estoque removido junto com produtos (12/05/2026)
     ('Camiseta Polo Preta',            'M',      4),
     ('Camiseta Polo Branca',           'G',      3),
     ('Camiseta Manga Longa Preta',     'M',      5),
