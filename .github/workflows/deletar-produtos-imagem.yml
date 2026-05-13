@@ -5,12 +5,71 @@ on:
     branches: [claude/setup-rls-tables-QA4Za]
     paths: ['.github/workflows/deletar-produtos-imagem.yml']
 
+env:
+  SUPABASE_REF: eaovtnotwfzuxgtqpkay
+
 jobs:
   deletar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deletar produtos zerados da imagem
+
+      - name: Deletar 7 produtos zerados da imagem
         env:
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python3 scripts/deletar-produtos-imagem.py
+          SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+        run: |
+          SQL="
+          DO \$\$
+          DECLARE
+            ids UUID[];
+          BEGIN
+            SELECT ARRAY_AGG(p.id) INTO ids
+            FROM public.produtos p
+            LEFT JOIN public.estoque e ON e.produto_id = p.id
+            WHERE (
+              (p.nome = 'Camiseta Basic Oversize Branca' AND p.tamanho::TEXT = 'P') OR
+              (p.nome = 'Camiseta Basic Oversize Cinza'  AND p.tamanho::TEXT = 'G') OR
+              (p.nome = 'Camiseta Basic Oversize Preta'  AND p.tamanho::TEXT = 'M') OR
+              (p.nome = 'Camiseta Basic Oversize Preta'  AND p.tamanho::TEXT = 'G') OR
+              (p.nome = 'Camiseta Estampada HG Logo'     AND p.tamanho::TEXT = 'G') OR
+              (p.nome = 'Camiseta Estampada HG Logo'     AND p.tamanho::TEXT = 'M') OR
+              (p.nome = 'Camiseta Gola Alta Preta'       AND p.tamanho::TEXT = 'M')
+            )
+            AND COALESCE(e.quantidade, 0) = 0
+            AND NOT EXISTS (
+              SELECT 1 FROM public.itens_venda iv WHERE iv.produto_id = p.id
+            );
+
+            IF ids IS NULL OR array_length(ids, 1) = 0 THEN
+              RAISE NOTICE 'Nenhum produto encontrado para apagar.';
+              RETURN;
+            END IF;
+
+            DELETE FROM public.estoque  WHERE produto_id = ANY(ids);
+            DELETE FROM public.produtos WHERE id         = ANY(ids);
+
+            RAISE NOTICE '% produto(s) apagado(s).', array_length(ids, 1);
+          END \$\$;
+          "
+
+          python3 -c "import json; print(json.dumps({'query': '''$SQL'''}))" > /tmp/query.json
+
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -X POST \
+            "https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query" \
+            -H "Authorization: Bearer ${SUPABASE_PAT}" \
+            -H "Content-Type: application/json" \
+            --data @/tmp/query.json \
+            --max-time 60)
+
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS:")
+          echo "HTTP: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ] 2>/dev/null; then
+            echo "✅ Produtos apagados com sucesso!"
+          else
+            echo "❌ Erro! HTTP $HTTP_CODE"
+            exit 1
+          fi
