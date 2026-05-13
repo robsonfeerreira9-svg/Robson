@@ -1,11 +1,12 @@
 """
-Apaga exatamente os 7 produtos listados pelo usuário (imagem 12/05/2026).
-Segurança: só apaga se quantidade = 0 e sem histórico de vendas.
+Apaga exatamente os 7 produtos da imagem (12/05/2026).
+Usa service role key via REST API — não precisa de SUPABASE_PAT.
+Só apaga se quantidade = 0 e sem histórico de vendas.
 """
 import os, json, urllib.request, urllib.error
 
-SUPABASE_REF = os.environ.get('SUPABASE_REF', 'eaovtnotwfzuxgtqpkay')
-SUPABASE_PAT = os.environ['SUPABASE_PAT']
+SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://eaovtnotwfzuxgtqpkay.supabase.co')
+SERVICE_KEY  = os.environ['SUPABASE_SERVICE_ROLE_KEY']
 
 ALVOS = [
     ('Camiseta Basic Oversize Branca', 'P'),
@@ -17,67 +18,76 @@ ALVOS = [
     ('Camiseta Gola Alta Preta',       'M'),
 ]
 
-def sql(query):
-    url = f'https://api.supabase.com/v1/projects/{SUPABASE_REF}/database/query'
-    payload = json.dumps({'query': query}).encode()
-    req = urllib.request.Request(url, data=payload, method='POST', headers={
-        'Authorization': f'Bearer {SUPABASE_PAT}',
-        'Content-Type': 'application/json',
-    })
+HEADERS = {
+    'apikey': SERVICE_KEY,
+    'Authorization': f'Bearer {SERVICE_KEY}',
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation',
+}
+
+def req(method, path, data=None, params=None):
+    url = f'{SUPABASE_URL}/rest/v1/{path}'
+    if params:
+        url += '?' + '&'.join(f'{k}={v}' for k, v in params.items())
+    body = json.dumps(data).encode() if data else None
+    r = urllib.request.Request(url, data=body, method=method, headers=HEADERS)
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read()), resp.status
+        with urllib.request.urlopen(r, timeout=30) as resp:
+            return json.loads(resp.read() or b'[]'), resp.status
     except urllib.error.HTTPError as e:
         body = e.read().decode()
-        print(f'HTTP {e.code}: {body}')
+        print(f'  HTTP {e.code}: {body}')
         raise
 
-# Montar condição WHERE para os alvos
-conditions = " OR ".join(
-    f"(p.nome = '{n}' AND p.tamanho::TEXT = '{t}')"
-    for n, t in ALVOS
-)
+apagados = 0
+preservados = 0
 
-print('=== Verificando produtos alvo ===')
-rows, _ = sql(f"""
-SELECT p.id, p.nome, p.tamanho,
-       COALESCE(e.quantidade, 0) AS quantidade,
-       EXISTS(SELECT 1 FROM public.itens_venda iv WHERE iv.produto_id = p.id) AS tem_venda
-FROM public.produtos p
-LEFT JOIN public.estoque e ON e.produto_id = p.id
-WHERE {conditions}
-ORDER BY p.nome, p.tamanho
-""")
+for nome, tamanho in ALVOS:
+    nome_enc   = urllib.parse.quote(nome) if hasattr(urllib, 'parse') else nome.replace(' ', '%20')
+    try:
+        import urllib.parse
+        nome_enc = urllib.parse.quote(nome, safe='')
+    except Exception:
+        pass
 
-if not rows:
-    print('Nenhum produto encontrado. Talvez já tenham sido apagados.')
-    exit(0)
+    # 1. Buscar o produto
+    rows, _ = req('GET', 'produtos', params={
+        'select': 'id,nome,tamanho',
+        'nome':   f'eq.{nome}',
+        'tamanho': f'eq.{tamanho}',
+    })
+    if not rows:
+        print(f'  NÃO ENCONTRADO: {nome} {tamanho}')
+        continue
+    prod_id = rows[0]['id']
 
-ids_apagar = []
-for r in rows:
-    if r['tem_venda']:
-        print(f"  PRESERVADO (tem vendas): {r['nome']} {r['tamanho']} | qty={r['quantidade']}")
-    elif r['quantidade'] > 0:
-        print(f"  PRESERVADO (tem estoque): {r['nome']} {r['tamanho']} | qty={r['quantidade']}")
-    else:
-        print(f"  APAGAR: {r['nome']} {r['tamanho']} | qty={r['quantidade']}")
-        ids_apagar.append(r['id'])
+    # 2. Verificar estoque
+    est, _ = req('GET', 'estoque', params={
+        'produto_id': f'eq.{prod_id}',
+        'select': 'quantidade',
+    })
+    qty = est[0]['quantidade'] if est else 0
 
-if not ids_apagar:
-    print('\nNenhum produto para apagar (todos têm estoque ou histórico de vendas).')
-    exit(0)
+    # 3. Verificar histórico de vendas
+    vendas, _ = req('GET', 'itens_venda', params={
+        'produto_id': f'eq.{prod_id}',
+        'select': 'id',
+        'limit': '1',
+    })
 
-print(f'\nApagando {len(ids_apagar)} produto(s)...')
-ids_sql = "ARRAY['" + "','".join(ids_apagar) + "']::UUID[]"
+    if qty > 0:
+        print(f'  PRESERVADO (estoque={qty}): {nome} {tamanho}')
+        preservados += 1
+        continue
+    if vendas:
+        print(f'  PRESERVADO (tem vendas): {nome} {tamanho}')
+        preservados += 1
+        continue
 
-sql(f"""
-DO $$
-DECLARE ids UUID[] := {ids_sql};
-BEGIN
-  DELETE FROM public.estoque       WHERE produto_id = ANY(ids);
-  DELETE FROM public.produtos      WHERE id         = ANY(ids);
-  RAISE NOTICE '% produto(s) apagado(s).', array_length(ids, 1);
-END $$;
-""")
+    # 4. Apagar estoque e produto
+    req('DELETE', 'estoque',  params={'produto_id': f'eq.{prod_id}'})
+    req('DELETE', 'produtos', params={'id': f'eq.{prod_id}'})
+    print(f'  ✅ APAGADO: {nome} {tamanho}')
+    apagados += 1
 
-print(f'✅ {len(ids_apagar)} produto(s) apagado(s) com sucesso.')
+print(f'\nResumo: {apagados} apagado(s), {preservados} preservado(s).')
