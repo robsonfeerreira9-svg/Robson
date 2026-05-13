@@ -1,16 +1,2 @@
-PROJECT_ID=prj_nYWT5NJoSZVnutPDrAsoN7Tf0Dvo
-DEPLOY_EXIT=0
-Retrieving project…
-Deploying robsons-projects-4e5d04b5/hg-grifes-erp
-Uploading [--------------------] (0.0B/503B)
-Uploading [====================] (503.0B/503B)
-Inspect: https://vercel.com/robsons-projects-4e5d04b5/hg-grifes-erp/4zdTaqzUqHmPvnN1koopoCn9JrfP [3s]
-Production: https://hg-grifes-g9nysl10s-robsons-projects-4e5d04b5.vercel.app [3s]
-https://hg-grifes-g9nysl10s-robsons-projects-4e5d04b5.vercel.appBuilding...
-Building...
-Building: Running build in Washington, D.C., USA (East) – iad1
-Building: Build machine configuration: 2 cores, 8 GB
-Building: Retrieving list of deployment files...
-[2K[1A[2K[GProduction: https://hg-grifes-g9nysl10s-robsons-projects-4e5d04b5.vercel.app [1m]
-Completing...
-Aliased: https://hg-grifes-erp.vercel.app [1m]
+HTTP: 201
+[{"email":"socio@hggrifes.com","role":"socio","ativo":true},{"email":"camilly@hggrifes.com","role":"funcionario","ativo":true},{"email":"ciara@hggrifes.com","role":"funcionario","ativo":true},{"email":"func1@hggrifes.com","role":"funcionario","ativo":false}]
