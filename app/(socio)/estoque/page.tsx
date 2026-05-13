@@ -196,6 +196,19 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
             </Button>
             <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           </div>
+
+          <button
+            onClick={async () => {
+              if (!confirm(`Ocultar "${produto.nome}" do sistema?`)) return
+              const supabase = createClient()
+              await supabase.from('produtos').update({ ativo: false } as any).eq('id', produto.id)
+              onSave()
+              onClose()
+            }}
+            className="w-full text-xs text-red-400 hover:text-red-300 py-1.5 border border-red-500/20 rounded-md hover:bg-red-500/10 transition-colors"
+          >
+            Ocultar produto do sistema
+          </button>
         </div>
       </Card>
     </div>

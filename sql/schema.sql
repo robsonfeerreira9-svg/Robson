@@ -868,26 +868,13 @@ ALTER TABLE public.produtos ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFA
 
 DO $$
 BEGIN
-  UPDATE public.produtos SET ativo = false
-  WHERE (nome, tamanho::TEXT) IN (
-    ('Camiseta Basic Oversize Branca', 'P'),
-    ('Camiseta Basic Oversize Cinza',  'G'),
-    ('Camiseta Basic Oversize Preta',  'M'),
-    ('Camiseta Basic Oversize Preta',  'G'),
-    ('Camiseta Estampada HG Logo',     'M'),
-    ('Camiseta Estampada HG Logo',     'G'),
-    ('Camiseta Gola Alta Preta',       'M'),
-    ('Camiseta Manga Longa Preta',     'M'),
-    ('Camiseta Polo Branca',           'G'),
-    ('Camiseta Polo Preta',            'M'),
-    ('Hoodie HG Logo Preto',           'M'),
-    ('Hoodie HG Logo Cinza',           'G'),
-    ('Hoodie HG Logo Branco',          'P'),
-    ('Hoodie Corta-Vento Preta',       'M'),
-    ('Jaqueta Corta-vento Preta',      'M'),
-    ('Jaqueta Corta-vento Azul',       'G'),
-    ('Jaqueta Bomber Preta',           'M')
-  );
+  -- Inativar todos os produtos sem foto E sem estoque (qty=0 ou sem registro)
+  UPDATE public.produtos p SET ativo = false
+  WHERE (p.foto_url IS NULL OR p.foto_url = '')
+    AND COALESCE(
+      (SELECT e.quantidade FROM public.estoque e WHERE e.produto_id = p.id LIMIT 1),
+      0
+    ) = 0;
   RAISE NOTICE '% produto(s) ocultado(s) (ativo=false).', (SELECT COUNT(*) FROM public.produtos WHERE ativo = false);
 END $$;
 

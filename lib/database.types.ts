@@ -35,6 +35,7 @@ export interface Produto {
   preco_venda: number
   markup_percentual: number
   canal: CanalProduto
+  ativo: boolean
   criado_em: string
 }
 
