@@ -1,0 +1,19 @@
+name: Deletar Produtos da Imagem (12/05)
+
+on:
+  push:
+    branches: [claude/setup-rls-tables-QA4Za]
+    paths: ['.github/workflows/deletar-produtos-imagem.yml']
+
+env:
+  SUPABASE_REF: eaovtnotwfzuxgtqpkay
+
+jobs:
+  deletar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deletar produtos zerados da imagem
+        env:
+          SUPABASE_PAT: ${{ secrets.SUPABASE_PAT }}
+        run: python3 scripts/deletar-produtos-imagem.py
