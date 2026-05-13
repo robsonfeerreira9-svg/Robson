@@ -17,6 +17,7 @@ async function fetchEstoque(): Promise<ProdutoComEstoque[]> {
   const { data, error } = await supabase
     .from('produtos')
     .select('*, estoque(*)')
+    .eq('ativo', true)
     .order('nome')
   if (error) throw error
   return (data as ProdutoComEstoque[]) ?? []

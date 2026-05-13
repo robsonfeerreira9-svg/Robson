@@ -98,7 +98,7 @@ async function fetchAlertas() {
   const supabase = createClient()
   const limite30dias = new Date()
   limite30dias.setDate(limite30dias.getDate() - 30)
-  const { data: produtos } = await supabase.from('produtos').select('nome, tamanho, estoque(*)')
+  const { data: produtos } = await supabase.from('produtos').select('nome, tamanho, estoque(*)').eq('ativo', true)
   const critico = (produtos ?? []).filter((p) => ((p.estoque as {quantidade:number}[])?.[0]?.quantidade ?? 0) < 3)
   const parado  = (produtos ?? []).filter((p) => {
     const ultima = (p.estoque as {ultima_venda_em:string|null}[])?.[0]?.ultima_venda_em
@@ -173,7 +173,7 @@ async function fetchContasAPagar(): Promise<ContaPagar[]> {
 
 async function fetchInventarioStats() {
   const supabase = createClient()
-  const { data: produtos } = await supabase.from('produtos').select('custo, preco_venda, estoque(quantidade)')
+  const { data: produtos } = await supabase.from('produtos').select('custo, preco_venda, estoque(quantidade)').eq('ativo', true)
   let totalInvestido = 0, potencialRetorno = 0
   for (const p of produtos ?? []) {
     const qty = (p.estoque as {quantidade:number}[])?.[0]?.quantidade ?? 0

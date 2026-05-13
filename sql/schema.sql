@@ -625,9 +625,7 @@ BEGIN
          t.custo::NUMERIC, t.markup::NUMERIC, t.preco::NUMERIC
   FROM (VALUES
     -- Produtos removidos a pedido (12/05/2026): Basic Oversize P/G/M, Estampada HG G/M, Gola Alta Preta M
-    ('Camiseta Polo Preta',            'M',     'ambos',  70.00, 171.43, 190.00),
-    ('Camiseta Polo Branca',           'G',     'ambos',  70.00, 171.43, 190.00),
-    ('Camiseta Manga Longa Preta',     'M',     'ambos',  65.00, 169.23, 175.00),
+    -- Polo Preta M, Polo Branca G, Manga Longa M removidos (12/05/2026)
     ('Bermuda Tactel Preta',           'M',     'ambos',  50.00, 180.00, 140.00),
     ('Bermuda Tactel Cinza',           'G',     'ambos',  50.00, 180.00, 140.00),
     ('Bermuda Moletom Preta',          'M',     'ambos',  65.00, 161.54, 170.00),
@@ -643,18 +641,13 @@ BEGIN
     ('Moletom HG Branco',              'M',     'ambos', 120.00, 166.67, 320.00),
     ('Moletom Cropped Preto',          'P',     'ambos', 110.00, 163.64, 290.00),
     ('Moletom Cropped Bege',           'M',     'ambos', 110.00, 163.64, 290.00),
-    ('Hoodie HG Logo Preto',           'M',     'ambos', 130.00, 169.23, 350.00),
-    ('Hoodie HG Logo Cinza',           'G',     'ambos', 130.00, 169.23, 350.00),
-    ('Hoodie HG Logo Branco',          'P',     'ambos', 130.00, 169.23, 350.00),
-    ('Hoodie Corta-Vento Preta',       'M',     'fisico',100.00, 170.00, 270.00),
+    -- Hoodie HG Logo M/G/P e Corta-Vento M removidos (12/05/2026)
     ('Boné HG Preto',                  'UNICO', 'ambos',  35.00, 171.43,  95.00),
     ('Boné HG Bege',                   'UNICO', 'ambos',  35.00, 171.43,  95.00),
     ('Boné Trucker Preto',             'UNICO', 'ambos',  40.00, 175.00, 110.00),
     ('Boné Snapback Cinza',            'UNICO', 'fisico', 40.00, 175.00, 110.00),
     ('Boné 5 Panel Preto',             'UNICO', 'fisico', 38.00, 163.16, 100.00),
-    ('Jaqueta Corta-vento Preta',      'M',     'fisico',140.00, 171.43, 380.00),
-    ('Jaqueta Corta-vento Azul',       'G',     'fisico',140.00, 171.43, 380.00),
-    ('Jaqueta Bomber Preta',           'M',     'fisico',180.00, 166.67, 480.00),
+    -- Jaqueta Corta-vento Preta M, Azul G, Bomber Preta M removidas (12/05/2026)
     ('Jaqueta Jeans Preta',            'P',     'fisico',160.00, 168.75, 430.00),
     ('Regata Oversize Preta',          'M',     'ambos',  38.00, 163.16, 100.00),
     ('Regata Oversize Branca',         'M',     'ambos',  38.00, 163.16, 100.00),
@@ -678,8 +671,7 @@ BEGIN
   JOIN (VALUES
     -- Estoque removido junto com produtos (12/05/2026)
     ('Camiseta Polo Preta',            'M',      4),
-    ('Camiseta Polo Branca',           'G',      3),
-    ('Camiseta Manga Longa Preta',     'M',      5),
+    -- Polo Branca G e Manga Longa M removidos (12/05/2026)
     ('Bermuda Tactel Preta',           'M',      6),
     ('Bermuda Tactel Cinza',           'G',      5),
     ('Bermuda Moletom Preta',          'M',      4),
@@ -695,18 +687,13 @@ BEGIN
     ('Moletom HG Branco',              'M',      4),
     ('Moletom Cropped Preto',          'P',      3),
     ('Moletom Cropped Bege',           'M',      3),
-    ('Hoodie HG Logo Preto',           'M',      4),
-    ('Hoodie HG Logo Cinza',           'G',      3),
-    ('Hoodie HG Logo Branco',          'P',      3),
-    ('Hoodie Corta-Vento Preta',       'M',      4),
+    -- Hoodie HG Logo e Corta-Vento removidos (12/05/2026)
     ('Boné HG Preto',                  'UNICO',  8),
     ('Boné HG Bege',                   'UNICO',  7),
     ('Boné Trucker Preto',             'UNICO',  6),
     ('Boné Snapback Cinza',            'UNICO',  5),
     ('Boné 5 Panel Preto',             'UNICO',  5),
-    ('Jaqueta Corta-vento Preta',      'M',      3),
-    ('Jaqueta Corta-vento Azul',       'G',      3),
-    ('Jaqueta Bomber Preta',           'M',      2),
+    -- Jaquetas removidas (12/05/2026)
     ('Jaqueta Jeans Preta',            'P',      2),
     ('Regata Oversize Preta',          'M',      7),
     ('Regata Oversize Branca',         'M',      6),
@@ -876,7 +863,33 @@ END $$;
 -- STEP 19 e 20 removidos — eram scripts de limpeza one-shot que não devem rodar no deploy automático
 
 
--- STEP 18: REMOVIDO — apagava produtos sem foto a cada deploy (perigo!)
+-- STEP 18: Campo ativo em produtos + ocultar produtos sem foto/zerados
+ALTER TABLE public.produtos ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true;
+
+DO $$
+BEGIN
+  UPDATE public.produtos SET ativo = false
+  WHERE (nome, tamanho::TEXT) IN (
+    ('Camiseta Basic Oversize Branca', 'P'),
+    ('Camiseta Basic Oversize Cinza',  'G'),
+    ('Camiseta Basic Oversize Preta',  'M'),
+    ('Camiseta Basic Oversize Preta',  'G'),
+    ('Camiseta Estampada HG Logo',     'M'),
+    ('Camiseta Estampada HG Logo',     'G'),
+    ('Camiseta Gola Alta Preta',       'M'),
+    ('Camiseta Manga Longa Preta',     'M'),
+    ('Camiseta Polo Branca',           'G'),
+    ('Camiseta Polo Preta',            'M'),
+    ('Hoodie HG Logo Preto',           'M'),
+    ('Hoodie HG Logo Cinza',           'G'),
+    ('Hoodie HG Logo Branco',          'P'),
+    ('Hoodie Corta-Vento Preta',       'M'),
+    ('Jaqueta Corta-vento Preta',      'M'),
+    ('Jaqueta Corta-vento Azul',       'G'),
+    ('Jaqueta Bomber Preta',           'M')
+  );
+  RAISE NOTICE '% produto(s) ocultado(s) (ativo=false).', (SELECT COUNT(*) FROM public.produtos WHERE ativo = false);
+END $$;
 
 
 -- ─────────────────────────────────────────────────────
