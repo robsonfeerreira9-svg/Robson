@@ -1531,6 +1531,12 @@ CREATE TRIGGER trg_log_update_produtos
   FOR EACH ROW EXECUTE FUNCTION public.fn_log_update();
 
 -- ─────────────────────────────────────────────────────
+-- STEP 27a: Coluna fotos_urls para visualização 360° (array de URLs)
+-- ─────────────────────────────────────────────────────
+ALTER TABLE public.produtos
+  ADD COLUMN IF NOT EXISTS fotos_urls TEXT[] DEFAULT '{}';
+
+-- ─────────────────────────────────────────────────────
 -- STEP 27b: Centros de custo adicionais no enum categoria_movimentacao
 -- ─────────────────────────────────────────────────────
 DO $$

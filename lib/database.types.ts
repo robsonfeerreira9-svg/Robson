@@ -29,6 +29,7 @@ export interface Produto {
   id: string
   nome: string
   foto_url: string | null
+  fotos_urls: string[] | null
   tamanho: TamanhoProduto
   numero: string | null
   custo: number
