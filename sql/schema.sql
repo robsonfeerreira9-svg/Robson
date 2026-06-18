@@ -1636,3 +1636,41 @@ BEGIN
     END IF;
   END IF;
 END $$;
+
+-- ─────────────────────────────────────────────────────
+-- STEP 31: Corrigir datas das parcelas do aporte de R$4.000
+-- Parcela 1 = 15/06/2026 e já foi paga.
+-- Parcelas 2–10 seguem quinzenalmente a partir de 01/07/2026.
+-- Remove os registros antigos (datas erradas a partir de 01/07) e reinsertem.
+-- ─────────────────────────────────────────────────────
+DO $$
+BEGIN
+  -- Remove as 10 parcelas com datas erradas criadas pelo STEP 28
+  DELETE FROM public.movimentacao_caixa
+  WHERE tipo = 'saida'
+    AND categoria = 'capital_giro'
+    AND descricao LIKE 'Aporte de Capital — Parcela %/10'
+    AND vence_em BETWEEN '2026-07-01' AND '2026-11-15';
+
+  -- Insere somente se a versão corrigida ainda não existe
+  IF NOT EXISTS (
+    SELECT 1 FROM public.movimentacao_caixa
+    WHERE tipo = 'saida'
+      AND categoria = 'capital_giro'
+      AND descricao = 'Aporte de Capital — Parcela 1/10'
+      AND vence_em = '2026-06-15'
+  ) THEN
+    INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, vence_em, pago)
+    VALUES
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 1/10',  400.00, '2026-06-15', true),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 2/10',  402.00, '2026-07-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 3/10',  404.00, '2026-07-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 4/10',  406.00, '2026-08-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 5/10',  408.00, '2026-08-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 6/10',  410.00, '2026-09-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 7/10',  412.00, '2026-09-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 8/10',  414.00, '2026-10-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 9/10',  416.00, '2026-10-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 10/10', 418.00, '2026-11-01', false);
+  END IF;
+END $$;

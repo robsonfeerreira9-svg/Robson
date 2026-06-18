@@ -807,7 +807,8 @@ export default function FinanceiroPage() {
   const entradas = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria !== 'aporte').reduce((a, m) => a + Number(m.valor), 0)
   const saidas   = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   const pendente = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
-  const saldo    = entradas - saidas
+  // Saldo real = saldo anterior + entradas do período − saídas do período
+  const saldo    = saldoAnterior + entradas - saidas
 
   const backHref = isSocio ? '/dashboard' : '/pdv'
   const backLabel = isSocio ? '← Dashboard' : '← PDV'
@@ -887,11 +888,11 @@ export default function FinanceiroPage() {
               {pendente > 0 && <p className="text-[10px] text-[#F59E0B] mt-0.5">{formatarMoeda(pendente)} pendente</p>}
             </Card>
             <Card hover>
-              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo Real</p>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo Disponível</p>
               <p className={`text-xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
                 {formatarMoeda(saldo)}
               </p>
-              <p className="text-[10px] text-[#555555] mt-0.5">Vendas + outros − saídas</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Anterior + período − saídas</p>
             </Card>
           </div>
         )}
