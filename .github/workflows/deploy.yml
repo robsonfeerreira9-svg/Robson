@@ -104,6 +104,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REMOVE_BG_API_KEY: ${{ secrets.REMOVE_BG_API_KEY }}
         run: |
           set +e  # Capturar erros manualmente
 
@@ -147,6 +148,11 @@ jobs:
           echo "${SUPABASE_SERVICE_ROLE_KEY}" | npx vercel@latest env add \
             SUPABASE_SERVICE_ROLE_KEY production \
             --token "$VERCEL_TOKEN" --force 2>/dev/null || true
+          if [ -n "${REMOVE_BG_API_KEY}" ]; then
+            echo "${REMOVE_BG_API_KEY}" | npx vercel@latest env add \
+              REMOVE_BG_API_KEY production \
+              --token "$VERCEL_TOKEN" --force 2>/dev/null || true
+          fi
 
           # Deploy
           echo "=== Vercel Deploy ==="
