@@ -3,7 +3,6 @@
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -398,9 +397,10 @@ function EstoquePageInner() {
                       {/* Linha cabeçalho do grupo */}
                       <tr key={`grp-${nome}`} className="border-b border-[#2A2A2A] bg-[#141414]">
                         <td className="px-4 py-3">
-                          <div className="relative w-10 h-10 bg-[#0D0D0D] rounded overflow-hidden">
+                          <div className="w-10 h-10 bg-[#0D0D0D] rounded overflow-hidden flex items-center justify-center flex-shrink-0">
                             {foto ? (
-                              <Image src={foto} alt={nome} fill className="object-cover" sizes="40px" />
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={foto} alt={nome} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-[#2A2A2A]">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16" /></svg>
@@ -482,9 +482,10 @@ function EstoquePageInner() {
                       }`}
                     >
                       <td className="px-4 py-3">
-                        <div className="relative w-10 h-10 bg-[#0D0D0D] rounded overflow-hidden">
+                        <div className="w-10 h-10 bg-[#0D0D0D] rounded overflow-hidden flex items-center justify-center flex-shrink-0">
                           {produto.foto_url ? (
-                            <Image src={produto.foto_url} alt={produto.nome} fill className="object-cover" sizes="40px" />
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={produto.foto_url} alt={produto.nome} className="w-full h-full object-cover" loading="lazy" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-[#2A2A2A]">
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

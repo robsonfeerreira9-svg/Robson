@@ -392,6 +392,9 @@ export default function DashboardPage() {
   const { data: contasAPagar = [] } = useSWR('contas-a-pagar-dash', fetchContasAPagar, { refreshInterval: 30000 })
 
   // ── Dados do gráfico mesclados ─────────────────────────────────────────────
+  const diasNoMesAtual = new Date(periodoA.ano, periodoA.mes, 0).getDate()
+  const ticksDiasMes = ['01', '07', '14', '21', String(diasNoMesAtual).padStart(2, '0')]
+
   const chartData = modo === 'mensal'
     ? graficoMesA.map((p, i) => ({
         label: p.label,
@@ -596,7 +599,8 @@ export default function DashboardPage() {
                 dataKey="label"
                 tick={{ fill: '#888888', fontSize: 10 }}
                 tickLine={false} axisLine={false}
-                interval={modo === 'mensal' ? 4 : 0}
+                ticks={modo === 'mensal' ? ticksDiasMes : undefined}
+                interval={modo === 'mensal' ? 0 : 0}
               />
               <YAxis
                 yAxisId="receita"

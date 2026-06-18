@@ -266,6 +266,91 @@ function AporteModal({ onClose, onSave }: { onClose: () => void; onSave: () => v
   )
 }
 
+// ── Modal de Boleto Bancário ──────────────────────────────────────────────────
+function BoletoModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
+  const [fornecedor, setFornecedor] = useState('')
+  const [valor, setValor] = useState('')
+  const [vencimento, setVencimento] = useState(hoje())
+  const [obs, setObs] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
+
+  async function handleSalvar() {
+    if (!fornecedor.trim()) { setErro('Informe o nome do fornecedor.'); return }
+    const valorNum = parseFloat(valor)
+    if (isNaN(valorNum) || valorNum <= 0) { setErro('Informe um valor válido.'); return }
+    if (!vencimento) { setErro('Data de vencimento obrigatória para boleto.'); return }
+
+    setLoading(true)
+    const supabase = createClient()
+    const descricao = obs.trim()
+      ? `${fornecedor.trim()} — Boleto — ${obs.trim()}`
+      : `${fornecedor.trim()} — Boleto`
+
+    const { error } = await supabase.from('movimentacao_caixa').insert({
+      tipo: 'saida' as const,
+      categoria: 'compra_estoque' as CategoriaMovimentacao,
+      descricao,
+      valor: valorNum,
+      vence_em: vencimento,
+      pago: false,
+    })
+    setLoading(false)
+    if (error) { setErro(error.message); return }
+    onSave(); onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="bg-[#141414] border border-[#2A2A2A] rounded-xl w-full max-w-sm shadow-2xl">
+        <div className="p-5">
+          <h3 className="font-bold text-[#F0F0F0] mb-1">Lançar Boleto de Fornecedor</h3>
+          <p className="text-xs text-[#888888] mb-4">Registra a conta como pendente. Clique "Pagar" quando efetuar o pagamento.</p>
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="text-xs text-[#888888] font-medium block mb-1">Fornecedor *</label>
+              <input type="text" value={fornecedor} onChange={(e) => setFornecedor(e.target.value)}
+                placeholder="Ex: Atacado MF, Fornecedor XYZ..."
+                className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Valor (R$) *</label>
+                <input type="number" min="0" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)}
+                  placeholder="0,00"
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Vencimento *</label>
+                <input type="date" value={vencimento} onChange={(e) => setVencimento(e.target.value)}
+                  style={{ colorScheme: 'dark' }}
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-[#888888] font-medium block mb-1">Observação (opcional)</label>
+              <input type="text" value={obs} onChange={(e) => setObs(e.target.value)}
+                placeholder="Ex: NF 1234, Coleção verão..."
+                className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+            </div>
+            <p className="text-[10px] text-[#F59E0B]">⚠️ Aparecerá em "Contas a Pagar" até você marcar como pago.</p>
+            {erro && <p className="text-xs text-red-400">{erro}</p>}
+            <div className="flex gap-2 pt-1">
+              <button onClick={handleSalvar} disabled={loading}
+                className="flex-1 py-2.5 rounded-lg bg-[#F59E0B] text-[#0D0D0D] text-sm font-bold hover:bg-[#D97706] transition-colors disabled:opacity-50">
+                {loading ? 'Salvando...' : 'Lançar Boleto'}
+              </button>
+              <button onClick={onClose} className="px-4 py-2.5 rounded-lg border border-[#2A2A2A] text-[#888888] text-sm hover:text-[#F0F0F0] transition-colors">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Helpers de contas recorrentes ─────────────────────────────────────────────
 const MAX_REPETICOES: Record<string, number> = { mensal: 24, quinzenal: 52, semanal: 104 }
 
@@ -683,6 +768,7 @@ export default function FinanceiroPage() {
   const [dataFim,    setDataFim]    = useState(hoje)
   const [showModal, setShowModal] = useState<'entrada' | 'saida' | null>(null)
   const [showAporteModal, setShowAporteModal] = useState(false)
+  const [showBoletoModal, setShowBoletoModal] = useState(false)
   const [pagandoInlineId, setPagandoInlineId] = useState<string | null>(null)
   const [editingMov, setEditingMov] = useState<Movimentacao | null>(null)
 
@@ -754,6 +840,12 @@ export default function FinanceiroPage() {
                 Aporte
               </button>
             )}
+            <button
+              onClick={() => setShowBoletoModal(true)}
+              className="px-3 py-2 rounded-lg bg-[#F59E0B] text-[#0D0D0D] text-sm font-bold hover:bg-[#D97706] transition-colors"
+            >
+              Boleto
+            </button>
             {isSocio && (
               <Button variant="primary" onClick={() => setShowModal('entrada')}>+ Entrada</Button>
             )}
@@ -1005,6 +1097,9 @@ export default function FinanceiroPage() {
       )}
       {showAporteModal && (
         <AporteModal onClose={() => setShowAporteModal(false)} onSave={handleSaved} />
+      )}
+      {showBoletoModal && (
+        <BoletoModal onClose={() => setShowBoletoModal(false)} onSave={handleSaved} />
       )}
     </div>
   )

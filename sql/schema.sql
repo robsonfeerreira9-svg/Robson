@@ -1522,3 +1522,35 @@ DROP TRIGGER IF EXISTS trg_log_update_produtos ON public.produtos;
 CREATE TRIGGER trg_log_update_produtos
   BEFORE UPDATE ON public.produtos
   FOR EACH ROW EXECUTE FUNCTION public.fn_log_update();
+
+-- ─────────────────────────────────────────────────────
+-- STEP 28: Aporte de R$4.000 com parcelas quinzenais nos dias 01 e 15
+-- Idempotente: só insere se nenhum aporte deste valor e período existir
+-- ─────────────────────────────────────────────────────
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.movimentacao_caixa
+    WHERE categoria = 'aporte'
+      AND valor = 4000
+      AND criado_em >= '2026-06-01'
+  ) THEN
+    -- Entrada: registra o recebimento do aporte
+    INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, pago)
+    VALUES ('entrada', 'aporte', 'Aporte de Capital — R$4.000,00 em 10x quinzenais', 4000, true);
+
+    -- Saídas: 10 parcelas nos dias 01 e 15, base R$400 + R$2 de acréscimo por quinzena
+    INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, vence_em, pago)
+    VALUES
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 1/10', 400.00, '2026-07-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 2/10', 402.00, '2026-07-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 3/10', 404.00, '2026-08-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 4/10', 406.00, '2026-08-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 5/10', 408.00, '2026-09-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 6/10', 410.00, '2026-09-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 7/10', 412.00, '2026-10-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 8/10', 414.00, '2026-10-15', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 9/10', 416.00, '2026-11-01', false),
+      ('saida', 'capital_giro', 'Aporte de Capital — Parcela 10/10', 418.00, '2026-11-15', false);
+  END IF;
+END $$;

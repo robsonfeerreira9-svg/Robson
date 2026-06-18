@@ -151,7 +151,7 @@ function telefoneWpp(tel: string | null, msg: string) {
 }
 
 function msgAniversario(nome: string) {
-  return `Oi ${nome}! 🎂 A HG Grifes deseja um feliz aniversário! Como presente, preparamos um desconto especial para você. Passa na loja ou me chama aqui no WhatsApp para aproveitar! 🎁`
+  return `Parabéns ${nome}! 🎂 Hoje é seu aniversário e você ganhou 20% de desconto em qualquer peça da loja HG Grifes! 🎁 Válido somente hoje. Pode passar na loja ou nos chamar aqui no WhatsApp para aproveitar! 🛍️`
 }
 
 function badgeCliente(compras: number) {
