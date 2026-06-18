@@ -4,7 +4,7 @@ export type CanalProduto = 'fisico' | 'online' | 'ambos'
 export type CanalVenda = 'fisico' | 'whatsapp' | 'instagram'
 export type MetodoPagamento = 'pix' | 'credito' | 'debito' | 'dinheiro'
 export type TipoMovimentacao = 'entrada' | 'saida'
-export type CategoriaMovimentacao = 'venda' | 'compra_estoque' | 'custo_operacional' | 'outro' | 'aporte' | 'capital_giro'
+export type CategoriaMovimentacao = 'venda' | 'compra_estoque' | 'custo_operacional' | 'outro' | 'aporte' | 'capital_giro' | 'administrativo' | 'midia_marketing' | 'funcionarios'
 
 export interface Usuario {
   id: string

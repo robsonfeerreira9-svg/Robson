@@ -79,6 +79,9 @@ const CATEGORIAS_SAIDA: { value: CategoriaMovimentacao; label: string }[] = [
   { value: 'compra_estoque',    label: 'Compra de Estoque' },
   { value: 'custo_operacional', label: 'Custo Operacional' },
   { value: 'capital_giro',      label: 'Capital de Giro (Empréstimo)' },
+  { value: 'administrativo',    label: 'Administrativo' },
+  { value: 'midia_marketing',   label: 'Mídia / Marketing' },
+  { value: 'funcionarios',      label: 'Funcionários' },
   { value: 'outro',             label: 'Outro' },
 ]
 
@@ -92,12 +95,16 @@ const LABEL_CATEGORIA: Record<string, string> = {
   venda: 'Venda', compra_estoque: 'Compra Estoque',
   custo_operacional: 'Custo Operacional', outro: 'Outro',
   aporte: 'Aporte', capital_giro: 'Capital de Giro',
+  administrativo: 'Administrativo', midia_marketing: 'Mídia/Marketing',
+  funcionarios: 'Funcionários',
 }
 
 const COR_CATEGORIA: Record<string, string> = {
   venda: 'text-green-400', aporte: 'text-blue-400',
   capital_giro: 'text-orange-400', compra_estoque: 'text-yellow-400',
   custo_operacional: 'text-[#888888]', outro: 'text-[#888888]',
+  administrativo: 'text-purple-400', midia_marketing: 'text-pink-400',
+  funcionarios: 'text-cyan-400',
 }
 
 // ── Fetcher de saldo do mês anterior (para carryover) ────────────────────────

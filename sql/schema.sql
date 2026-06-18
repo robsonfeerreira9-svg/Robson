@@ -1531,6 +1531,25 @@ CREATE TRIGGER trg_log_update_produtos
   FOR EACH ROW EXECUTE FUNCTION public.fn_log_update();
 
 -- ─────────────────────────────────────────────────────
+-- STEP 27b: Centros de custo adicionais no enum categoria_movimentacao
+-- ─────────────────────────────────────────────────────
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'administrativo'
+    AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'categoria_movimentacao')) THEN
+    ALTER TYPE public.categoria_movimentacao ADD VALUE 'administrativo';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'midia_marketing'
+    AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'categoria_movimentacao')) THEN
+    ALTER TYPE public.categoria_movimentacao ADD VALUE 'midia_marketing';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'funcionarios'
+    AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'categoria_movimentacao')) THEN
+    ALTER TYPE public.categoria_movimentacao ADD VALUE 'funcionarios';
+  END IF;
+END $$;
+
+-- ─────────────────────────────────────────────────────
 -- STEP 28: Aporte de R$4.000 com parcelas quinzenais nos dias 01 e 15
 -- Idempotente: só insere se nenhum aporte deste valor e período existir
 -- ─────────────────────────────────────────────────────
@@ -1576,4 +1595,44 @@ BEGIN
     OR LOWER(descricao) LIKE '%consórcio%'
   )
   AND criado_em::date BETWEEN '2026-06-14' AND '2026-06-16';
+END $$;
+
+-- ─────────────────────────────────────────────────────
+-- STEP 30: Ajuste de saldo inicial para R$6.145,84
+-- Insere uma entrada de ajuste em 31/05/2026 apenas se ainda não existir.
+-- O valor inserido é a diferença entre R$6.145,84 e o saldo calculado
+-- (entradas pagas − saídas pagas, excluindo aportes) até 31/05/2026.
+-- ─────────────────────────────────────────────────────
+DO $$
+DECLARE
+  v_entradas   NUMERIC;
+  v_saidas     NUMERIC;
+  v_saldo_atual NUMERIC;
+  v_alvo        NUMERIC := 6145.84;
+  v_ajuste      NUMERIC;
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.movimentacao_caixa
+    WHERE descricao = 'Saldo Inicial de Caixa — Ajuste'
+      AND criado_em::date = '2026-05-31'
+  ) THEN
+    SELECT
+      COALESCE(SUM(CASE WHEN tipo = 'entrada' AND pago = true THEN valor ELSE 0 END), 0),
+      COALESCE(SUM(CASE WHEN tipo = 'saida'   AND pago = true THEN valor ELSE 0 END), 0)
+    INTO v_entradas, v_saidas
+    FROM public.movimentacao_caixa
+    WHERE categoria <> 'aporte'
+      AND criado_em < '2026-06-01';
+
+    v_saldo_atual := v_entradas - v_saidas;
+    v_ajuste := v_alvo - v_saldo_atual;
+
+    IF v_ajuste > 0 THEN
+      INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, pago, criado_em)
+      VALUES ('entrada', 'outro', 'Saldo Inicial de Caixa — Ajuste', v_ajuste, true, '2026-05-31T23:59:00');
+    ELSIF v_ajuste < 0 THEN
+      INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, pago, criado_em)
+      VALUES ('saida', 'outro', 'Saldo Inicial de Caixa — Ajuste', ABS(v_ajuste), true, '2026-05-31T23:59:00');
+    END IF;
+  END IF;
 END $$;
