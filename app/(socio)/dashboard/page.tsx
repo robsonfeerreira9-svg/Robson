@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import useSWR, { mutate as swrMutate } from 'swr'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
@@ -49,13 +49,25 @@ async function fetchGraficoMensal(p: PeriodoMes) {
     .gte('criado_em', inicio).lte('criado_em', fim)
 
   const diasNoMes = new Date(p.ano, p.mes, 0).getDate()
-  const mapa: Record<string, number> = {}
-  for (let d = 1; d <= diasNoMes; d++) mapa[String(d).padStart(2, '0')] = 0
+  const mapaReceita: Record<string, number> = {}
+  const mapaVolume:  Record<string, number> = {}
+  for (let d = 1; d <= diasNoMes; d++) {
+    const k = String(d).padStart(2, '0')
+    mapaReceita[k] = 0
+    mapaVolume[k]  = 0
+  }
   for (const v of vendas ?? []) {
     const k = String(new Date(v.criado_em).getDate()).padStart(2, '0')
-    if (k in mapa) mapa[k] += Number(v.total_final)
+    if (k in mapaReceita) {
+      mapaReceita[k] += Number(v.total_final)
+      mapaVolume[k]  += 1
+    }
   }
-  return Object.entries(mapa).map(([label, valor]) => ({ label, valor }))
+  return Object.keys(mapaReceita).map((label) => ({
+    label,
+    valor:  mapaReceita[label],
+    volume: mapaVolume[label],
+  }))
 }
 
 async function fetchGraficoAnual(ano: number) {
@@ -194,14 +206,16 @@ function labelMes(p: PeriodoMes) {
 
 // ── Tooltip customizado ───────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label }: {
-  active?: boolean; payload?: {value:number; name:string; color:string}[]; label?: string
+  active?: boolean; payload?: {value:number; name:string; color:string; dataKey:string}[]; label?: string
 }) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-3 py-2 text-xs shadow-xl">
-      <p className="text-[#888888] mb-1">{label}</p>
+      <p className="text-[#888888] mb-1">Dia {label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color }} className="font-bold">{p.name}: {formatarMoeda(p.value)}</p>
+        <p key={i} style={{ color: p.color }} className="font-bold">
+          {p.name}: {p.dataKey === 'volume' ? `${p.value} venda${p.value !== 1 ? 's' : ''}` : formatarMoeda(p.value)}
+        </p>
       ))}
     </div>
   )
@@ -383,6 +397,7 @@ export default function DashboardPage() {
         label: p.label,
         [labelMes(periodoA)]: p.valor,
         [labelMes(periodoB)]: graficoMesB[i]?.valor ?? 0,
+        volume: (p as { volume?: number }).volume ?? 0,
       }))
     : graficoAnoA.map((p, i) => ({
         label: p.label,
@@ -574,8 +589,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={260}>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
               <XAxis
                 dataKey="label"
@@ -584,28 +599,49 @@ export default function DashboardPage() {
                 interval={modo === 'mensal' ? 4 : 0}
               />
               <YAxis
+                yAxisId="receita"
                 tick={{ fill: '#888888', fontSize: 10 }}
                 tickLine={false} axisLine={false}
                 tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
                 width={46}
               />
+              {modo === 'mensal' && !comparar && (
+                <YAxis
+                  yAxisId="volume"
+                  orientation="right"
+                  tick={{ fill: '#4A9EFF', fontSize: 10 }}
+                  tickLine={false} axisLine={false}
+                  tickFormatter={(v) => `${v}v`}
+                  width={30}
+                  allowDecimals={false}
+                />
+              )}
               <Tooltip content={<CustomTooltip />} />
               <Legend
                 wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
                 formatter={(v) => <span style={{ color: '#888888' }}>{v}</span>}
               />
               <Line
-                type="monotone" dataKey={keyA} stroke="#F5C518" strokeWidth={2}
+                yAxisId="receita"
+                type="monotone" dataKey={keyA} name="Receita" stroke="#F5C518" strokeWidth={2}
                 dot={false} activeDot={{ r: 4, fill: '#F5C518', stroke: '#0D0D0D', strokeWidth: 2 }}
               />
+              {modo === 'mensal' && !comparar && (
+                <Bar
+                  yAxisId="volume"
+                  dataKey="volume" name="Vendas/dia"
+                  fill="#4A9EFF" opacity={0.25} radius={[2, 2, 0, 0]}
+                />
+              )}
               {comparar && (
                 <Line
-                  type="monotone" dataKey={keyB} stroke="#555555" strokeWidth={1.5}
+                  yAxisId="receita"
+                  type="monotone" dataKey={keyB} name={keyB} stroke="#555555" strokeWidth={1.5}
                   strokeDasharray="4 4" dot={false}
                   activeDot={{ r: 3, fill: '#555555', stroke: '#0D0D0D', strokeWidth: 2 }}
                 />
               )}
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </Card>
 

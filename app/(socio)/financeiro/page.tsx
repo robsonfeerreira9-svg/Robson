@@ -78,12 +78,193 @@ async function fetchVenceSemana(): Promise<Movimentacao[]> {
 const CATEGORIAS_SAIDA: { value: CategoriaMovimentacao; label: string }[] = [
   { value: 'compra_estoque',    label: 'Compra de Estoque' },
   { value: 'custo_operacional', label: 'Custo Operacional' },
+  { value: 'capital_giro',      label: 'Capital de Giro (Empréstimo)' },
   { value: 'outro',             label: 'Outro' },
 ]
 
 const CATEGORIAS_ENTRADA: { value: CategoriaMovimentacao; label: string }[] = [
-  { value: 'outro', label: 'Aporte / Outros' },
+  { value: 'venda',  label: 'Receita de Venda' },
+  { value: 'aporte', label: 'Aporte de Capital' },
+  { value: 'outro',  label: 'Outro' },
 ]
+
+const LABEL_CATEGORIA: Record<string, string> = {
+  venda: 'Venda', compra_estoque: 'Compra Estoque',
+  custo_operacional: 'Custo Operacional', outro: 'Outro',
+  aporte: 'Aporte', capital_giro: 'Capital de Giro',
+}
+
+const COR_CATEGORIA: Record<string, string> = {
+  venda: 'text-green-400', aporte: 'text-blue-400',
+  capital_giro: 'text-orange-400', compra_estoque: 'text-yellow-400',
+  custo_operacional: 'text-[#888888]', outro: 'text-[#888888]',
+}
+
+// ── Fetcher de saldo do mês anterior (para carryover) ────────────────────────
+async function fetchSaldoMesAnterior(): Promise<number> {
+  const supabase = createClient()
+  const hoje = new Date()
+  const fimMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0, 23, 59, 59)
+  const inicioHistorico = new Date(2000, 0, 1).toISOString()
+
+  const { data } = await supabase
+    .from('movimentacao_caixa')
+    .select('tipo, valor, pago')
+    .lte('criado_em', fimMesAnterior.toISOString())
+    .not('categoria', 'eq', 'aporte')
+
+  if (!data) return 0
+  const entradas = data.filter((m) => m.pago && m.tipo === 'entrada').reduce((s, m) => s + Number(m.valor), 0)
+  const saidas   = data.filter((m) => m.pago && m.tipo === 'saida').reduce((s, m) => s + Number(m.valor), 0)
+  return entradas - saidas
+}
+
+// ── Modal de Aporte com projeção de parcelas ──────────────────────────────────
+function AporteModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
+  const [valor, setValor] = useState('')
+  const [descricao, setDescricao] = useState('Aporte de Capital')
+  const [parcelas, setParcelas] = useState(10)
+  const [frequencia, setFrequencia] = useState<'quinzenal' | 'mensal'>('quinzenal')
+  const [parcelaBase, setParcelaBase] = useState('')
+  const [acrescimo, setAcrescimo] = useState('2')
+  const [dataInicio, setDataInicio] = useState(hoje())
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
+
+  const baseNum  = parseFloat(parcelaBase) || 0
+  const acrescNum = parseFloat(acrescimo) || 0
+
+  const projecao = Array.from({ length: Math.min(parcelas, 20) }, (_, i) => ({
+    num: i + 1,
+    valor: baseNum + acrescNum * i,
+    data: (() => {
+      const d = new Date(dataInicio + 'T12:00:00')
+      if (frequencia === 'quinzenal') d.setDate(d.getDate() + 15 * i)
+      else d.setMonth(d.getMonth() + i)
+      return d.toLocaleDateString('pt-BR')
+    })(),
+  }))
+
+  const totalParcelas = projecao.reduce((s, p) => s + p.valor, 0)
+
+  async function handleSalvar() {
+    if (!valor || !parcelaBase) { setErro('Preencha valor total e valor da parcela.'); return }
+    const supabase = createClient()
+    setLoading(true)
+
+    const payloads = projecao.map((p, i) => {
+      const d = new Date(dataInicio + 'T12:00:00')
+      if (frequencia === 'quinzenal') d.setDate(d.getDate() + 15 * i)
+      else d.setMonth(d.getMonth() + i)
+      return {
+        tipo: 'saida' as const,
+        categoria: 'capital_giro' as CategoriaMovimentacao,
+        descricao: `${descricao} — Parcela ${p.num}/${parcelas}`,
+        valor: p.valor,
+        vence_em: d.toISOString().slice(0, 10),
+        pago: false,
+      }
+    })
+
+    const entradaAporte = {
+      tipo: 'entrada' as const,
+      categoria: 'aporte' as CategoriaMovimentacao,
+      descricao: `${descricao} — R$${parseFloat(valor).toFixed(2)} em ${parcelas}x`,
+      valor: parseFloat(valor),
+      pago: true,
+    }
+
+    const { error } = await supabase.from('movimentacao_caixa').insert([entradaAporte, ...payloads])
+    setLoading(false)
+    if (error) { setErro(error.message); return }
+    onSave(); onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="bg-[#141414] border border-[#2A2A2A] rounded-xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-5">
+          <h3 className="font-bold text-[#F0F0F0] mb-1">Registrar Aporte de Capital</h3>
+          <p className="text-xs text-[#888888] mb-4">Lança a entrada do aporte e projeta as parcelas de devolução como Capital de Giro.</p>
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Valor Total do Aporte (R$)</label>
+                <input type="number" min="0" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)}
+                  placeholder="4000,00" className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Descrição</label>
+                <input type="text" value={descricao} onChange={(e) => setDescricao(e.target.value)}
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Nº de Parcelas</label>
+                <input type="number" min="1" max="52" value={parcelas} onChange={(e) => setParcelas(Number(e.target.value))}
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Frequência</label>
+                <select value={frequencia} onChange={(e) => setFrequencia(e.target.value as 'quinzenal' | 'mensal')}
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold">
+                  <option value="quinzenal">Quinzenal</option>
+                  <option value="mensal">Mensal</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">1ª Data de Pagamento</label>
+                <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)}
+                  style={{ colorScheme: 'dark' }}
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Valor da 1ª Parcela (R$)</label>
+                <input type="number" min="0" step="0.01" value={parcelaBase} onChange={(e) => setParcelaBase(e.target.value)}
+                  placeholder="400,00" className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+              <div>
+                <label className="text-xs text-[#888888] font-medium block mb-1">Acréscimo por parcela (R$)</label>
+                <input type="number" min="0" step="0.01" value={acrescimo} onChange={(e) => setAcrescimo(e.target.value)}
+                  placeholder="2,00" className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold" />
+              </div>
+            </div>
+            {baseNum > 0 && (
+              <div className="border border-[#2A2A2A] rounded-lg p-3 bg-[#0D0D0D]">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-xs font-bold text-[#F0F0F0]">Projeção de Pagamentos</p>
+                  <p className="text-xs text-[#F59E0B] font-bold">Total: {formatarMoeda(totalParcelas)}</p>
+                </div>
+                <div className="flex flex-col gap-0.5 max-h-40 overflow-y-auto">
+                  {projecao.map((p) => (
+                    <div key={p.num} className="flex justify-between text-[10px] py-0.5 border-b border-[#1A1A1A]">
+                      <span className="text-[#888888]">Parcela {p.num}/{parcelas} — {p.data}</span>
+                      <span className="text-[#F0F0F0] font-semibold">{formatarMoeda(p.valor)}</span>
+                    </div>
+                  ))}
+                  {parcelas > 20 && <p className="text-[10px] text-[#555555] mt-1">... {parcelas - 20} parcelas adicionais</p>}
+                </div>
+              </div>
+            )}
+            {erro && <p className="text-xs text-red-400">{erro}</p>}
+            <div className="flex gap-2 pt-1">
+              <button onClick={handleSalvar} disabled={loading}
+                className="flex-1 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors disabled:opacity-50">
+                {loading ? 'Salvando...' : 'Lançar Aporte + Parcelas'}
+              </button>
+              <button onClick={onClose} className="px-4 py-2.5 rounded-lg border border-[#2A2A2A] text-[#888888] text-sm hover:text-[#F0F0F0] transition-colors">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── Helpers de contas recorrentes ─────────────────────────────────────────────
 const MAX_REPETICOES: Record<string, number> = { mensal: 24, quinzenal: 52, semanal: 104 }
@@ -501,6 +682,7 @@ export default function FinanceiroPage() {
   const [dataInicio, setDataInicio] = useState(primeiroDiaMes)
   const [dataFim,    setDataFim]    = useState(hoje)
   const [showModal, setShowModal] = useState<'entrada' | 'saida' | null>(null)
+  const [showAporteModal, setShowAporteModal] = useState(false)
   const [pagandoInlineId, setPagandoInlineId] = useState<string | null>(null)
   const [editingMov, setEditingMov] = useState<Movimentacao | null>(null)
 
@@ -524,16 +706,15 @@ export default function FinanceiroPage() {
     { refreshInterval: 30000 }
   )
 
-  // Saldo considera apenas entradas/saídas já pagas
+  const { data: saldoAnterior = 0 } = useSWR('saldo-mes-anterior', fetchSaldoMesAnterior, { refreshInterval: 300000 })
+
+  // Saldo considera apenas entradas/saídas já pagas — segregados por categoria
+  const receitaVendas = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'venda').reduce((a, m) => a + Number(m.valor), 0)
+  const aportes       = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'aporte').reduce((a, m) => a + Number(m.valor), 0)
   const entradas = movs.filter((m) => m.pago && m.tipo === 'entrada').reduce((a, m) => a + Number(m.valor), 0)
   const saidas   = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   const pendente = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   const saldo    = entradas - saidas
-
-  const labelCategoria: Record<string, string> = {
-    venda: 'Venda', compra_estoque: 'Compra Estoque',
-    custo_operacional: 'Custo Operacional', outro: 'Outro',
-  }
 
   const backHref = isSocio ? '/dashboard' : '/pdv'
   const backLabel = isSocio ? '← Dashboard' : '← PDV'
@@ -566,6 +747,14 @@ export default function FinanceiroPage() {
           </div>
           <div className="flex gap-2">
             {isSocio && (
+              <button
+                onClick={() => setShowAporteModal(true)}
+                className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors"
+              >
+                Aporte
+              </button>
+            )}
+            {isSocio && (
               <Button variant="primary" onClick={() => setShowModal('entrada')}>+ Entrada</Button>
             )}
             <Button variant="danger" onClick={() => setShowModal('saida')}>+ Saída</Button>
@@ -577,26 +766,33 @@ export default function FinanceiroPage() {
 
         {/* Cards resumo — somente sócio */}
         {isSocio && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
             <Card hover>
-              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Entradas</p>
-              <p className="text-2xl font-black text-success">{formatarMoeda(entradas)}</p>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo Anterior</p>
+              <p className={`text-xl font-black ${saldoAnterior >= 0 ? 'text-[#888888]' : 'text-danger'}`}>{formatarMoeda(saldoAnterior)}</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Acumulado meses ant.</p>
+            </Card>
+            <Card hover>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Receita Vendas</p>
+              <p className="text-xl font-black text-success">{formatarMoeda(receitaVendas)}</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Período selecionado</p>
+            </Card>
+            <Card hover>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Aportes</p>
+              <p className="text-xl font-black text-blue-400">{formatarMoeda(aportes)}</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Capital de terceiros</p>
             </Card>
             <Card hover>
               <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saídas Pagas</p>
-              <p className="text-2xl font-black text-danger">{formatarMoeda(saidas)}</p>
+              <p className="text-xl font-black text-danger">{formatarMoeda(saidas)}</p>
+              {pendente > 0 && <p className="text-[10px] text-[#F59E0B] mt-0.5">{formatarMoeda(pendente)} pendente</p>}
             </Card>
-            {pendente > 0 && (
-              <Card hover>
-                <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Pendente</p>
-                <p className="text-2xl font-black text-[#F59E0B]">{formatarMoeda(pendente)}</p>
-              </Card>
-            )}
             <Card hover>
               <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo Real</p>
-              <p className={`text-2xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
+              <p className={`text-xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
                 {formatarMoeda(saldo)}
               </p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Vendas + outros − saídas</p>
             </Card>
           </div>
         )}
@@ -720,8 +916,8 @@ export default function FinanceiroPage() {
                           {m.tipo === 'entrada' ? 'Entrada' : 'Saída'}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-[#888888] text-xs">
-                        {labelCategoria[m.categoria] ?? m.categoria}
+                      <td className={`px-4 py-3 text-xs ${COR_CATEGORIA[m.categoria] ?? 'text-[#888888]'}`}>
+                        {LABEL_CATEGORIA[m.categoria] ?? m.categoria}
                       </td>
                       <td className="px-4 py-3 text-[#F0F0F0] max-w-[200px] truncate">
                         {m.descricao ?? '—'}
@@ -806,6 +1002,9 @@ export default function FinanceiroPage() {
             mutate('vence-semana')
           }}
         />
+      )}
+      {showAporteModal && (
+        <AporteModal onClose={() => setShowAporteModal(false)} onSave={handleSaved} />
       )}
     </div>
   )

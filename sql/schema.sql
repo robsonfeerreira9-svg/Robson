@@ -878,6 +878,10 @@ BEGIN
   RAISE NOTICE '% produto(s) ocultado(s) (ativo=false).', (SELECT COUNT(*) FROM public.produtos WHERE ativo = false);
 END $$;
 
+-- STEP 18b: Novas categorias financeiras para segregação contábil
+ALTER TYPE categoria_movimentacao ADD VALUE IF NOT EXISTS 'aporte';
+ALTER TYPE categoria_movimentacao ADD VALUE IF NOT EXISTS 'capital_giro';
+
 
 -- ─────────────────────────────────────────────────────
 -- STEP 17: Atualiza realizar_venda com suporte a data retroativa

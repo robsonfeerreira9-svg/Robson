@@ -108,6 +108,28 @@ async function fetchAniversariantes(): Promise<Aniversariante[]> {
     .sort((a, b) => a.dia - b.dia)
 }
 
+interface ComportamentoStats {
+  canal: Record<string, number>
+  pagamento: Record<string, number>
+  totalVendas: number
+  ticketMedioGeral: number
+}
+
+async function fetchComportamento(): Promise<ComportamentoStats> {
+  const supabase = createClient()
+  const { data } = await supabase.from('vendas').select('canal_venda, metodo_pagamento, total_final')
+  const canal: Record<string, number> = {}
+  const pagamento: Record<string, number> = {}
+  let totalReceita = 0
+  for (const v of data ?? []) {
+    canal[v.canal_venda] = (canal[v.canal_venda] || 0) + 1
+    pagamento[v.metodo_pagamento] = (pagamento[v.metodo_pagamento] || 0) + 1
+    totalReceita += v.total_final
+  }
+  const totalVendas = data?.length ?? 0
+  return { canal, pagamento, totalVendas, ticketMedioGeral: totalVendas > 0 ? totalReceita / totalVendas : 0 }
+}
+
 async function fetchVendasCliente(clienteId: string): Promise<VendaResumo[]> {
   const supabase = createClient()
   const { data, error } = await supabase
@@ -267,103 +289,168 @@ const FAIXAS = [
 
 // ── Persona do cliente ────────────────────────────────────────────────────────
 function PersonaCliente({ clientes }: { clientes: ClienteStats[] }) {
+  const { data: comportamento } = useSWR('comportamento-vendas', fetchComportamento)
+
   const comIdade = clientes
     .map((c) => ({ ...c, idade: calcularIdade(c.data_nascimento) }))
     .filter((c): c is typeof c & { idade: number } => c.idade !== null)
 
-  if (comIdade.length === 0) {
-    return (
-      <Card>
-        <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">Persona do Cliente</h2>
-        <p className="text-xs text-[#888888]">
-          Nenhum cliente com data de nascimento cadastrada ainda.
-          Preencha as datas de nascimento no PDV para visualizar a persona.
-        </p>
-      </Card>
-    )
-  }
-
-  const idadeMedia = Math.round(comIdade.reduce((s, c) => s + c.idade, 0) / comIdade.length)
-  const idadeMinima = Math.min(...comIdade.map((c) => c.idade))
-  const idadeMaxima = Math.max(...comIdade.map((c) => c.idade))
+  const idadeMedia = comIdade.length > 0
+    ? Math.round(comIdade.reduce((s, c) => s + c.idade, 0) / comIdade.length)
+    : null
+  const idadeMinima = comIdade.length > 0 ? Math.min(...comIdade.map((c) => c.idade)) : null
+  const idadeMaxima = comIdade.length > 0 ? Math.max(...comIdade.map((c) => c.idade)) : null
 
   const distribuicao = FAIXAS.map((f) => {
     const count = comIdade.filter((c) => c.idade >= f.min && c.idade <= f.max).length
     return { ...f, count, pct: comIdade.length > 0 ? (count / comIdade.length) * 100 : 0 }
   })
 
-  const faixaDominante = distribuicao.reduce((a, b) => (b.count > a.count ? b : a))
+  const faixaDominante = distribuicao.length > 0 ? distribuicao.reduce((a, b) => (b.count > a.count ? b : a)) : null
 
-  // Perfil textual da persona
   let perfilIdade = ''
-  if (idadeMedia < 20) perfilIdade = 'Jovem (adolescente/jovem adulto)'
-  else if (idadeMedia < 28) perfilIdade = 'Jovem adulto (18–27 anos)'
-  else if (idadeMedia < 38) perfilIdade = 'Adulto jovem (28–37 anos)'
-  else if (idadeMedia < 48) perfilIdade = 'Adulto (38–47 anos)'
-  else perfilIdade = 'Adulto maduro (48+ anos)'
+  if (idadeMedia !== null) {
+    if (idadeMedia < 20) perfilIdade = 'Jovem (adolescente/jovem adulto)'
+    else if (idadeMedia < 28) perfilIdade = 'Jovem adulto (18–27 anos)'
+    else if (idadeMedia < 38) perfilIdade = 'Adulto jovem (28–37 anos)'
+    else if (idadeMedia < 48) perfilIdade = 'Adulto (38–47 anos)'
+    else perfilIdade = 'Adulto maduro (48+ anos)'
+  }
+
+  const CANAL_CORES: Record<string, string> = { fisico: 'bg-gold', whatsapp: 'bg-green-500', instagram: 'bg-purple-400' }
+  const PAGO_CORES: Record<string, string> = { pix: 'bg-blue-400', credito: 'bg-indigo-400', debito: 'bg-cyan-400', dinheiro: 'bg-emerald-400' }
+
+  function barrasComportamento(mapa: Record<string, number>, cores: Record<string, string>, labels: Record<string, string>) {
+    const total = Object.values(mapa).reduce((a, b) => a + b, 0)
+    if (total === 0) return null
+    return Object.entries(mapa)
+      .sort(([, a], [, b]) => b - a)
+      .map(([key, count]) => {
+        const pct = (count / total) * 100
+        return (
+          <div key={key}>
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-[#888888]">{labels[key] ?? key}</span>
+              <span className="text-[#555555]">{count} ({pct.toFixed(0)}%)</span>
+            </div>
+            <div className="h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-500 ${cores[key] ?? 'bg-[#3A3A3A]'}`} style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+        )
+      })
+  }
+
+  if (comIdade.length === 0 && !comportamento) {
+    return (
+      <Card>
+        <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-2">Persona do Cliente</h2>
+        <p className="text-xs text-[#888888]">
+          Nenhum cliente com data de nascimento cadastrada ainda. Preencha as datas de nascimento no PDV para visualizar a persona.
+        </p>
+      </Card>
+    )
+  }
 
   return (
     <Card>
       <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4 flex items-center gap-2">
         Persona do Cliente
-        <span className="text-xs text-[#888888] font-normal normal-case tracking-normal">
-          ({comIdade.length} de {clientes.length} com nascimento cadastrado)
-        </span>
+        {comIdade.length > 0 && (
+          <span className="text-xs text-[#888888] font-normal normal-case tracking-normal">
+            ({comIdade.length} de {clientes.length} com nascimento cadastrado)
+          </span>
+        )}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Lado esquerdo — números */}
+        {/* Lado esquerdo — idade */}
         <div className="flex flex-col gap-4">
-          {/* Idade média em destaque */}
-          <div className="bg-[#0D0D0D] rounded-xl p-4 flex items-center gap-4">
-            <div className="text-center">
-              <p className="text-5xl font-black text-gold leading-none">{idadeMedia}</p>
-              <p className="text-xs text-[#888888] mt-1 uppercase tracking-wide">anos</p>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[#F0F0F0]">Idade Média</p>
-              <p className="text-xs text-[#888888] mt-0.5">{perfilIdade}</p>
-              <p className="text-xs text-[#555555] mt-1">
-                Variação: {idadeMinima}–{idadeMaxima} anos
-              </p>
-            </div>
-          </div>
-
-          {/* Faixa dominante */}
-          <div className="bg-[#0D0D0D] rounded-xl p-4">
-            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Faixa mais comum</p>
-            <p className="text-xl font-black text-[#F0F0F0]">{faixaDominante.label} anos</p>
-            <p className="text-xs text-[#888888] mt-0.5">
-              {faixaDominante.count} cliente{faixaDominante.count !== 1 ? 's' : ''} — {faixaDominante.pct.toFixed(0)}% da base
-            </p>
-          </div>
-        </div>
-
-        {/* Lado direito — distribuição */}
-        <div>
-          <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-3">Distribuição por Faixa</p>
-          <div className="flex flex-col gap-2.5">
-            {distribuicao.map((f) => (
-              <div key={f.label}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className={f.label === faixaDominante.label ? 'font-bold text-gold' : 'text-[#888888]'}>
-                    {f.label} anos
-                  </span>
-                  <span className="text-[#555555]">
-                    {f.count > 0 ? `${f.count} (${f.pct.toFixed(0)}%)` : '—'}
-                  </span>
+          {idadeMedia !== null ? (
+            <>
+              <div className="bg-[#0D0D0D] rounded-xl p-4 flex items-center gap-4">
+                <div className="text-center">
+                  <p className="text-5xl font-black text-gold leading-none">{idadeMedia}</p>
+                  <p className="text-xs text-[#888888] mt-1 uppercase tracking-wide">anos</p>
                 </div>
-                <div className="h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      f.label === faixaDominante.label ? 'bg-gold' : 'bg-[#3A3A3A]'
-                    }`}
-                    style={{ width: `${f.pct}%` }}
-                  />
+                <div>
+                  <p className="text-sm font-bold text-[#F0F0F0]">Idade Média</p>
+                  <p className="text-xs text-[#888888] mt-0.5">{perfilIdade}</p>
+                  <p className="text-xs text-[#555555] mt-1">Variação: {idadeMinima}–{idadeMaxima} anos</p>
                 </div>
               </div>
-            ))}
-          </div>
+              {faixaDominante && (
+                <div className="bg-[#0D0D0D] rounded-xl p-4">
+                  <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Faixa mais comum</p>
+                  <p className="text-xl font-black text-[#F0F0F0]">{faixaDominante.label} anos</p>
+                  <p className="text-xs text-[#888888] mt-0.5">
+                    {faixaDominante.count} cliente{faixaDominante.count !== 1 ? 's' : ''} — {faixaDominante.pct.toFixed(0)}% da base
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="bg-[#0D0D0D] rounded-xl p-4">
+              <p className="text-xs text-[#888888]">Sem dados de nascimento. Preencha no PDV.</p>
+            </div>
+          )}
+
+          {/* Ticket médio geral */}
+          {comportamento && comportamento.totalVendas > 0 && (
+            <div className="bg-[#0D0D0D] rounded-xl p-4">
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Ticket Médio Geral</p>
+              <p className="text-2xl font-black text-gold">{formatarMoeda(comportamento.ticketMedioGeral)}</p>
+              <p className="text-xs text-[#555555] mt-0.5">{comportamento.totalVendas} vendas totais</p>
+            </div>
+          )}
+        </div>
+
+        {/* Lado direito — distribuição etária + canal + pagamento */}
+        <div className="flex flex-col gap-4">
+          {comIdade.length > 0 && (
+            <div>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-3">Distribuição por Faixa Etária</p>
+              <div className="flex flex-col gap-2.5">
+                {distribuicao.map((f) => (
+                  <div key={f.label}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className={faixaDominante && f.label === faixaDominante.label ? 'font-bold text-gold' : 'text-[#888888]'}>
+                        {f.label} anos
+                      </span>
+                      <span className="text-[#555555]">
+                        {f.count > 0 ? `${f.count} (${f.pct.toFixed(0)}%)` : '—'}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          faixaDominante && f.label === faixaDominante.label ? 'bg-gold' : 'bg-[#3A3A3A]'
+                        }`}
+                        style={{ width: `${f.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {comportamento && (
+            <>
+              <div>
+                <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-3">Canal de Vendas</p>
+                <div className="flex flex-col gap-2.5">
+                  {barrasComportamento(comportamento.canal, CANAL_CORES, CANAL_LABEL)}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-3">Método de Pagamento</p>
+                <div className="flex flex-col gap-2.5">
+                  {barrasComportamento(comportamento.pagamento, PAGO_CORES, PAGO_LABEL)}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </Card>
@@ -676,6 +763,7 @@ export default function ClientesPage() {
                     <th className="text-left pb-2 text-xs font-semibold text-[#888888] uppercase tracking-wide">Cliente</th>
                     <th className="text-center pb-2 text-xs font-semibold text-[#888888] uppercase tracking-wide">Compras</th>
                     <th className="text-right pb-2 text-xs font-semibold text-[#888888] uppercase tracking-wide">Total Gasto</th>
+                    <th className="text-right pb-2 text-xs font-semibold text-[#888888] uppercase tracking-wide">Ticket Médio</th>
                     <th className="text-left pb-2 text-xs font-semibold text-[#888888] uppercase tracking-wide">Última Compra</th>
                     <th className="text-center pb-2 text-xs font-semibold text-[#888888] uppercase tracking-wide">Perfil</th>
                     <th className="text-center pb-2 text-xs font-semibold text-[#888888] uppercase tracking-wide">WhatsApp</th>
@@ -695,6 +783,9 @@ export default function ClientesPage() {
                       </td>
                       <td className="py-3 text-center font-bold text-[#F0F0F0]">{c.total_compras}</td>
                       <td className="py-3 text-right font-bold text-gold">{formatarMoeda(c.total_gasto)}</td>
+                      <td className="py-3 text-right text-sm text-[#F0F0F0]">
+                        {c.total_compras > 0 ? formatarMoeda(c.total_gasto / c.total_compras) : '—'}
+                      </td>
                       <td className="py-3 text-xs text-[#888888]">
                         {c.ultima_compra ? new Date(c.ultima_compra).toLocaleDateString('pt-BR') : '—'}
                       </td>

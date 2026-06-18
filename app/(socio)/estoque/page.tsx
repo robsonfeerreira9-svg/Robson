@@ -223,6 +223,8 @@ function EstoquePageInner() {
   const [filtroTamanho, setFiltroTamanho] = useState<TamanhoProduto | 'todos'>('todos')
   const [filtroCanal, setFiltroCanal] = useState<CanalProduto | 'todos'>('todos')
   const [filtroAlerta, setFiltroAlerta] = useState(false)
+  const [mostrarZerados, setMostrarZerados] = useState(false)
+  const [modoGrade, setModoGrade] = useState(false)
   const { data: produtos = [], isLoading } = useSWR('estoque-socio', fetchEstoque, {
     refreshInterval: 60000,
   })
@@ -242,11 +244,20 @@ function EstoquePageInner() {
     const baixo = isEstoqueBaixo(qty)
     const parado = isProdutoParado(ultima)
 
+    if (!mostrarZerados && qty === 0) return false
     if (filtroTamanho !== 'todos' && p.tamanho !== filtroTamanho) return false
     if (filtroCanal !== 'todos' && p.canal !== filtroCanal) return false
     if (filtroAlerta && !baixo && !parado) return false
     return true
   })
+
+  // Grade de variações: agrupa por nome do produto
+  const gruposPorNome = produtosFiltrados.reduce<Record<string, typeof produtosFiltrados>>((acc, p) => {
+    if (!acc[p.nome]) acc[p.nome] = []
+    acc[p.nome].push(p)
+    return acc
+  }, {})
+  const gruposOrdenados = Object.entries(gruposPorNome).sort(([a], [b]) => a.localeCompare(b))
 
   const TAMANHOS = ['todos', 'PP', 'P', 'M', 'G', 'GG', 'UNICO'] as const
   const CANAIS = ['todos', 'fisico', 'online', 'ambos'] as const
@@ -309,6 +320,29 @@ function EstoquePageInner() {
             >
               Só alertas
             </button>
+            <button
+              onClick={() => setMostrarZerados((v) => !v)}
+              className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${
+                mostrarZerados
+                  ? 'bg-[#555555] text-white border-[#555555]'
+                  : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-[#555555]'
+              }`}
+            >
+              {mostrarZerados ? 'Ocultar zerados' : 'Mostrar zerados'}
+            </button>
+            <button
+              onClick={() => setModoGrade((v) => !v)}
+              className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${
+                modoGrade
+                  ? 'bg-gold text-[#0D0D0D] border-gold'
+                  : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-gold hover:text-gold'
+              }`}
+            >
+              {modoGrade ? 'Grade ▦' : 'Grade'}
+            </button>
+            <span className="text-xs text-[#555555] ml-auto self-center">
+              {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? 's' : ''}
+            </span>
           </div>
         </Card>
 
@@ -344,10 +378,83 @@ function EstoquePageInner() {
               ) : produtosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={11} className="text-center py-12 text-[#888888]">
-                    Nenhum produto encontrado
+                    {!mostrarZerados ? 'Nenhum produto com estoque. Ative "Mostrar zerados" para ver todos.' : 'Nenhum produto encontrado.'}
                   </td>
                 </tr>
+              ) : modoGrade ? (
+                // ── Modo Grade: agrupado por nome ──────────────────────────
+                gruposOrdenados.map(([nome, variantes]) => {
+                  const totalQty = variantes.reduce((s, v) => s + (v.estoque?.[0]?.quantidade ?? 0), 0)
+                  const foto = variantes.find((v) => v.foto_url)?.foto_url ?? null
+                  const preco = variantes[0]?.preco_venda ?? 0
+                  const custo = variantes[0]?.custo ?? 0
+                  const margem = custo > 0 ? (((preco - custo) / custo) * 100).toFixed(0) : '—'
+                  const temAlerta = variantes.some((v) => {
+                    const q = v.estoque?.[0]?.quantidade ?? 0
+                    return isEstoqueBaixo(q) || isProdutoParado(v.estoque?.[0]?.ultima_venda_em ?? null)
+                  })
+                  return (
+                    <>
+                      {/* Linha cabeçalho do grupo */}
+                      <tr key={`grp-${nome}`} className="border-b border-[#2A2A2A] bg-[#141414]">
+                        <td className="px-4 py-3">
+                          <div className="relative w-10 h-10 bg-[#0D0D0D] rounded overflow-hidden">
+                            {foto ? (
+                              <Image src={foto} alt={nome} fill className="object-cover" sizes="40px" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[#2A2A2A]">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16" /></svg>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-bold text-[#F0F0F0]" colSpan={2}>
+                          {nome}
+                          {temAlerta && <span className="ml-2 text-[10px] text-[#F59E0B]">⚠</span>}
+                        </td>
+                        <td className="px-4 py-3 text-[#888888] capitalize text-xs">{variantes[0]?.canal}</td>
+                        <td className="px-4 py-3 text-right font-black text-gold">{totalQty}</td>
+                        <td className="px-4 py-3 text-right text-[#888888] text-xs">{formatarMoeda(custo)}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-gold text-xs">{formatarMoeda(preco)}</td>
+                        <td className="px-4 py-3 text-right text-[#888888] text-xs">{margem}%</td>
+                        <td colSpan={2} className="px-4 py-3 text-xs text-[#555555]">{variantes.length} variação{variantes.length !== 1 ? 'ões' : ''}</td>
+                        <td className="px-4 py-3" />
+                      </tr>
+                      {/* Linhas de cada variação */}
+                      {variantes.map((produto) => {
+                        const est = produto.estoque?.[0]
+                        const qty = est?.quantidade ?? 0
+                        const ultima = est?.ultima_venda_em ?? null
+                        const baixo = isEstoqueBaixo(qty)
+                        const parado = isProdutoParado(ultima)
+                        return (
+                          <tr key={produto.id} className={`border-b border-[#1E1E1E] transition-colors ${baixo ? 'bg-red-500/5 hover:bg-red-500/10' : parado ? 'bg-yellow-500/5 hover:bg-yellow-500/10' : 'bg-[#111111] hover:bg-[#1A1A1A]'}`}>
+                            <td className="px-4 py-2 pl-8">
+                              <div className="w-1 h-4 bg-[#2A2A2A] rounded-full" />
+                            </td>
+                            <td className="px-4 py-2 text-[#888888] text-xs pl-2">— variação</td>
+                            <td className="px-4 py-2"><Badge variant="default">{produto.numero || produto.tamanho}</Badge></td>
+                            <td className="px-4 py-2 text-[#555555] text-xs capitalize">{produto.canal}</td>
+                            <td className={`px-4 py-2 text-right font-bold text-sm ${qty === 0 ? 'text-[#555555]' : qty < 3 ? 'text-red-400' : 'text-[#F0F0F0]'}`}>{qty}</td>
+                            <td colSpan={3} />
+                            <td className="px-4 py-2 text-[#555555] text-xs">{ultima ? new Date(ultima).toLocaleDateString('pt-BR') : 'Nunca'}</td>
+                            <td className="px-4 py-2">
+                              <div className="flex flex-col gap-1">
+                                {baixo && <Badge variant="danger">Baixo</Badge>}
+                                {parado && <Badge variant="warning">Parado</Badge>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-2 text-center">
+                              <button onClick={() => setEditarModal(produto)} className="text-xs text-gold hover:underline font-semibold">Editar</button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </>
+                  )
+                })
               ) : (
+                // ── Modo Lista: flat, igual ao anterior ────────────────────
                 produtosFiltrados.map((produto) => {
                   const est = produto.estoque?.[0]
                   const qty = est?.quantidade ?? 0
@@ -390,7 +497,7 @@ function EstoquePageInner() {
                       <td className="px-4 py-3 font-medium text-[#F0F0F0] max-w-[200px] truncate">{produto.nome}</td>
                       <td className="px-4 py-3"><Badge variant="default">{produto.numero || produto.tamanho}</Badge></td>
                       <td className="px-4 py-3 text-[#888888] capitalize">{produto.canal}</td>
-                      <td className="px-4 py-3 text-right font-bold text-[#F0F0F0]">{qty}</td>
+                      <td className={`px-4 py-3 text-right font-bold ${qty === 0 ? 'text-[#555555]' : qty < 3 ? 'text-red-400' : 'text-[#F0F0F0]'}`}>{qty}</td>
                       <td className="px-4 py-3 text-right text-[#888888]">{formatarMoeda(produto.custo)}</td>
                       <td className="px-4 py-3 text-right font-semibold text-gold">{formatarMoeda(produto.preco_venda)}</td>
                       <td className="px-4 py-3 text-right text-[#888888]">{margem}%</td>
