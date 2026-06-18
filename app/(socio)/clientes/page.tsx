@@ -151,7 +151,7 @@ function telefoneWpp(tel: string | null, msg: string) {
 }
 
 function msgAniversario(nome: string) {
-  return `Parabéns ${nome}! 🎂 Hoje é seu aniversário e você ganhou 20% de desconto em qualquer peça da loja HG Grifes! 🎁 Válido somente hoje. Pode passar na loja ou nos chamar aqui no WhatsApp para aproveitar! 🛍️`
+  return `Parabéns ${nome}! 🥳 Hoje é o seu dia especial e a nossa loja preparou um presente exclusivo para você! 🎉\n\n*Você ganhou 20% de DESCONTO* em qualquer peça da loja, válido exclusivamente para o dia de hoje! Não dá para perder essa chance de se mimar. 🎁\n\n👇 Estou enviando abaixo os modelos incríveis que acabaram de chegar no seu tamanho para você dar uma olhada:\n[Carregar fotos do estoque]`
 }
 
 function badgeCliente(compras: number) {
@@ -162,11 +162,21 @@ function badgeCliente(compras: number) {
 
 function calcularIdade(dataNasc: string | null): number | null {
   if (!dataNasc) return null
-  const nasc = new Date(dataNasc + 'T12:00:00')
+  // Suporta YYYY-MM-DD (ISO) e DD/MM/YYYY (brasileiro)
+  let nasc: Date
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataNasc)) {
+    const [d, m, y] = dataNasc.split('/')
+    nasc = new Date(`${y}-${m}-${d}T12:00:00`)
+  } else {
+    nasc = new Date(dataNasc + (dataNasc.includes('T') ? '' : 'T12:00:00'))
+  }
+  if (isNaN(nasc.getTime())) return null
   const hoje = new Date()
   let idade = hoje.getFullYear() - nasc.getFullYear()
   const m = hoje.getMonth() - nasc.getMonth()
   if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--
+  // Descarta idades fora do intervalo razoável (evita dados corrompidos)
+  if (idade < 5 || idade > 100) return null
   return idade
 }
 
@@ -195,6 +205,91 @@ function diasDesdeUltimaCompra(ultimaCompra: string | null): number | null {
 
 function msgReativacao(nome: string) {
   return `Oi ${nome}! Tudo bem? 💛 Sentimos sua falta aqui na HG Grifes! Passando pra avisar que chegaram novidades incríveis. Que tal dar uma olhadinha? 🛍️`
+}
+
+// ── Modelos de mensagem WPP ───────────────────────────────────────────────────
+const MSG_ANIVERSARIO_TEMPLATE = `Parabéns! 🥳 Hoje é o seu dia especial e a nossa loja preparou um presente exclusivo para você! 🎉
+
+*Você ganhou 20% de DESCONTO* em qualquer peça da loja, válido exclusivamente para o dia de hoje! Não dá para perder essa chance de se mimar. 🎁
+
+👇 Estou enviando abaixo os modelos incríveis que acabaram de chegar no seu tamanho para você dar uma olhada:
+[Carregar fotos do estoque]`
+
+const MSG_CAMPANHA_TENIS = `Olha, separei essa mensagem porque ela é extremamente especial para você! ⚠️ *A HG ENLOUQUECEU de vez!* ⚠️
+
+A partir de AGORA, *TODOS os tênis nacionais do nosso estoque estão saindo com 50% de DESCONTO!* Sim, metade do preço original! É a oportunidade perfeita para você garantir aquele modelo que estava namorando. 👟
+
+👇 Dá uma olhada nos modelos que separei para você e corre, porque o estoque vai zerar rápido:
+[Carregar fotos dos tênis em estoque]`
+
+function ModelosMensagem() {
+  const [copiado, setCopiado] = useState<string | null>(null)
+
+  async function copiar(key: string, texto: string) {
+    try {
+      await navigator.clipboard.writeText(texto)
+      setCopiado(key)
+      setTimeout(() => setCopiado(null), 2500)
+    } catch {
+      const el = document.createElement('textarea')
+      el.value = texto
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+      setCopiado(key)
+      setTimeout(() => setCopiado(null), 2500)
+    }
+  }
+
+  const modelos = [
+    {
+      key: 'aniversario',
+      titulo: '🎂 Aniversariantes do Dia',
+      subtitulo: 'Dispara para clientes que fazem aniversário hoje — inclui 20% OFF',
+      cor: 'border-gold/30 bg-gold/5',
+      corBotao: 'bg-gold text-[#0D0D0D] hover:bg-[#D4A800]',
+      texto: MSG_ANIVERSARIO_TEMPLATE,
+    },
+    {
+      key: 'tenis',
+      titulo: '👟 Campanha Tênis 50% OFF',
+      subtitulo: 'Queima de estoque — enviado para toda a base de clientes',
+      cor: 'border-green-500/30 bg-green-500/5',
+      corBotao: 'bg-green-600 text-white hover:bg-green-500',
+      texto: MSG_CAMPANHA_TENIS,
+    },
+  ]
+
+  return (
+    <Card>
+      <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-1 flex items-center gap-2">
+        📣 Modelos de Mensagem
+      </h2>
+      <p className="text-xs text-[#888888] mb-4">Copie e cole no WhatsApp — edite o nome e adicione as fotos antes de enviar.</p>
+      <div className="flex flex-col gap-4">
+        {modelos.map((m) => (
+          <div key={m.key} className={`border rounded-xl p-4 ${m.cor}`}>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="text-sm font-bold text-[#F0F0F0]">{m.titulo}</p>
+                <p className="text-xs text-[#888888] mt-0.5">{m.subtitulo}</p>
+              </div>
+              <button
+                onClick={() => copiar(m.key, m.texto)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${m.corBotao}`}
+              >
+                {copiado === m.key ? '✓ Copiado!' : 'Copiar'}
+              </button>
+            </div>
+            <pre className="text-[11px] text-[#888888] whitespace-pre-wrap leading-relaxed bg-[#0D0D0D] rounded-lg p-3 font-sans">
+              {m.texto}
+            </pre>
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
 }
 
 // ── Clientes inativos ─────────────────────────────────────────────────────────
@@ -721,6 +816,9 @@ export default function ClientesPage() {
 
         {/* Clientes inativos */}
         {!isLoading && <ClientesInativos clientes={clientes} />}
+
+        {/* Modelos de Mensagem WhatsApp */}
+        <ModelosMensagem />
 
         {/* Filtro + Ranking */}
         <Card>

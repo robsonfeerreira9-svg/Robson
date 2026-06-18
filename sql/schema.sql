@@ -288,11 +288,12 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-  v_venda_id    UUID;
-  v_cliente_id  UUID;
-  v_item        JSONB;
-  v_estoque_qty INTEGER;
-  v_comissao    NUMERIC;
+  v_venda_id        UUID;
+  v_cliente_id      UUID;
+  v_item            JSONB;
+  v_estoque_qty     INTEGER;
+  v_comissao        NUMERIC;
+  v_base_comissao   NUMERIC;
 BEGIN
   -- 1. Upsert cliente se CPF informado
   IF p_cliente_cpf IS NOT NULL AND trim(p_cliente_cpf) != '' THEN
@@ -358,8 +359,14 @@ BEGIN
 
   END LOOP;
 
-  -- 4. Calcular e inserir comissão (5% do total_final)
-  v_comissao := ROUND(p_total_final * 0.05, 2);
+  -- 4. Calcular e inserir comissão (5% do valor líquido após taxa de maquininha)
+  -- Crédito/débito: desconta 5,30% de taxa antes de calcular a comissão da vendedora
+  IF p_metodo_pagamento IN ('credito', 'debito') THEN
+    v_base_comissao := ROUND(p_total_final * (1 - 0.053), 2);
+  ELSE
+    v_base_comissao := p_total_final;
+  END IF;
+  v_comissao := ROUND(v_base_comissao * 0.05, 2);
   INSERT INTO public.comissoes (venda_id, vendedor_id, percentual, valor_comissao)
   VALUES (v_venda_id, p_vendedor_id, 5, v_comissao);
 
@@ -1553,4 +1560,20 @@ BEGIN
       ('saida', 'capital_giro', 'Aporte de Capital — Parcela 9/10', 416.00, '2026-11-01', false),
       ('saida', 'capital_giro', 'Aporte de Capital — Parcela 10/10', 418.00, '2026-11-15', false);
   END IF;
+END $$;
+
+-- ─────────────────────────────────────────────────────
+-- STEP 29: Remover lançamento duplicado "Consórcio" de 15/06/2026
+-- O valor correto já está lançado como "Capital de Giro"
+-- Este DO block é idempotente — se não existir, nada acontece
+-- ─────────────────────────────────────────────────────
+DO $$
+BEGIN
+  DELETE FROM public.movimentacao_caixa
+  WHERE (
+    LOWER(descricao) LIKE '%cons%rcio%'
+    OR LOWER(descricao) LIKE '%consorcio%'
+    OR LOWER(descricao) LIKE '%consórcio%'
+  )
+  AND criado_em::date BETWEEN '2026-06-14' AND '2026-06-16';
 END $$;

@@ -63,11 +63,13 @@ async function fetchGraficoMensal(p: PeriodoMes) {
       mapaVolume[k]  += 1
     }
   }
-  return Object.keys(mapaReceita).map((label) => ({
-    label,
-    valor:  mapaReceita[label],
-    volume: mapaVolume[label],
-  }))
+  return Object.keys(mapaReceita)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((label) => ({
+      label,
+      valor:  mapaReceita[label],
+      volume: mapaVolume[label],
+    }))
 }
 
 async function fetchGraficoAnual(ano: number) {

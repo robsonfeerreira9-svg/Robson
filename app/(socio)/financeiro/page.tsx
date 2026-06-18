@@ -794,10 +794,10 @@ export default function FinanceiroPage() {
 
   const { data: saldoAnterior = 0 } = useSWR('saldo-mes-anterior', fetchSaldoMesAnterior, { refreshInterval: 300000 })
 
-  // Saldo considera apenas entradas/saídas já pagas — segregados por categoria
   const receitaVendas = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'venda').reduce((a, m) => a + Number(m.valor), 0)
   const aportes       = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'aporte').reduce((a, m) => a + Number(m.valor), 0)
-  const entradas = movs.filter((m) => m.pago && m.tipo === 'entrada').reduce((a, m) => a + Number(m.valor), 0)
+  // entradas para o saldo real EXCLUI aportes — aporte é capital de terceiros, não fluxo operacional
+  const entradas = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria !== 'aporte').reduce((a, m) => a + Number(m.valor), 0)
   const saidas   = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   const pendente = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   const saldo    = entradas - saidas
