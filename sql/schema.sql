@@ -1680,3 +1680,15 @@ BEGIN
       ('saida', 'capital_giro', 'Aporte de Capital — Parcela 10/10', 418.00, '2026-11-01', false);
   END IF;
 END $$;
+
+-- ─────────────────────────────────────────────────────
+-- STEP 32: Remover parcelas pendentes do aporte (capital de giro)
+-- Qualquer parcela pago=false do aporte não representa dívida real no caixa —
+-- o saldo correto já está calibrado via STEP 30.
+-- Garante que nenhuma entrada falsa apareça em "Contas a Pagar".
+-- ─────────────────────────────────────────────────────
+DELETE FROM public.movimentacao_caixa
+WHERE tipo = 'saida'
+  AND categoria = 'capital_giro'
+  AND descricao LIKE 'Aporte de Capital — Parcela %'
+  AND pago = false;
