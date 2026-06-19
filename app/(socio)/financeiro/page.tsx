@@ -803,12 +803,11 @@ export default function FinanceiroPage() {
 
   const receitaVendas = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'venda').reduce((a, m) => a + Number(m.valor), 0)
   const aportes       = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'aporte').reduce((a, m) => a + Number(m.valor), 0)
-  // entradas para o saldo real EXCLUI aportes — aporte é capital de terceiros, não fluxo operacional
-  const entradas = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria !== 'aporte').reduce((a, m) => a + Number(m.valor), 0)
-  const saidas   = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
-  const pendente = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
-  // Saldo real = saldo anterior + entradas do período − saídas do período
-  const saldo    = saldoAnterior + entradas - saidas
+  const entradas      = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria !== 'aporte').reduce((a, m) => a + Number(m.valor), 0)
+  const saidas        = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
+  const pendente      = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
+  // Aporte entrou no caixa fisicamente → soma no saldo disponível
+  const saldo         = saldoAnterior + entradas + aportes - saidas
 
   const backHref = isSocio ? '/dashboard' : '/pdv'
   const backLabel = isSocio ? '← Dashboard' : '← PDV'
@@ -892,7 +891,7 @@ export default function FinanceiroPage() {
               <p className={`text-xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
                 {formatarMoeda(saldo)}
               </p>
-              <p className="text-[10px] text-[#555555] mt-0.5">Anterior + período − saídas</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Anterior + vendas + aporte − saídas</p>
             </Card>
           </div>
         )}
