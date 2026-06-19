@@ -806,8 +806,10 @@ export default function FinanceiroPage() {
   const entradas      = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria !== 'aporte').reduce((a, m) => a + Number(m.valor), 0)
   const saidas        = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   const pendente      = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
-  // Aporte entrou no caixa fisicamente → soma no saldo disponível
-  const saldo         = saldoAnterior + entradas + aportes - saidas
+  // Resultado do período (sem o carryover anterior)
+  const saldoMes      = entradas + aportes - saidas
+  // Saldo Total = anterior + resultado do período
+  const saldo         = saldoAnterior + saldoMes
 
   const backHref = isSocio ? '/dashboard' : '/pdv'
   const backLabel = isSocio ? '← Dashboard' : '← PDV'
@@ -865,33 +867,43 @@ export default function FinanceiroPage() {
 
         {/* Cards resumo — somente sócio */}
         {isSocio && (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {/* Linha 1: componentes do período */}
             <Card hover>
               <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo Anterior</p>
               <p className={`text-xl font-black ${saldoAnterior >= 0 ? 'text-[#888888]' : 'text-danger'}`}>{formatarMoeda(saldoAnterior)}</p>
-              <p className="text-[10px] text-[#555555] mt-0.5">Acumulado meses ant.</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Acumulado até mês passado</p>
             </Card>
             <Card hover>
-              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Receita Vendas</p>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Receita de Vendas</p>
               <p className="text-xl font-black text-success">{formatarMoeda(receitaVendas)}</p>
-              <p className="text-[10px] text-[#555555] mt-0.5">Período selecionado</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Apenas vendas do período</p>
             </Card>
             <Card hover>
-              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Aportes</p>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Aporte Recebido</p>
               <p className="text-xl font-black text-blue-400">{formatarMoeda(aportes)}</p>
-              <p className="text-[10px] text-[#555555] mt-0.5">Capital de terceiros</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Entrou no caixa</p>
             </Card>
+
+            {/* Linha 2: saídas + resultados */}
             <Card hover>
               <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saídas Pagas</p>
               <p className="text-xl font-black text-danger">{formatarMoeda(saidas)}</p>
-              {pendente > 0 && <p className="text-[10px] text-[#F59E0B] mt-0.5">{formatarMoeda(pendente)} pendente</p>}
+              {pendente > 0 && <p className="text-[10px] text-[#F59E0B] mt-0.5">{formatarMoeda(pendente)} a pagar</p>}
             </Card>
-            <Card hover>
+            <Card hover className={saldoMes >= 0 ? 'border-green-600/30' : 'border-danger/30'}>
+              <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Resultado do Mês</p>
+              <p className={`text-xl font-black ${saldoMes >= 0 ? 'text-success' : 'text-danger'}`}>
+                {saldoMes >= 0 ? '+' : ''}{formatarMoeda(saldoMes)}
+              </p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Vendas + aporte − saídas</p>
+            </Card>
+            <Card hover className="border-gold/30">
               <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-1">Saldo Disponível</p>
               <p className={`text-xl font-black ${saldo >= 0 ? 'text-gold' : 'text-danger'}`}>
                 {formatarMoeda(saldo)}
               </p>
-              <p className="text-[10px] text-[#555555] mt-0.5">Anterior + vendas + aporte − saídas</p>
+              <p className="text-[10px] text-[#555555] mt-0.5">Anterior + resultado mês</p>
             </Card>
           </div>
         )}
