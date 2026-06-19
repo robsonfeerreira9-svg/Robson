@@ -149,9 +149,29 @@ jobs:
             SUPABASE_SERVICE_ROLE_KEY production \
             --token "$VERCEL_TOKEN" --force 2>/dev/null || true
           if [ -n "${REMOVE_BG_API_KEY}" ]; then
-            echo "${REMOVE_BG_API_KEY}" | npx vercel@latest env add \
-              REMOVE_BG_API_KEY production \
-              --token "$VERCEL_TOKEN" --force 2>/dev/null || true
+            echo "=== Configurando REMOVE_BG_API_KEY via Vercel API ==="
+            # Verificar se já existe
+            EXISTING=$(curl -s \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              "https://api.vercel.com/v10/projects/${PROJECT_ID}/env?teamId=${VERCEL_ORG_ID}" \
+              | python3 -c "import sys,json; envs=json.load(sys.stdin).get('envs',[]); match=[e for e in envs if e.get('key')=='REMOVE_BG_API_KEY']; print(match[0]['id'] if match else '')" 2>/dev/null || echo "")
+            if [ -n "$EXISTING" ]; then
+              # Atualizar existente
+              PATCH_RESP=$(curl -s -X PATCH \
+                -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+                -H "Content-Type: application/json" \
+                "https://api.vercel.com/v10/projects/${PROJECT_ID}/env/${EXISTING}?teamId=${VERCEL_ORG_ID}" \
+                -d "{\"value\":\"${REMOVE_BG_API_KEY}\",\"target\":[\"production\"],\"type\":\"encrypted\"}")
+              echo "REMOVE_BG_API_KEY atualizado: $(echo $PATCH_RESP | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key','erro'))" 2>/dev/null)"
+            else
+              # Criar novo
+              POST_RESP=$(curl -s -X POST \
+                -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+                -H "Content-Type: application/json" \
+                "https://api.vercel.com/v10/projects/${PROJECT_ID}/env?teamId=${VERCEL_ORG_ID}" \
+                -d "{\"key\":\"REMOVE_BG_API_KEY\",\"value\":\"${REMOVE_BG_API_KEY}\",\"target\":[\"production\"],\"type\":\"encrypted\"}")
+              echo "REMOVE_BG_API_KEY criado: $(echo $POST_RESP | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key','erro'))" 2>/dev/null)"
+            fi
           fi
 
           # Deploy

@@ -321,9 +321,7 @@ export default function NovoProdutoPage() {
             {/* Aviso API key */}
             {avisoApi && (
               <div className="text-[10px] text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/20 rounded-lg px-3 py-2">
-                <strong>Dica:</strong> Para remoção de fundo automática, configure{' '}
-                <code className="bg-[#F59E0B]/20 px-1 rounded">REMOVE_BG_API_KEY</code>{' '}
-                no seu <code className="bg-[#F59E0B]/20 px-1 rounded">.env.local</code>.
+                <strong>Aviso IA:</strong> {avisoApi}
               </div>
             )}
 
