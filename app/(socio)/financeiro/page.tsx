@@ -799,12 +799,20 @@ export default function FinanceiroPage() {
     { refreshInterval: 30000 }
   )
 
+  // Cards sempre calculados com TODOS os tipos (ignora filtro de tipo da tabela)
+  const cardKey = ['movimentacoes-cards', dataInicio, dataFim]
+  const { data: cardMovs = [] } = useSWR(
+    cardKey,
+    () => fetchMovimentacoes('', dataInicio, dataFim),
+    { refreshInterval: 30000 }
+  )
+
   const { data: saldoAnterior = 0 } = useSWR('saldo-mes-anterior', fetchSaldoMesAnterior, { refreshInterval: 300000 })
 
-  const receitaVendas = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'venda').reduce((a, m) => a + Number(m.valor), 0)
-  const aportes       = movs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'aporte').reduce((a, m) => a + Number(m.valor), 0)
-  const saidas        = movs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
-  const pendente      = movs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
+  const receitaVendas = cardMovs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'venda').reduce((a, m) => a + Number(m.valor), 0)
+  const aportes       = cardMovs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'aporte').reduce((a, m) => a + Number(m.valor), 0)
+  const saidas        = cardMovs.filter((m) => m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
+  const pendente      = cardMovs.filter((m) => !m.pago && m.tipo === 'saida').reduce((a, m) => a + Number(m.valor), 0)
   // Saldo Disponível = anterior + vendas do período + aportes − saídas
   const saldo         = saldoAnterior + receitaVendas + aportes - saidas
 
@@ -813,6 +821,7 @@ export default function FinanceiroPage() {
 
   function handleSaved() {
     mutate(cacheKey)
+    mutate(cardKey)
     mutate('vence-semana')
   }
 
@@ -822,6 +831,7 @@ export default function FinanceiroPage() {
     await supabase.from('movimentacao_caixa').update({ pago: true }).eq('id', id)
     setPagandoInlineId(null)
     mutate(cacheKey)
+    mutate(cardKey)
     mutate('vence-semana')
   }
 
