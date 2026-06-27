@@ -816,6 +816,16 @@ export default function FinanceiroPage() {
   // Saldo Disponível = anterior + vendas do período + aportes − saídas
   const saldo         = saldoAnterior + receitaVendas + aportes - saidas
 
+  // Custo da empresa por categoria (apenas saídas pagas, excluindo capital de giro)
+  const CATS_DESPESA: CategoriaMovimentacao[] = ['compra_estoque', 'custo_operacional', 'administrativo', 'midia_marketing', 'funcionarios', 'outro']
+  const despesasPorCategoria = CATS_DESPESA.map((cat) => ({
+    cat,
+    label: LABEL_CATEGORIA[cat] ?? cat,
+    total: cardMovs.filter((m) => m.pago && m.tipo === 'saida' && m.categoria === cat).reduce((a, m) => a + Number(m.valor), 0),
+  })).filter((d) => d.total > 0)
+  const capitalGiro  = cardMovs.filter((m) => m.pago && m.tipo === 'saida' && m.categoria === 'capital_giro').reduce((a, m) => a + Number(m.valor), 0)
+  const custoDaEmpresa = saidas - capitalGiro
+
   const backHref = isSocio ? '/dashboard' : '/pdv'
   const backLabel = isSocio ? '← Dashboard' : '← PDV'
 
@@ -903,6 +913,37 @@ export default function FinanceiroPage() {
               <p className="text-[10px] text-[#555555] mt-0.5">Anterior + vendas + aporte − saídas</p>
             </Card>
           </div>
+        )}
+
+        {/* Breakdown de Despesas da Empresa — somente sócio */}
+        {isSocio && (despesasPorCategoria.length > 0 || capitalGiro > 0) && (
+          <Card padding="sm">
+            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold mb-3">Custo da Empresa — Detalhamento</p>
+            <div className="flex flex-col gap-1.5">
+              {despesasPorCategoria.map((d) => (
+                <div key={d.cat} className="flex items-center justify-between">
+                  <span className={`text-xs ${COR_CATEGORIA[d.cat] ?? 'text-[#888888]'}`}>{d.label}</span>
+                  <span className="text-sm font-bold text-[#F0F0F0]">{formatarMoeda(d.total)}</span>
+                </div>
+              ))}
+              {despesasPorCategoria.length > 0 && (
+                <div className="border-t border-[#2A2A2A] mt-1 pt-1.5 flex items-center justify-between">
+                  <span className="text-xs font-bold text-danger uppercase">Total Despesas</span>
+                  <span className="text-base font-black text-danger">{formatarMoeda(custoDaEmpresa)}</span>
+                </div>
+              )}
+              {capitalGiro > 0 && (
+                <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-[#2A2A2A]">
+                  <span className="text-xs text-orange-400">Capital de Giro (Empréstimo)</span>
+                  <span className="text-sm font-bold text-orange-400">{formatarMoeda(capitalGiro)}</span>
+                </div>
+              )}
+              <div className="border-t border-[#3A3A3A] mt-1 pt-1.5 flex items-center justify-between">
+                <span className="text-[10px] text-[#555555]">Total Saídas (incl. empréstimo)</span>
+                <span className="text-xs text-[#888888]">{formatarMoeda(saidas)}</span>
+              </div>
+            </div>
+          </Card>
         )}
 
         {/* Filtros */}
