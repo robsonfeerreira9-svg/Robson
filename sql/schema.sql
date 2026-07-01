@@ -1692,3 +1692,10 @@ WHERE tipo = 'saida'
   AND categoria = 'capital_giro'
   AND descricao LIKE 'Aporte de Capital — Parcela %'
   AND pago = false;
+
+-- STEP 33: Remover parcela pago=true do capital de giro (não representa dívida real)
+DELETE FROM public.movimentacao_caixa
+WHERE tipo = 'saida'
+  AND categoria = 'capital_giro'
+  AND descricao LIKE 'Aporte de Capital — Parcela %'
+  AND pago = true;
