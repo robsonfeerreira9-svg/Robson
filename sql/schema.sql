@@ -1699,3 +1699,41 @@ WHERE tipo = 'saida'
   AND categoria = 'capital_giro'
   AND descricao LIKE 'Aporte de Capital — Parcela %'
   AND pago = true;
+
+-- ─────────────────────────────────────────────────────
+-- STEP 34: Recalibrar saldo anterior para R$3.359,62
+-- Apaga o ajuste antigo (STEP 30) e insere novo com o valor correto.
+-- Roda sempre (sem IF NOT EXISTS) para garantir calibragem idempotente.
+-- ─────────────────────────────────────────────────────
+DO $$
+DECLARE
+  v_entradas    NUMERIC;
+  v_saidas      NUMERIC;
+  v_saldo_atual NUMERIC;
+  v_alvo        NUMERIC := 3359.62;
+  v_ajuste      NUMERIC;
+BEGIN
+  -- Remove qualquer ajuste anterior
+  DELETE FROM public.movimentacao_caixa
+  WHERE descricao = 'Saldo Inicial de Caixa — Ajuste';
+
+  -- Calcula saldo de todas as entradas/saídas pagas (excl. aporte) antes de julho/2026
+  SELECT
+    COALESCE(SUM(CASE WHEN tipo = 'entrada' AND pago = true THEN valor ELSE 0 END), 0),
+    COALESCE(SUM(CASE WHEN tipo = 'saida'   AND pago = true THEN valor ELSE 0 END), 0)
+  INTO v_entradas, v_saidas
+  FROM public.movimentacao_caixa
+  WHERE categoria <> 'aporte'
+    AND criado_em < '2026-07-01';
+
+  v_saldo_atual := v_entradas - v_saidas;
+  v_ajuste      := v_alvo - v_saldo_atual;
+
+  IF v_ajuste > 0 THEN
+    INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, pago, criado_em)
+    VALUES ('entrada', 'outro', 'Saldo Inicial de Caixa — Ajuste', v_ajuste, true, '2026-05-31T23:59:00');
+  ELSIF v_ajuste < 0 THEN
+    INSERT INTO public.movimentacao_caixa (tipo, categoria, descricao, valor, pago, criado_em)
+    VALUES ('saida', 'outro', 'Saldo Inicial de Caixa — Ajuste', ABS(v_ajuste), true, '2026-05-31T23:59:00');
+  END IF;
+END $$;
