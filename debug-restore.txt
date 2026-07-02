@@ -1,4 +1,4 @@
-RESULTADO: 258 vendas no banco agora.
+RESULTADO: 260 vendas no banco agora.
 Nenhum backup encontrado antes de 06/05/2026 — dados irrecuperáveis via API.
 HTTP 200
 Resposta completa da API de backups:
