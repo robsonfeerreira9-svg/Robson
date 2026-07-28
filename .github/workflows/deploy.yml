@@ -105,6 +105,9 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           REMOVE_BG_API_KEY: ${{ secrets.REMOVE_BG_API_KEY }}
+          ZAPI_INSTANCE_ID: ${{ secrets.ZAPI_INSTANCE_ID }}
+          ZAPI_TOKEN: ${{ secrets.ZAPI_TOKEN }}
+          ZAPI_CLIENT_TOKEN: ${{ secrets.ZAPI_CLIENT_TOKEN }}
         run: |
           set +e  # Capturar erros manualmente
 
@@ -173,6 +176,31 @@ jobs:
               echo "REMOVE_BG_API_KEY criado: $(echo $POST_RESP | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key','erro'))" 2>/dev/null)"
             fi
           fi
+          # Z-API (WhatsApp campanha automática)
+          for ZAPI_VAR in ZAPI_INSTANCE_ID ZAPI_TOKEN ZAPI_CLIENT_TOKEN; do
+            VAL="${!ZAPI_VAR}"
+            if [ -n "$VAL" ]; then
+              EXISTING=$(curl -s \
+                -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+                "https://api.vercel.com/v10/projects/${PROJECT_ID}/env?teamId=${VERCEL_ORG_ID}" \
+                | python3 -c "import sys,json; k='${ZAPI_VAR}'; envs=json.load(sys.stdin).get('envs',[]); match=[e for e in envs if e.get('key')==k]; print(match[0]['id'] if match else '')" 2>/dev/null || echo "")
+              if [ -n "$EXISTING" ]; then
+                curl -s -X PATCH \
+                  -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+                  -H "Content-Type: application/json" \
+                  "https://api.vercel.com/v10/projects/${PROJECT_ID}/env/${EXISTING}?teamId=${VERCEL_ORG_ID}" \
+                  -d "{\"value\":\"${VAL}\",\"target\":[\"production\"],\"type\":\"encrypted\"}" > /dev/null
+                echo "${ZAPI_VAR} atualizado"
+              else
+                curl -s -X POST \
+                  -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+                  -H "Content-Type: application/json" \
+                  "https://api.vercel.com/v10/projects/${PROJECT_ID}/env?teamId=${VERCEL_ORG_ID}" \
+                  -d "{\"key\":\"${ZAPI_VAR}\",\"value\":\"${VAL}\",\"target\":[\"production\"],\"type\":\"encrypted\"}" > /dev/null
+                echo "${ZAPI_VAR} criado"
+              fi
+            fi
+          done
 
           # Deploy
           echo "=== Vercel Deploy ==="

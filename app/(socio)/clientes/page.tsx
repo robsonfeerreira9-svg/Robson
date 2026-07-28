@@ -724,6 +724,8 @@ function ClienteDetalheModal({ cliente, onClose }: { cliente: ClienteStats; onCl
 }
 
 // ── Modal de Campanha ─────────────────────────────────────────────────────────
+type StatusEnvio = 'aguardando' | 'enviando' | 'ok' | 'erro'
+
 function CampanhaModal({
   clientes,
   onClose,
@@ -736,7 +738,9 @@ function CampanhaModal({
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
   const [busca, setBusca] = useState('')
   const [enviando, setEnviando] = useState(false)
-  const [indexEnvio, setIndexEnvio] = useState(0)
+  const [status, setStatus] = useState<Record<string, StatusEnvio>>({})
+  const [erros, setErros] = useState<Record<string, string>>({})
+  const [apiDisponivel, setApiDisponivel] = useState<boolean | null>(null)
 
   const clientesComTel = clientes.filter((c) => c.telefone)
   const clientesFiltrados = clientesComTel.filter((c) =>
@@ -772,22 +776,57 @@ function CampanhaModal({
     return msgTexto.replace(/\{nome\}/gi, nome)
   }
 
-  function iniciarEnvio() {
-    setEnviando(true)
-    setIndexEnvio(0)
-  }
-
-  function abrirProximo() {
-    const cliente = clientesSelecionados[indexEnvio]
-    if (!cliente?.telefone) return
-    const link = telefoneWpp(cliente.telefone, msgParaCliente(cliente.nome))
-    window.open(link, '_blank')
-    setIndexEnvio((i) => i + 1)
-  }
-
   const totalSelecionados = selecionados.size
-  const jaEnviados = indexEnvio
-  const todos = jaEnviados >= clientesSelecionados.length
+  const totalEnviados  = Object.values(status).filter((s) => s === 'ok').length
+  const totalErros     = Object.values(status).filter((s) => s === 'erro').length
+  const totalProcessado = totalEnviados + totalErros
+  const concluido      = enviando && totalProcessado >= clientesSelecionados.length
+
+  async function iniciarEnvio() {
+    setEnviando(true)
+    setStatus({})
+    setErros({})
+
+    // Verifica se a API está configurada com o primeiro envio
+    let primeiroChecked = false
+
+    for (const cliente of clientesSelecionados) {
+      setStatus((prev) => ({ ...prev, [cliente.id]: 'enviando' }))
+
+      const res = await fetch('/api/campanha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          telefone: cliente.telefone,
+          mensagem: msgParaCliente(cliente.nome),
+        }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+
+      if (!primeiroChecked) {
+        primeiroChecked = true
+        if (res.status === 503) {
+          // API não configurada — interrompe e mostra aviso
+          setApiDisponivel(false)
+          setEnviando(false)
+          setStatus({})
+          return
+        }
+        setApiDisponivel(true)
+      }
+
+      if (res.ok) {
+        setStatus((prev) => ({ ...prev, [cliente.id]: 'ok' }))
+      } else {
+        setStatus((prev) => ({ ...prev, [cliente.id]: 'erro' }))
+        setErros((prev) => ({ ...prev, [cliente.id]: data?.error ?? 'Erro desconhecido' }))
+      }
+
+      // Intervalo entre envios para evitar bloqueio do WhatsApp
+      await new Promise((r) => setTimeout(r, 1500))
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-4 overflow-y-auto" onClick={onClose}>
@@ -809,6 +848,21 @@ function CampanhaModal({
         </div>
 
         <div className="p-6 flex flex-col gap-5">
+
+          {/* Aviso API não configurada */}
+          {apiDisponivel === false && (
+            <div className="bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-xl p-4 flex flex-col gap-2">
+              <p className="text-sm font-bold text-[#F59E0B]">⚠️ WhatsApp API não configurada</p>
+              <p className="text-xs text-[#888888]">Para envio automático, adicione as variáveis abaixo nos <strong>GitHub Secrets</strong> e faça um novo deploy:</p>
+              <ul className="text-xs text-[#F0F0F0] font-mono bg-[#0D0D0D] rounded-lg p-3 flex flex-col gap-1">
+                <li>ZAPI_INSTANCE_ID</li>
+                <li>ZAPI_TOKEN</li>
+                <li>ZAPI_CLIENT_TOKEN</li>
+              </ul>
+              <p className="text-xs text-[#888888]">Crie uma conta em <strong>z-api.io</strong>, conecte o número da loja escaneando o QR Code e copie as credenciais.</p>
+            </div>
+          )}
+
           {!enviando ? (
             <>
               {/* Mensagem */}
@@ -901,52 +955,61 @@ function CampanhaModal({
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <WppIcon size={14} />
-                  Enviar Campanha
+                  Disparar Campanha
                 </button>
               </div>
             </>
           ) : (
-            /* Tela de envio */
+            /* Tela de progresso de envio */
             <div className="flex flex-col gap-4">
               <div className="text-center py-2">
                 <p className="text-lg font-black text-[#F0F0F0]">
-                  {todos ? '✅ Campanha concluída!' : `Enviando ${jaEnviados + 1} de ${clientesSelecionados.length}`}
+                  {concluido
+                    ? `✅ Concluído — ${totalEnviados} enviado${totalEnviados !== 1 ? 's' : ''}${totalErros > 0 ? `, ${totalErros} com erro` : ''}`
+                    : `Enviando... ${totalProcessado} de ${clientesSelecionados.length}`}
                 </p>
                 <p className="text-xs text-[#888888] mt-1">
-                  {todos ? 'Todos os WhatsApps foram abertos.' : 'Clique no botão para abrir o WhatsApp de cada cliente.'}
+                  {concluido ? 'Campanha finalizada.' : 'Aguarde — enviando 1 a cada 1,5s para não ser bloqueado.'}
                 </p>
                 <div className="mt-3 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500 rounded-full transition-all duration-300"
-                    style={{ width: `${(jaEnviados / clientesSelecionados.length) * 100}%` }}
+                    style={{ width: clientesSelecionados.length > 0 ? `${(totalProcessado / clientesSelecionados.length) * 100}%` : '0%' }}
                   />
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
-                {clientesSelecionados.map((c, i) => (
-                  <div key={c.id} className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${i < jaEnviados ? 'border-green-600/30 bg-green-600/10' : i === jaEnviados ? 'border-gold/40 bg-gold/5' : 'border-[#2A2A2A] bg-[#0D0D0D]'}`}>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold truncate ${i < jaEnviados ? 'text-[#555555]' : 'text-[#F0F0F0]'}`}>{c.nome}</p>
-                      <p className="text-xs text-[#555555]">{c.telefone}</p>
+                {clientesSelecionados.map((c) => {
+                  const s = status[c.id] ?? 'aguardando'
+                  return (
+                    <div key={c.id} className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${
+                      s === 'ok'      ? 'border-green-600/30 bg-green-600/10'
+                      : s === 'erro'  ? 'border-red-600/30 bg-red-600/10'
+                      : s === 'enviando' ? 'border-gold/40 bg-gold/5'
+                      : 'border-[#2A2A2A] bg-[#0D0D0D]'
+                    }`}>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-semibold truncate ${s === 'ok' ? 'text-[#555555]' : 'text-[#F0F0F0]'}`}>{c.nome}</p>
+                        {s === 'erro' && erros[c.id] && (
+                          <p className="text-[10px] text-red-400 mt-0.5 truncate">{erros[c.id]}</p>
+                        )}
+                        {s !== 'erro' && <p className="text-xs text-[#555555]">{c.telefone}</p>}
+                      </div>
+                      <span className={`text-xs font-bold flex-shrink-0 ${
+                        s === 'ok'       ? 'text-green-500'
+                        : s === 'erro'   ? 'text-red-400'
+                        : s === 'enviando' ? 'text-gold'
+                        : 'text-[#555555]'
+                      }`}>
+                        {s === 'ok' ? '✓ Enviado' : s === 'erro' ? '✗ Erro' : s === 'enviando' ? '⏳ Enviando…' : 'Aguardando'}
+                      </span>
                     </div>
-                    {i < jaEnviados ? (
-                      <span className="text-xs text-green-500 font-bold">✓ Aberto</span>
-                    ) : i === jaEnviados ? (
-                      <button
-                        onClick={abrirProximo}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-green-600 text-white text-xs font-bold hover:bg-green-500 transition-colors"
-                      >
-                        <WppIcon size={12} /> Abrir WPP
-                      </button>
-                    ) : (
-                      <span className="text-xs text-[#555555]">Aguardando</span>
-                    )}
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
-              {todos && (
+              {concluido && (
                 <button onClick={onClose} className="w-full py-2 rounded-lg bg-gold text-[#0D0D0D] text-sm font-bold hover:bg-[#D4A800] transition-colors">
                   Fechar
                 </button>
