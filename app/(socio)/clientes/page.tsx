@@ -226,8 +226,18 @@ A partir de AGORA, *TODOS os tênis nacionais do nosso estoque estão saindo com
 👇 Dá uma olhada nos modelos que separei para você e corre, porque o estoque vai zerar rápido:
 [Carregar fotos dos tênis em estoque]`
 
+const TEMPLATES_PADRAO = [
+  { key: 'aniversario', label: '🎂 Aniversário 20% OFF', texto: MSG_ANIVERSARIO_TEMPLATE },
+  { key: 'tenis',       label: '👟 Campanha Tênis 50%',  texto: MSG_CAMPANHA_TENIS },
+]
+
 function ModelosMensagem() {
   const [copiado, setCopiado] = useState<string | null>(null)
+  const [editando, setEditando] = useState<string | null>(null)
+  const [textos, setTextos] = useState<Record<string, string>>({
+    aniversario: MSG_ANIVERSARIO_TEMPLATE,
+    tenis: MSG_CAMPANHA_TENIS,
+  })
 
   async function copiar(key: string, texto: string) {
     try {
@@ -253,7 +263,6 @@ function ModelosMensagem() {
       subtitulo: 'Dispara para clientes que fazem aniversário hoje — inclui 20% OFF',
       cor: 'border-gold/30 bg-gold/5',
       corBotao: 'bg-gold text-[#0D0D0D] hover:bg-[#D4A800]',
-      texto: MSG_ANIVERSARIO_TEMPLATE,
     },
     {
       key: 'tenis',
@@ -261,7 +270,6 @@ function ModelosMensagem() {
       subtitulo: 'Queima de estoque — enviado para toda a base de clientes',
       cor: 'border-green-500/30 bg-green-500/5',
       corBotao: 'bg-green-600 text-white hover:bg-green-500',
-      texto: MSG_CAMPANHA_TENIS,
     },
   ]
 
@@ -279,16 +287,33 @@ function ModelosMensagem() {
                 <p className="text-sm font-bold text-[#F0F0F0]">{m.titulo}</p>
                 <p className="text-xs text-[#888888] mt-0.5">{m.subtitulo}</p>
               </div>
-              <button
-                onClick={() => copiar(m.key, m.texto)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${m.corBotao}`}
-              >
-                {copiado === m.key ? '✓ Copiado!' : 'Copiar'}
-              </button>
+              <div className="flex gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setEditando(editando === m.key ? null : m.key)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border border-[#3A3A3A] text-[#888888] hover:text-[#F0F0F0] hover:border-[#555555] transition-colors"
+                >
+                  {editando === m.key ? 'Fechar' : 'Editar'}
+                </button>
+                <button
+                  onClick={() => copiar(m.key, textos[m.key])}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${m.corBotao}`}
+                >
+                  {copiado === m.key ? '✓ Copiado!' : 'Copiar'}
+                </button>
+              </div>
             </div>
-            <pre className="text-[11px] text-[#888888] whitespace-pre-wrap leading-relaxed bg-[#0D0D0D] rounded-lg p-3 font-sans">
-              {m.texto}
-            </pre>
+            {editando === m.key ? (
+              <textarea
+                value={textos[m.key]}
+                onChange={(e) => setTextos((prev) => ({ ...prev, [m.key]: e.target.value }))}
+                rows={8}
+                className="w-full text-[11px] text-[#F0F0F0] bg-[#0D0D0D] rounded-lg p-3 font-sans leading-relaxed border border-[#3A3A3A] focus:outline-none focus:border-gold resize-y"
+              />
+            ) : (
+              <pre className="text-[11px] text-[#888888] whitespace-pre-wrap leading-relaxed bg-[#0D0D0D] rounded-lg p-3 font-sans">
+                {textos[m.key]}
+              </pre>
+            )}
           </div>
         ))}
       </div>
@@ -698,10 +723,247 @@ function ClienteDetalheModal({ cliente, onClose }: { cliente: ClienteStats; onCl
   )
 }
 
+// ── Modal de Campanha ─────────────────────────────────────────────────────────
+function CampanhaModal({
+  clientes,
+  onClose,
+}: {
+  clientes: ClienteStats[]
+  onClose: () => void
+}) {
+  const [msgTemplate, setMsgTemplate] = useState('personalizada')
+  const [msgTexto, setMsgTexto] = useState('')
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
+  const [busca, setBusca] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [indexEnvio, setIndexEnvio] = useState(0)
+
+  const clientesComTel = clientes.filter((c) => c.telefone)
+  const clientesFiltrados = clientesComTel.filter((c) =>
+    busca === '' || c.nome.toLowerCase().includes(busca.toLowerCase())
+  )
+
+  function toggleCliente(id: string) {
+    setSelecionados((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function selecionarTodos() {
+    setSelecionados(new Set(clientesFiltrados.map((c) => c.id)))
+  }
+
+  function desmarcarTodos() {
+    setSelecionados(new Set())
+  }
+
+  function aplicarTemplate(key: string) {
+    setMsgTemplate(key)
+    const t = TEMPLATES_PADRAO.find((t) => t.key === key)
+    if (t) setMsgTexto(t.texto)
+    else setMsgTexto('')
+  }
+
+  const clientesSelecionados = clientesComTel.filter((c) => selecionados.has(c.id))
+
+  function msgParaCliente(nome: string) {
+    return msgTexto.replace(/\{nome\}/gi, nome)
+  }
+
+  function iniciarEnvio() {
+    setEnviando(true)
+    setIndexEnvio(0)
+  }
+
+  function abrirProximo() {
+    const cliente = clientesSelecionados[indexEnvio]
+    if (!cliente?.telefone) return
+    const link = telefoneWpp(cliente.telefone, msgParaCliente(cliente.nome))
+    window.open(link, '_blank')
+    setIndexEnvio((i) => i + 1)
+  }
+
+  const totalSelecionados = selecionados.size
+  const jaEnviados = indexEnvio
+  const todos = jaEnviados >= clientesSelecionados.length
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-4 overflow-y-auto" onClick={onClose}>
+      <div
+        className="w-full max-w-2xl bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl shadow-2xl flex flex-col my-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A2A2A]">
+          <div>
+            <h2 className="font-bold text-[#F0F0F0] text-base">📣 Nova Campanha</h2>
+            <p className="text-xs text-[#888888] mt-0.5">Selecione os clientes e personalize a mensagem</p>
+          </div>
+          <button onClick={onClose} className="text-[#888888] hover:text-[#F0F0F0] transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="p-6 flex flex-col gap-5">
+          {!enviando ? (
+            <>
+              {/* Mensagem */}
+              <div>
+                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-2">Mensagem</label>
+                <div className="flex gap-2 mb-2 flex-wrap">
+                  <button
+                    onClick={() => aplicarTemplate('personalizada')}
+                    className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${msgTemplate === 'personalizada' ? 'border-gold text-gold bg-gold/10' : 'border-[#3A3A3A] text-[#888888] hover:border-[#555555]'}`}
+                  >
+                    Personalizada
+                  </button>
+                  {TEMPLATES_PADRAO.map((t) => (
+                    <button
+                      key={t.key}
+                      onClick={() => aplicarTemplate(t.key)}
+                      className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${msgTemplate === t.key ? 'border-gold text-gold bg-gold/10' : 'border-[#3A3A3A] text-[#888888] hover:border-[#555555]'}`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={msgTexto}
+                  onChange={(e) => setMsgTexto(e.target.value)}
+                  placeholder="Digite a mensagem... Use {nome} para personalizar com o nome do cliente."
+                  rows={6}
+                  className="w-full text-sm text-[#F0F0F0] bg-[#0D0D0D] rounded-lg p-3 border border-[#3A3A3A] focus:outline-none focus:border-gold resize-y font-sans leading-relaxed"
+                />
+                <p className="text-[10px] text-[#555555] mt-1">Use <span className="text-gold">{'{nome}'}</span> para inserir o nome do cliente automaticamente.</p>
+              </div>
+
+              {/* Seleção de clientes */}
+              <div>
+                <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+                  <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide">
+                    Clientes com telefone ({clientesComTel.length})
+                  </label>
+                  <div className="flex gap-2">
+                    <button onClick={selecionarTodos} className="text-xs px-2.5 py-1 rounded border border-[#3A3A3A] text-[#888888] hover:text-gold hover:border-gold transition-colors">
+                      Selecionar visíveis
+                    </button>
+                    {totalSelecionados > 0 && (
+                      <button onClick={desmarcarTodos} className="text-xs px-2.5 py-1 rounded border border-[#3A3A3A] text-[#888888] hover:text-danger hover:border-danger transition-colors">
+                        Desmarcar tudo
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  placeholder="Buscar cliente..."
+                  className="w-full mb-2 bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] placeholder-[#555555] focus:outline-none focus:border-gold"
+                />
+                <div className="flex flex-col gap-1 max-h-56 overflow-y-auto rounded-lg border border-[#2A2A2A] bg-[#0D0D0D] p-2">
+                  {clientesFiltrados.length === 0 ? (
+                    <p className="text-xs text-[#555555] p-2">Nenhum cliente encontrado</p>
+                  ) : (
+                    clientesFiltrados.map((c) => (
+                      <label key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-[#1A1A1A] cursor-pointer transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selecionados.has(c.id)}
+                          onChange={() => toggleCliente(c.id)}
+                          className="accent-gold w-3.5 h-3.5"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-[#F0F0F0] font-semibold truncate">{c.nome}</p>
+                          <p className="text-xs text-[#555555]">{c.telefone}</p>
+                        </div>
+                        <span className="text-xs text-[#555555]">{c.total_compras}x</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Rodapé */}
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#2A2A2A]">
+                <p className="text-sm text-[#888888]">
+                  {totalSelecionados > 0
+                    ? <span className="text-[#F0F0F0] font-bold">{totalSelecionados} cliente{totalSelecionados !== 1 ? 's' : ''} selecionado{totalSelecionados !== 1 ? 's' : ''}</span>
+                    : 'Nenhum cliente selecionado'}
+                </p>
+                <button
+                  onClick={iniciarEnvio}
+                  disabled={totalSelecionados === 0 || msgTexto.trim() === ''}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <WppIcon size={14} />
+                  Enviar Campanha
+                </button>
+              </div>
+            </>
+          ) : (
+            /* Tela de envio */
+            <div className="flex flex-col gap-4">
+              <div className="text-center py-2">
+                <p className="text-lg font-black text-[#F0F0F0]">
+                  {todos ? '✅ Campanha concluída!' : `Enviando ${jaEnviados + 1} de ${clientesSelecionados.length}`}
+                </p>
+                <p className="text-xs text-[#888888] mt-1">
+                  {todos ? 'Todos os WhatsApps foram abertos.' : 'Clique no botão para abrir o WhatsApp de cada cliente.'}
+                </p>
+                <div className="mt-3 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all duration-300"
+                    style={{ width: `${(jaEnviados / clientesSelecionados.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
+                {clientesSelecionados.map((c, i) => (
+                  <div key={c.id} className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${i < jaEnviados ? 'border-green-600/30 bg-green-600/10' : i === jaEnviados ? 'border-gold/40 bg-gold/5' : 'border-[#2A2A2A] bg-[#0D0D0D]'}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold truncate ${i < jaEnviados ? 'text-[#555555]' : 'text-[#F0F0F0]'}`}>{c.nome}</p>
+                      <p className="text-xs text-[#555555]">{c.telefone}</p>
+                    </div>
+                    {i < jaEnviados ? (
+                      <span className="text-xs text-green-500 font-bold">✓ Aberto</span>
+                    ) : i === jaEnviados ? (
+                      <button
+                        onClick={abrirProximo}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-green-600 text-white text-xs font-bold hover:bg-green-500 transition-colors"
+                      >
+                        <WppIcon size={12} /> Abrir WPP
+                      </button>
+                    ) : (
+                      <span className="text-xs text-[#555555]">Aguardando</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {todos && (
+                <button onClick={onClose} className="w-full py-2 rounded-lg bg-gold text-[#0D0D0D] text-sm font-bold hover:bg-[#D4A800] transition-colors">
+                  Fechar
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Página ────────────────────────────────────────────────────────────────────
 export default function ClientesPage() {
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteStats | null>(null)
+  const [showCampanha, setShowCampanha] = useState(false)
 
   const { data: clientes = [], isLoading } = useSWR('clientes-stats', fetchClientesStats, { refreshInterval: 60000 })
   const { data: aniversariantes = [] } = useSWR('aniversariantes', fetchAniversariantes, { refreshInterval: 3600000 })
@@ -733,6 +995,13 @@ export default function ClientesPage() {
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Clientes</h1>
             <a href="/dashboard" className="text-xs text-[#888888] hover:text-gold transition-colors">← Dashboard</a>
           </div>
+          <button
+            onClick={() => setShowCampanha(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-600 transition-colors"
+          >
+            <WppIcon size={14} />
+            Campanha
+          </button>
         </div>
 
         {/* KPIs */}
@@ -933,6 +1202,14 @@ export default function ClientesPage() {
         <ClienteDetalheModal
           cliente={clienteSelecionado}
           onClose={() => setClienteSelecionado(null)}
+        />
+      )}
+
+      {/* Modal de Campanha */}
+      {showCampanha && (
+        <CampanhaModal
+          clientes={clientes}
+          onClose={() => setShowCampanha(false)}
         />
       )}
     </div>
