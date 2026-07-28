@@ -726,6 +726,21 @@ function ClienteDetalheModal({ cliente, onClose }: { cliente: ClienteStats; onCl
 // ── Modal de Campanha ─────────────────────────────────────────────────────────
 type StatusEnvio = 'aguardando' | 'enviando' | 'ok' | 'erro'
 
+interface MidiaItem {
+  url: string
+  tipo: 'image' | 'video'
+  nome: string
+  preview?: string // object URL para imagens
+}
+
+const OPCOES_COMPRAS = [
+  { valor: 1,  label: '1x' },
+  { valor: 2,  label: '2x' },
+  { valor: 3,  label: '3x' },
+  { valor: 4,  label: '4x' },
+  { valor: -1, label: '5x+' },
+]
+
 function CampanhaModal({
   clientes,
   onClose,
@@ -741,9 +756,29 @@ function CampanhaModal({
   const [status, setStatus] = useState<Record<string, StatusEnvio>>({})
   const [erros, setErros] = useState<Record<string, string>>({})
   const [apiDisponivel, setApiDisponivel] = useState<boolean | null>(null)
+  const [midias, setMidias] = useState<MidiaItem[]>([])
+  const [uploadando, setUploadando] = useState(false)
+  const [filtroAniversario, setFiltroAniversario] = useState(false)
+  const [filtroCompras, setFiltroCompras] = useState<number[]>([])
 
-  const clientesComTel = clientes.filter((c) => c.telefone)
-  const clientesFiltrados = clientesComTel.filter((c) =>
+  const mesAtual = new Date().getMonth() + 1
+
+  // Aplica filtros de aniversário e compras antes do filtro de busca
+  const clientesComFiltros = clientes.filter((c) => {
+    if (!c.telefone) return false
+    if (filtroAniversario) {
+      if (!c.data_nascimento) return false
+      const d = new Date(c.data_nascimento + 'T12:00:00')
+      if (d.getMonth() + 1 !== mesAtual) return false
+    }
+    if (filtroCompras.length > 0) {
+      const match = filtroCompras.some((f) => f === -1 ? c.total_compras >= 5 : c.total_compras === f)
+      if (!match) return false
+    }
+    return true
+  })
+
+  const clientesFiltrados = clientesComFiltros.filter((c) =>
     busca === '' || c.nome.toLowerCase().includes(busca.toLowerCase())
   )
 
@@ -753,6 +788,12 @@ function CampanhaModal({
       next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
+  }
+
+  function toggleFiltroCompras(valor: number) {
+    setFiltroCompras((prev) =>
+      prev.includes(valor) ? prev.filter((v) => v !== valor) : [...prev, valor]
+    )
   }
 
   function selecionarTodos() {
@@ -770,24 +811,61 @@ function CampanhaModal({
     else setMsgTexto('')
   }
 
-  const clientesSelecionados = clientesComTel.filter((c) => selecionados.has(c.id))
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return
+    setUploadando(true)
+    const supabase = createClient()
+    const novas: MidiaItem[] = []
+
+    for (const file of Array.from(files)) {
+      const tipo: 'image' | 'video' = file.type.startsWith('video') ? 'video' : 'image'
+      const safeName = file.name.replace(/[^a-z0-9._-]/gi, '_')
+      const path = `${Date.now()}_${safeName}`
+
+      const { error } = await supabase.storage
+        .from('campanhas')
+        .upload(path, file, { upsert: true })
+
+      if (error) {
+        console.error('Upload erro:', error.message)
+        continue
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from('campanhas').getPublicUrl(path)
+      const preview = tipo === 'image' ? URL.createObjectURL(file) : undefined
+      novas.push({ url: publicUrl, tipo, nome: file.name, preview })
+    }
+
+    setMidias((prev) => [...prev, ...novas])
+    setUploadando(false)
+  }
+
+  function removerMidia(index: number) {
+    setMidias((prev) => {
+      const next = [...prev]
+      if (next[index].preview) URL.revokeObjectURL(next[index].preview!)
+      next.splice(index, 1)
+      return next
+    })
+  }
+
+  const clientesSelecionados = clientes.filter((c) => selecionados.has(c.id))
 
   function msgParaCliente(nome: string) {
     return msgTexto.replace(/\{nome\}/gi, nome)
   }
 
   const totalSelecionados = selecionados.size
-  const totalEnviados  = Object.values(status).filter((s) => s === 'ok').length
-  const totalErros     = Object.values(status).filter((s) => s === 'erro').length
+  const totalEnviados   = Object.values(status).filter((s) => s === 'ok').length
+  const totalErros      = Object.values(status).filter((s) => s === 'erro').length
   const totalProcessado = totalEnviados + totalErros
-  const concluido      = enviando && totalProcessado >= clientesSelecionados.length
+  const concluido       = enviando && totalProcessado >= clientesSelecionados.length
 
   async function iniciarEnvio() {
     setEnviando(true)
     setStatus({})
     setErros({})
 
-    // Verifica se a API está configurada com o primeiro envio
     let primeiroChecked = false
 
     for (const cliente of clientesSelecionados) {
@@ -799,6 +877,7 @@ function CampanhaModal({
         body: JSON.stringify({
           telefone: cliente.telefone,
           mensagem: msgParaCliente(cliente.nome),
+          midias: midias.map((m) => ({ url: m.url, tipo: m.tipo })),
         }),
       })
 
@@ -807,7 +886,6 @@ function CampanhaModal({
       if (!primeiroChecked) {
         primeiroChecked = true
         if (res.status === 503) {
-          // API não configurada — interrompe e mostra aviso
           setApiDisponivel(false)
           setEnviando(false)
           setStatus({})
@@ -823,7 +901,6 @@ function CampanhaModal({
         setErros((prev) => ({ ...prev, [cliente.id]: data?.error ?? 'Erro desconhecido' }))
       }
 
-      // Intervalo entre envios para evitar bloqueio do WhatsApp
       await new Promise((r) => setTimeout(r, 1500))
     }
   }
@@ -889,17 +966,89 @@ function CampanhaModal({
                   value={msgTexto}
                   onChange={(e) => setMsgTexto(e.target.value)}
                   placeholder="Digite a mensagem... Use {nome} para personalizar com o nome do cliente."
-                  rows={6}
+                  rows={5}
                   className="w-full text-sm text-[#F0F0F0] bg-[#0D0D0D] rounded-lg p-3 border border-[#3A3A3A] focus:outline-none focus:border-gold resize-y font-sans leading-relaxed"
                 />
-                <p className="text-[10px] text-[#555555] mt-1">Use <span className="text-gold">{'{nome}'}</span> para inserir o nome do cliente automaticamente.</p>
+                <p className="text-[10px] text-[#555555] mt-1">Use <span className="text-gold">{'{nome}'}</span> para personalizar com o nome de cada cliente.</p>
+              </div>
+
+              {/* Upload de Mídias */}
+              <div>
+                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-2">
+                  Fotos e Vídeos
+                  <span className="text-[#555555] ml-1 normal-case font-normal">(opcional — enviados após a mensagem)</span>
+                </label>
+                {midias.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {midias.map((m, i) => (
+                      <div key={i} className="relative group">
+                        {m.tipo === 'image' && m.preview ? (
+                          <img src={m.preview} alt={m.nome} className="w-16 h-16 object-cover rounded-lg border border-[#3A3A3A]" />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg border border-[#3A3A3A] bg-[#0D0D0D] flex flex-col items-center justify-center gap-0.5">
+                            <span className="text-xl">🎥</span>
+                            <span className="text-[9px] text-[#555555] truncate w-14 text-center px-1">{m.nome}</span>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => removerMidia(i)}
+                          className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none w-5 h-5"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className={`flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#3A3A3A] text-xs text-[#888888] cursor-pointer hover:border-gold hover:text-gold transition-colors ${uploadando ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFiles(e.target.files)}
+                    disabled={uploadando}
+                  />
+                  {uploadando ? '⏳ Enviando arquivos...' : '+ Adicionar fotos ou vídeos'}
+                </label>
+              </div>
+
+              {/* Filtros */}
+              <div>
+                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-2">Filtrar Clientes</label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setFiltroAniversario((v) => !v)}
+                    className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${filtroAniversario ? 'border-gold text-gold bg-gold/10' : 'border-[#3A3A3A] text-[#888888] hover:border-[#555555]'}`}
+                  >
+                    🎂 Aniversariantes do mês
+                  </button>
+                  {OPCOES_COMPRAS.map((op) => (
+                    <button
+                      key={op.valor}
+                      onClick={() => toggleFiltroCompras(op.valor)}
+                      className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${filtroCompras.includes(op.valor) ? 'border-green-500 text-green-400 bg-green-500/10' : 'border-[#3A3A3A] text-[#888888] hover:border-[#555555]'}`}
+                    >
+                      {op.label}
+                    </button>
+                  ))}
+                  {(filtroAniversario || filtroCompras.length > 0) && (
+                    <button
+                      onClick={() => { setFiltroAniversario(false); setFiltroCompras([]) }}
+                      className="px-2.5 py-1 rounded text-xs font-semibold border border-[#3A3A3A] text-[#555555] hover:text-danger hover:border-danger transition-colors"
+                    >
+                      Limpar filtros
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Seleção de clientes */}
               <div>
                 <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
                   <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide">
-                    Clientes com telefone ({clientesComTel.length})
+                    Clientes com telefone
+                    <span className="text-gold ml-1">({clientesComFiltros.length})</span>
                   </label>
                   <div className="flex gap-2">
                     <button onClick={selecionarTodos} className="text-xs px-2.5 py-1 rounded border border-[#3A3A3A] text-[#888888] hover:text-gold hover:border-gold transition-colors">
@@ -919,9 +1068,9 @@ function CampanhaModal({
                   placeholder="Buscar cliente..."
                   className="w-full mb-2 bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] placeholder-[#555555] focus:outline-none focus:border-gold"
                 />
-                <div className="flex flex-col gap-1 max-h-56 overflow-y-auto rounded-lg border border-[#2A2A2A] bg-[#0D0D0D] p-2">
+                <div className="flex flex-col gap-1 max-h-48 overflow-y-auto rounded-lg border border-[#2A2A2A] bg-[#0D0D0D] p-2">
                   {clientesFiltrados.length === 0 ? (
-                    <p className="text-xs text-[#555555] p-2">Nenhum cliente encontrado</p>
+                    <p className="text-xs text-[#555555] p-2">Nenhum cliente encontrado com esses filtros</p>
                   ) : (
                     clientesFiltrados.map((c) => (
                       <label key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-[#1A1A1A] cursor-pointer transition-colors">
@@ -944,14 +1093,19 @@ function CampanhaModal({
 
               {/* Rodapé */}
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#2A2A2A]">
-                <p className="text-sm text-[#888888]">
-                  {totalSelecionados > 0
-                    ? <span className="text-[#F0F0F0] font-bold">{totalSelecionados} cliente{totalSelecionados !== 1 ? 's' : ''} selecionado{totalSelecionados !== 1 ? 's' : ''}</span>
-                    : 'Nenhum cliente selecionado'}
-                </p>
+                <div>
+                  <p className="text-sm text-[#888888]">
+                    {totalSelecionados > 0
+                      ? <span className="text-[#F0F0F0] font-bold">{totalSelecionados} cliente{totalSelecionados !== 1 ? 's' : ''}</span>
+                      : 'Nenhum selecionado'}
+                  </p>
+                  {midias.length > 0 && (
+                    <p className="text-[10px] text-[#888888]">{midias.length} mídia{midias.length !== 1 ? 's' : ''} anexada{midias.length !== 1 ? 's' : ''}</p>
+                  )}
+                </div>
                 <button
                   onClick={iniciarEnvio}
-                  disabled={totalSelecionados === 0 || msgTexto.trim() === ''}
+                  disabled={totalSelecionados === 0 || msgTexto.trim() === '' || uploadando}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <WppIcon size={14} />

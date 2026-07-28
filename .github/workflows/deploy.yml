@@ -81,7 +81,7 @@ jobs:
           fi
 
       # ── 2. Bucket de Storage ─────────────────────────────
-      - name: Criar bucket 'produtos'
+      - name: Criar buckets de Storage
         run: |
           curl -sf -X POST \
             "${SUPABASE_URL}/storage/v1/bucket" \
@@ -89,8 +89,16 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"id":"produtos","name":"produtos","public":true}' \
-          && echo "Bucket criado" \
-          || echo "Bucket ja existe (ok)"
+          && echo "Bucket produtos criado" \
+          || echo "Bucket produtos ja existe (ok)"
+          curl -sf -X POST \
+            "${SUPABASE_URL}/storage/v1/bucket" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"id":"campanhas","name":"campanhas","public":true,"fileSizeLimit":52428800}' \
+          && echo "Bucket campanhas criado" \
+          || echo "Bucket campanhas ja existe (ok)"
 
       # ── 3. Deps do projeto ───────────────────────────────
       - name: npm install

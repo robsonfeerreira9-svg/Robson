@@ -1737,3 +1737,24 @@ BEGIN
     VALUES ('saida', 'outro', 'Saldo Inicial de Caixa — Ajuste', ABS(v_ajuste), true, '2026-05-31T23:59:00');
   END IF;
 END $$;
+
+-- ─────────────────────────────────────────────────────
+-- STEP 35: RLS para bucket campanhas (mídias de campanha WPP)
+-- ─────────────────────────────────────────────────────
+DO $$ BEGIN
+  CREATE POLICY "campanhas_insert_auth" ON storage.objects
+    FOR INSERT TO authenticated
+    WITH CHECK (bucket_id = 'campanhas');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "campanhas_select_public" ON storage.objects
+    FOR SELECT TO public
+    USING (bucket_id = 'campanhas');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "campanhas_delete_auth" ON storage.objects
+    FOR DELETE TO authenticated
+    USING (bucket_id = 'campanhas');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
