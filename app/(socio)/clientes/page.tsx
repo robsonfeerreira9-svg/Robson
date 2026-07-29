@@ -811,16 +811,16 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
               <div>
                 <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">
                   Client-Token
-                  <span className="text-[#F59E0B] ml-1 normal-case font-normal">(falta preencher)</span>
+                  <span className="text-[#555555] ml-1 normal-case font-normal">(opcional)</span>
                 </label>
                 <input
                   value={clientToken}
                   onChange={(e) => setClientToken(e.target.value)}
-                  placeholder="Encontre no Z-API → ícone do perfil → Client-Token"
+                  placeholder="Opcional — deixe em branco se não tiver"
                   className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
                 />
                 <p className="text-[10px] text-[#555555] mt-1">
-                  No site z-api.io, clique no ícone do seu perfil (canto superior direito) para ver o Client-Token.
+                  Se existir, fica no ícone do perfil do z-api.io. Contas mais novas podem não ter este campo.
                 </p>
               </div>
 
@@ -832,7 +832,7 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
 
               <button
                 onClick={salvar}
-                disabled={salvando || !instanceId || !token || !clientToken}
+                disabled={salvando || !instanceId || !token}
                 className="w-full py-2.5 rounded-lg bg-green-600 text-white font-bold text-sm hover:bg-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {salvando ? 'Salvando...' : 'Salvar e Ativar'}

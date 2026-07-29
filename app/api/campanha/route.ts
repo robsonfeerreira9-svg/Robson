@@ -10,12 +10,12 @@ interface MidiaItem {
 }
 
 async function carregarCredenciais(): Promise<{ instanceId: string; token: string; clientToken: string } | null> {
-  // Prioridade 1: env vars (GitHub Secrets via Vercel)
+  // Prioridade 1: env vars
   const instanceId  = process.env.ZAPI_INSTANCE_ID
   const token       = process.env.ZAPI_TOKEN
-  const clientToken = process.env.ZAPI_CLIENT_TOKEN
+  const clientToken = process.env.ZAPI_CLIENT_TOKEN ?? ''
 
-  if (instanceId && token && clientToken) {
+  if (instanceId && token) {
     return { instanceId, token, clientToken }
   }
 
@@ -33,11 +33,11 @@ async function carregarCredenciais(): Promise<{ instanceId: string; token: strin
     const cfg: Record<string, string> = {}
     for (const row of data ?? []) cfg[row.chave] = row.valor
 
-    const id  = instanceId  || cfg.ZAPI_INSTANCE_ID
-    const tk  = token       || cfg.ZAPI_TOKEN
-    const ct  = clientToken || cfg.ZAPI_CLIENT_TOKEN
+    const id = instanceId || cfg.ZAPI_INSTANCE_ID
+    const tk = token      || cfg.ZAPI_TOKEN
+    const ct = clientToken || cfg.ZAPI_CLIENT_TOKEN || ''
 
-    if (id && tk && ct) return { instanceId: id, token: tk, clientToken: ct }
+    if (id && tk) return { instanceId: id, token: tk, clientToken: ct }
   } catch { /* falha silenciosa */ }
 
   return null
