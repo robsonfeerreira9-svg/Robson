@@ -1,2 +1,50 @@
-HTTP: 201
-[{"email":"socio@hggrifes.com","role":"socio","ativo":true},{"email":"camilly@hggrifes.com","role":"funcionario","ativo":true},{"email":"ciara@hggrifes.com","role":"funcionario","ativo":true},{"email":"func1@hggrifes.com","role":"funcionario","ativo":false}]
+PROJECT_ID=prj_nYWT5NJoSZVnutPDrAsoN7Tf0Dvo
+DEPLOY_EXIT=1
+Vercel CLI 58.1.0 (Node.js 20.20.2)
+Retrieving project…
+Deploying robsons-projects-4e5d04b5/hg-grifes-erp
+Uploading [--------------------] (0.0B/74.8KB)
+Uploading [========------------] (33.3KB/74.8KB)
+Uploading [=============-------] (49.3KB/74.8KB)
+Uploading [=================---] (65.3KB/74.8KB)
+Uploading [====================] (74.8KB/74.8KB)
+  Inspect         https://vercel.com/robsons-projects-4e5d04b5/hg-grifes-erp/7cqR8sMQMKqPuPuxcfcmnYUHrT9z
+  Production      https://hg-grifes-5y6k0d3sl-robsons-projects-4e5d04b5.vercel.app
+https://hg-grifes-5y6k0d3sl-robsons-projects-4e5d04b5.vercel.appBuilding…
+Building…
+Running build in Washington, D.C., USA (East) – iad1
+Build machine configuration: 2 cores, 8 GB
+Retrieving list of deployment files...
+Downloading 70 deployment files...
+Restored build cache from previous deployment (3KnSdvHwyoHNoo1wnPXVEWGvZsyu)
+Running "vercel build"
+Vercel CLI 56.5.0
+Installing dependencies...
+up to date in 3s
+154 packages are looking for funding
+run `npm fund` for details
+Detected Next.js version: 14.2.15
+Running "npm run build"
+> hg-grifes-erp@0.1.0 build
+> next build
+▲ Next.js 14.2.15
+Creating an optimized production build ...
+Failed to compile.
+./app/(socio)/clientes/page.tsx
+Error:
+x Nullish coalescing operator(??) requires parens when mixing with logical operators
+,-[/vercel/path0/app/(socio)/clientes/page.tsx:763:1]
+763 |       const texto = await res.text().catch(() => '')
+764 |       let d: Record<string, string> = {}
+765 |       try { d = JSON.parse(texto) } catch (_e) { /* não é JSON */ }
+766 |       setMsg({ tipo: 'erro', texto: `Erro ${res.status}: ${d.error ?? texto.slice(0, 150) || 'desconhecido'}` })
+:                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+767 |     }
+768 |   }
+`----
+Caused by:
+Syntax Error
+Import trace for requested module:
+./app/(socio)/clientes/page.tsx
+> Build failed because of webpack errors
+Error: Command "npm run build" exited with 1
