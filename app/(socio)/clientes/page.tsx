@@ -731,7 +731,6 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
   const [clientToken, setClientToken] = useState('')
   const [salvando,    setSalvando]    = useState(false)
   const [msg,         setMsg]         = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null)
-  const [carregando,  setCarregando]  = useState(true)
 
   // Carrega valores existentes
   useEffect(() => {
@@ -741,9 +740,8 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
         if (cfg.ZAPI_INSTANCE_ID)  setInstanceId(cfg.ZAPI_INSTANCE_ID)
         if (cfg.ZAPI_TOKEN)        setToken(cfg.ZAPI_TOKEN)
         if (cfg.ZAPI_CLIENT_TOKEN) setClientToken(cfg.ZAPI_CLIENT_TOKEN)
-        setCarregando(false)
       })
-      .catch(() => setCarregando(false))
+      .catch(() => {})
   }, [])
 
   async function salvar() {
@@ -786,12 +784,9 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="p-6 flex flex-col gap-4">
-          {carregando ? (
-            <p className="text-xs text-[#888888] text-center py-4">Carregando...</p>
-          ) : (
-            <>
-              <div>
-                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Instance ID</label>
+          <>
+            <div>
+              <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Instance ID</label>
                 <input
                   value={instanceId}
                   onChange={(e) => setInstanceId(e.target.value)}
@@ -837,8 +832,7 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
               >
                 {salvando ? 'Salvando...' : 'Salvar e Ativar'}
               </button>
-            </>
-          )}
+          </>
         </div>
       </div>
     </div>
