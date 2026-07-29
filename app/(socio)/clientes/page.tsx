@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase'
 import Card from '@/components/ui/Card'
@@ -734,7 +734,7 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
   const [carregando,  setCarregando]  = useState(true)
 
   // Carrega valores existentes
-  useState(() => {
+  useEffect(() => {
     fetch('/api/configuracoes')
       .then((r) => r.json())
       .then((cfg) => {
@@ -744,7 +744,7 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
         setCarregando(false)
       })
       .catch(() => setCarregando(false))
-  })
+  }, [])
 
   async function salvar() {
     setSalvando(true)
