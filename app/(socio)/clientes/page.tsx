@@ -762,7 +762,7 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
     } else {
       const texto = await res.text().catch(() => '')
       let d: Record<string, string> = {}
-      try { d = JSON.parse(texto) } catch { /* não é JSON */ }
+      try { d = JSON.parse(texto) } catch (_e) { /* não é JSON */ }
       setMsg({ tipo: 'erro', texto: `Erro ${res.status}: ${d.error ?? texto.slice(0, 150) || 'desconhecido'}` })
     }
   }
@@ -786,55 +786,53 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="p-6 flex flex-col gap-4">
-          <>
-            <div>
-              <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Instance ID</label>
-                <input
-                  value={instanceId}
-                  onChange={(e) => setInstanceId(e.target.value)}
-                  placeholder="Ex: 3F6D0EBC6CADA21029F252B7684F8B2A"
-                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Token</label>
-                <input
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Ex: 9C9CF55B9B6FE700C6A751A0"
-                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">
-                  Client-Token
-                  <span className="text-[#555555] ml-1 normal-case font-normal">(opcional)</span>
-                </label>
-                <input
-                  value={clientToken}
-                  onChange={(e) => setClientToken(e.target.value)}
-                  placeholder="Opcional — deixe em branco se não tiver"
-                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
-                />
-                <p className="text-[10px] text-[#555555] mt-1">
-                  Se existir, fica no ícone do perfil do z-api.io. Contas mais novas podem não ter este campo.
-                </p>
-              </div>
+          <div>
+            <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Instance ID</label>
+            <input
+              value={instanceId}
+              onChange={(e) => setInstanceId(e.target.value)}
+              placeholder="Ex: 3F6D0EBC6CADA21029F252B7684F8B2A"
+              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Token</label>
+            <input
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="Ex: 9C9CF55B9B6FE700C6A751A0"
+              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">
+              Client-Token
+              <span className="text-[#555555] ml-1 normal-case font-normal">(opcional)</span>
+            </label>
+            <input
+              value={clientToken}
+              onChange={(e) => setClientToken(e.target.value)}
+              placeholder="Opcional — deixe em branco se não tiver"
+              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
+            />
+            <p className="text-[10px] text-[#555555] mt-1">
+              Se existir, fica no ícone do perfil do z-api.io. Contas mais novas podem não ter este campo.
+            </p>
+          </div>
 
-              {msg && (
-                <p className={`text-sm font-semibold rounded-lg px-3 py-2 ${msg.tipo === 'ok' ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
-                  {msg.texto}
-                </p>
-              )}
+          {msg && (
+            <p className={`text-sm font-semibold rounded-lg px-3 py-2 ${msg.tipo === 'ok' ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
+              {msg.texto}
+            </p>
+          )}
 
-              <button
-                onClick={salvar}
-                disabled={salvando || !instanceId || !token}
-                className="w-full py-2.5 rounded-lg bg-green-600 text-white font-bold text-sm hover:bg-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {salvando ? 'Salvando...' : 'Salvar e Ativar'}
-              </button>
-          </>
+          <button
+            onClick={salvar}
+            disabled={salvando || !instanceId || !token}
+            className="w-full py-2.5 rounded-lg bg-green-600 text-white font-bold text-sm hover:bg-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {salvando ? 'Salvando...' : 'Salvar e Ativar'}
+          </button>
         </div>
       </div>
     </div>
