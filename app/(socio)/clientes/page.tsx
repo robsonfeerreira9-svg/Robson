@@ -763,7 +763,7 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
       const texto = await res.text().catch(() => '')
       let d: Record<string, string> = {}
       try { d = JSON.parse(texto) } catch (_e) { /* não é JSON */ }
-      setMsg({ tipo: 'erro', texto: `Erro ${res.status}: ${d.error ?? texto.slice(0, 150) || 'desconhecido'}` })
+      setMsg({ tipo: 'erro', texto: `Erro ${res.status}: ${d.error ?? (texto.slice(0, 150) || 'desconhecido')}` })
     }
   }
 
