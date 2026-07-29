@@ -724,6 +724,127 @@ function ClienteDetalheModal({ cliente, onClose }: { cliente: ClienteStats; onCl
 }
 
 // ── Modal de Campanha ─────────────────────────────────────────────────────────
+// ── Modal Configurar WhatsApp (Z-API) ────────────────────────────────────────
+function ConfigWppModal({ onClose }: { onClose: () => void }) {
+  const [instanceId,  setInstanceId]  = useState('')
+  const [token,       setToken]       = useState('')
+  const [clientToken, setClientToken] = useState('')
+  const [salvando,    setSalvando]    = useState(false)
+  const [msg,         setMsg]         = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null)
+  const [carregando,  setCarregando]  = useState(true)
+
+  // Carrega valores existentes
+  useState(() => {
+    fetch('/api/configuracoes')
+      .then((r) => r.json())
+      .then((cfg) => {
+        if (cfg.ZAPI_INSTANCE_ID)  setInstanceId(cfg.ZAPI_INSTANCE_ID)
+        if (cfg.ZAPI_TOKEN)        setToken(cfg.ZAPI_TOKEN)
+        if (cfg.ZAPI_CLIENT_TOKEN) setClientToken(cfg.ZAPI_CLIENT_TOKEN)
+        setCarregando(false)
+      })
+      .catch(() => setCarregando(false))
+  })
+
+  async function salvar() {
+    setSalvando(true)
+    setMsg(null)
+    const res = await fetch('/api/configuracoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ZAPI_INSTANCE_ID:  instanceId.trim(),
+        ZAPI_TOKEN:        token.trim(),
+        ZAPI_CLIENT_TOKEN: clientToken.trim(),
+      }),
+    })
+    setSalvando(false)
+    if (res.ok) {
+      setMsg({ tipo: 'ok', texto: '✅ Credenciais salvas! Campanha pronta para envio.' })
+    } else {
+      const d = await res.json().catch(() => ({}))
+      setMsg({ tipo: 'erro', texto: `Erro: ${d.error ?? 'desconhecido'}` })
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-md bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A2A2A]">
+          <div>
+            <h2 className="font-bold text-[#F0F0F0]">⚙️ Configurar WhatsApp</h2>
+            <p className="text-xs text-[#888888] mt-0.5">Credenciais Z-API para envio automático</p>
+          </div>
+          <button onClick={onClose} className="text-[#888888] hover:text-[#F0F0F0]">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="p-6 flex flex-col gap-4">
+          {carregando ? (
+            <p className="text-xs text-[#888888] text-center py-4">Carregando...</p>
+          ) : (
+            <>
+              <div>
+                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Instance ID</label>
+                <input
+                  value={instanceId}
+                  onChange={(e) => setInstanceId(e.target.value)}
+                  placeholder="Ex: 3F6D0EBC6CADA21029F252B7684F8B2A"
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">Token</label>
+                <input
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="Ex: 9C9CF55B9B6FE700C6A751A0"
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-[#888888] font-semibold uppercase tracking-wide block mb-1.5">
+                  Client-Token
+                  <span className="text-[#F59E0B] ml-1 normal-case font-normal">(falta preencher)</span>
+                </label>
+                <input
+                  value={clientToken}
+                  onChange={(e) => setClientToken(e.target.value)}
+                  placeholder="Encontre no Z-API → ícone do perfil → Client-Token"
+                  className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#F0F0F0] font-mono focus:outline-none focus:border-gold"
+                />
+                <p className="text-[10px] text-[#555555] mt-1">
+                  No site z-api.io, clique no ícone do seu perfil (canto superior direito) para ver o Client-Token.
+                </p>
+              </div>
+
+              {msg && (
+                <p className={`text-sm font-semibold rounded-lg px-3 py-2 ${msg.tipo === 'ok' ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
+                  {msg.texto}
+                </p>
+              )}
+
+              <button
+                onClick={salvar}
+                disabled={salvando || !instanceId || !token || !clientToken}
+                className="w-full py-2.5 rounded-lg bg-green-600 text-white font-bold text-sm hover:bg-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {salvando ? 'Salvando...' : 'Salvar e Ativar'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 type StatusEnvio = 'aguardando' | 'enviando' | 'ok' | 'erro'
 
 interface MidiaItem {
@@ -1181,6 +1302,7 @@ export default function ClientesPage() {
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteStats | null>(null)
   const [showCampanha, setShowCampanha] = useState(false)
+  const [showConfigWpp, setShowConfigWpp] = useState(false)
 
   const { data: clientes = [], isLoading } = useSWR('clientes-stats', fetchClientesStats, { refreshInterval: 60000 })
   const { data: aniversariantes = [] } = useSWR('aniversariantes', fetchAniversariantes, { refreshInterval: 3600000 })
@@ -1212,13 +1334,22 @@ export default function ClientesPage() {
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Clientes</h1>
             <a href="/dashboard" className="text-xs text-[#888888] hover:text-gold transition-colors">← Dashboard</a>
           </div>
-          <button
-            onClick={() => setShowCampanha(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-600 transition-colors"
-          >
-            <WppIcon size={14} />
-            Campanha
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowConfigWpp(true)}
+              title="Configurar WhatsApp"
+              className="px-3 py-2 rounded-lg border border-[#2A2A2A] text-[#888888] text-sm hover:border-gold hover:text-gold transition-colors"
+            >
+              ⚙️
+            </button>
+            <button
+              onClick={() => setShowCampanha(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-600 transition-colors"
+            >
+              <WppIcon size={14} />
+              Campanha
+            </button>
+          </div>
         </div>
 
         {/* KPIs */}
@@ -1420,6 +1551,11 @@ export default function ClientesPage() {
           cliente={clienteSelecionado}
           onClose={() => setClienteSelecionado(null)}
         />
+      )}
+
+      {/* Modal Configurar WhatsApp */}
+      {showConfigWpp && (
+        <ConfigWppModal onClose={() => setShowConfigWpp(false)} />
       )}
 
       {/* Modal de Campanha */}

@@ -1758,3 +1758,29 @@ DO $$ BEGIN
     FOR DELETE TO authenticated
     USING (bucket_id = 'campanhas');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ─────────────────────────────────────────────────────
+-- STEP 36: Tabela de configurações do sistema
+-- ─────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.configuracoes (
+  chave        TEXT PRIMARY KEY,
+  valor        TEXT NOT NULL,
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.configuracoes ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "configuracoes_socio_all" ON public.configuracoes
+    FOR ALL TO authenticated
+    USING (EXISTS (
+      SELECT 1 FROM public.usuarios WHERE id = auth.uid() AND role = 'socio'
+    ));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Pré-popular credenciais Z-API conhecidas
+INSERT INTO public.configuracoes (chave, valor) VALUES
+  ('ZAPI_INSTANCE_ID', '3F6D0EBC6CADA21029F252B7684F8B2A'),
+  ('ZAPI_TOKEN',       '9C9CF55B9B6FE700C6A751A0')
+ON CONFLICT (chave) DO UPDATE
+  SET valor = EXCLUDED.valor, atualizado_em = NOW();
