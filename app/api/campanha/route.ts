@@ -40,7 +40,12 @@ async function carregarCredenciais(): Promise<{ instanceId: string; token: strin
     if (id && tk) return { instanceId: id, token: tk, clientToken: ct }
   } catch { /* falha silenciosa */ }
 
-  return null
+  // Prioridade 3: credenciais pré-configuradas (fallback garantido)
+  return {
+    instanceId: '3F6D0EBC6CADA21029F252B7684F8B2A',
+    token:      '9C9CF55B9B6FE700C6A751A0',
+    clientToken: '',
+  }
 }
 
 async function zapiPost(instanceId: string, token: string, clientToken: string, endpoint: string, body: object) {
