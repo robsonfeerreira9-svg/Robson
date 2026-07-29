@@ -49,13 +49,17 @@ async function carregarCredenciais(): Promise<{ instanceId: string; token: strin
 }
 
 async function zapiPost(instanceId: string, token: string, clientToken: string, endpoint: string, body: object) {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (clientToken) headers['Client-Token'] = clientToken
   return fetch(
     `https://api.z-api.io/instances/${instanceId}/token/${token}/${endpoint}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Client-Token': clientToken },
-      body: JSON.stringify(body),
-    }
+    { method: 'POST', headers, body: JSON.stringify(body) }
+  )
+}
+
+function zapiErrMsg(body: Record<string, unknown>, status: number): string {
+  return String(
+    body.message ?? body.value ?? body.error ?? body.reason ?? `Erro Z-API ${status}`
   )
 }
 
@@ -85,15 +89,15 @@ export async function POST(req: NextRequest) {
   try {
     if (!midias || midias.length === 0) {
       const res = await zapiPost(instanceId, token, clientToken, 'send-text', { phone, message: mensagem })
-      const body = await res.json().catch(() => ({}))
-      if (!res.ok) return NextResponse.json({ error: (body as {message?: string}).message ?? `Erro ${res.status}` }, { status: res.status })
+      const body = await res.json().catch(() => ({})) as Record<string, unknown>
+      if (!res.ok) return NextResponse.json({ error: zapiErrMsg(body, res.status) }, { status: res.status })
     } else {
       const primeira = midias[0]
       const ep1 = primeira.tipo === 'video' ? 'send-video' : 'send-image'
       const bk1 = primeira.tipo === 'video' ? 'video'      : 'image'
       const res1 = await zapiPost(instanceId, token, clientToken, ep1, { phone, [bk1]: primeira.url, caption: mensagem })
-      const b1 = await res1.json().catch(() => ({}))
-      if (!res1.ok) return NextResponse.json({ error: (b1 as {message?: string}).message ?? `Erro ${res1.status}` }, { status: res1.status })
+      const b1 = await res1.json().catch(() => ({})) as Record<string, unknown>
+      if (!res1.ok) return NextResponse.json({ error: zapiErrMsg(b1, res1.status) }, { status: res1.status })
 
       for (const midia of midias.slice(1)) {
         await new Promise((r) => setTimeout(r, 800))
