@@ -226,9 +226,29 @@ A partir de AGORA, *TODOS os tênis nacionais do nosso estoque estão saindo com
 👇 Dá uma olhada nos modelos que separei para você e corre, porque o estoque vai zerar rápido:
 [Carregar fotos dos tênis em estoque]`
 
+const MSG_PROMOCAO_HG = `🚨 PROMOÇÃO PESADA NA HG! 🚨
+
+Se você tava esperando uma oportunidade pra renovar o guarda-roupa, é agora! 👀🔥
+
+👕 Camisas 30% OFF
+🩳 Bermudas e calças 15% OFF
+🧥 Moletons 50% OFF
+🧥 Conjuntos de frio 30% OFF
+👟 Tênis 20% OFF
+
+E ainda tem essas oportunidades 👇
+
+🔥 BAG: de R$ 149,90 por R$ 99,90
+🔥 PASTA ANGEL: de R$ 250,00 por R$ 199,90
+
+⏰ Só até sexta-feira!
+
+Corre porque algumas peças já estão nas últimas 👀`
+
 const TEMPLATES_PADRAO = [
-  { key: 'aniversario', label: '🎂 Aniversário 20% OFF', texto: MSG_ANIVERSARIO_TEMPLATE },
-  { key: 'tenis',       label: '👟 Campanha Tênis 50%',  texto: MSG_CAMPANHA_TENIS },
+  { key: 'promocao',    label: '🚨 Promoção Pesada HG',   texto: MSG_PROMOCAO_HG },
+  { key: 'aniversario', label: '🎂 Aniversário 20% OFF',  texto: MSG_ANIVERSARIO_TEMPLATE },
+  { key: 'tenis',       label: '👟 Campanha Tênis 50%',   texto: MSG_CAMPANHA_TENIS },
 ]
 
 function ModelosMensagem() {
@@ -863,8 +883,8 @@ function CampanhaModal({
   clientes: ClienteStats[]
   onClose: () => void
 }) {
-  const [msgTemplate, setMsgTemplate] = useState('personalizada')
-  const [msgTexto, setMsgTexto] = useState('')
+  const [msgTemplate, setMsgTemplate] = useState('promocao')
+  const [msgTexto, setMsgTexto] = useState(MSG_PROMOCAO_HG)
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
   const [busca, setBusca] = useState('')
   const [enviando, setEnviando] = useState(false)
