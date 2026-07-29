@@ -984,6 +984,15 @@ function CampanhaModal({
     let primeiroChecked = false
 
     for (const cliente of clientesSelecionados) {
+      if (!cliente.telefone) {
+        setStatus((prev) => ({ ...prev, [cliente.id]: 'erro' }))
+        setErros((prev) => ({ ...prev, [cliente.id]: 'Sem telefone cadastrado' }))
+        continue
+      }
+
+      const msgFinal = msgParaCliente(cliente.nome)
+      if (!msgFinal.trim()) continue
+
       setStatus((prev) => ({ ...prev, [cliente.id]: 'enviando' }))
 
       const res = await fetch('/api/campanha', {
@@ -991,7 +1000,7 @@ function CampanhaModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           telefone: cliente.telefone,
-          mensagem: msgParaCliente(cliente.nome),
+          mensagem: msgFinal,
           midias: midias.map((m) => ({ url: m.url, tipo: m.tipo })),
         }),
       })
