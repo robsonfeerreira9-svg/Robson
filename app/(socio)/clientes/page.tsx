@@ -760,8 +760,10 @@ function ConfigWppModal({ onClose }: { onClose: () => void }) {
     if (res.ok) {
       setMsg({ tipo: 'ok', texto: '✅ Credenciais salvas! Campanha pronta para envio.' })
     } else {
-      const d = await res.json().catch(() => ({}))
-      setMsg({ tipo: 'erro', texto: `Erro: ${d.error ?? 'desconhecido'}` })
+      const texto = await res.text().catch(() => '')
+      let d: Record<string, string> = {}
+      try { d = JSON.parse(texto) } catch { /* não é JSON */ }
+      setMsg({ tipo: 'erro', texto: `Erro ${res.status}: ${d.error ?? texto.slice(0, 150) || 'desconhecido'}` })
     }
   }
 
