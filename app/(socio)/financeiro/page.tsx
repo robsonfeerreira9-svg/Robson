@@ -112,13 +112,11 @@ async function fetchSaldoMesAnterior(): Promise<number> {
   const supabase = createClient()
   const hoje = new Date()
   const fimMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0, 23, 59, 59)
-  const inicioHistorico = new Date(2000, 0, 1).toISOString()
 
   const { data } = await supabase
     .from('movimentacao_caixa')
     .select('tipo, valor, pago')
     .lte('criado_em', fimMesAnterior.toISOString())
-    .not('categoria', 'eq', 'aporte')
 
   if (!data) return 0
   const entradas = data.filter((m) => m.pago && m.tipo === 'entrada').reduce((s, m) => s + Number(m.valor), 0)
