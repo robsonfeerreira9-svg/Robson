@@ -115,15 +115,13 @@ async function fetchSaldoMesAnterior(): Promise<number> {
 
   const { data } = await supabase
     .from('movimentacao_caixa')
-    .select('tipo, valor, pago, categoria')
+    .select('tipo, valor, pago')
+    .eq('pago', true)
     .lte('criado_em', fimMesAnterior.toISOString())
 
   if (!data) return 0
-  // Exclui aportes das entradas (capital de sócios não é resultado operacional)
-  // Exclui compra_estoque e capital_giro das saídas (financiados pelos aportes)
-  const CATS_EXCL_SAIDA = ['compra_estoque', 'capital_giro']
-  const entradas = data.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria !== 'aporte').reduce((s, m) => s + Number(m.valor), 0)
-  const saidas   = data.filter((m) => m.pago && m.tipo === 'saida' && !CATS_EXCL_SAIDA.includes(m.categoria)).reduce((s, m) => s + Number(m.valor), 0)
+  const entradas = data.filter((m) => m.tipo === 'entrada').reduce((s, m) => s + Number(m.valor), 0)
+  const saidas   = data.filter((m) => m.tipo === 'saida').reduce((s, m) => s + Number(m.valor), 0)
   return entradas - saidas
 }
 
