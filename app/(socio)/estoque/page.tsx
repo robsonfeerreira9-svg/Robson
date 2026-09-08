@@ -22,6 +22,32 @@ async function fetchEstoque(): Promise<ProdutoComEstoque[]> {
   return (data as ProdutoComEstoque[]) ?? []
 }
 
+// ── Fetcher de ranking de vendas por modelo e tamanho ────────────────────────
+async function fetchRankingVendas() {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('itens_venda')
+    .select('quantidade, produto:produtos(nome, tamanho, numero)')
+
+  if (!data) return { modelos: [] as {nome:string,qty:number}[], tamanhos: [] as {tam:string,qty:number}[] }
+
+  const modeloMap: Record<string, number> = {}
+  const tamanhoMap: Record<string, number> = {}
+
+  for (const item of data) {
+    const prod = item.produto as { nome: string; tamanho: string; numero: string | null } | null
+    if (!prod) continue
+    const qty  = item.quantidade ?? 1
+    modeloMap[prod.nome] = (modeloMap[prod.nome] ?? 0) + qty
+    const tam = prod.numero ?? prod.tamanho
+    tamanhoMap[tam] = (tamanhoMap[tam] ?? 0) + qty
+  }
+
+  const modelos  = Object.entries(modeloMap).sort(([,a],[,b]) => b-a).slice(0,8).map(([nome,qty]) => ({nome,qty}))
+  const tamanhos = Object.entries(tamanhoMap).sort(([,a],[,b]) => b-a).map(([tam,qty]) => ({tam,qty}))
+  return { modelos, tamanhos }
+}
+
 // ── Helpers de alerta ────────────────────────────────────────────────────────
 function isEstoqueBaixo(qty: number) { return qty < 3 }
 function isProdutoParado(ultimaVenda: string | null) {
@@ -252,9 +278,8 @@ function EstoquePageInner() {
   const [filtroAlerta, setFiltroAlerta] = useState(false)
   const [mostrarZerados, setMostrarZerados] = useState(false)
   const [modoGrade, setModoGrade] = useState(false)
-  const { data: produtos = [], isLoading } = useSWR('estoque-socio', fetchEstoque, {
-    refreshInterval: 60000,
-  })
+  const { data: produtos = [], isLoading } = useSWR('estoque-socio', fetchEstoque, { refreshInterval: 60000 })
+  const { data: ranking } = useSWR('ranking-vendas', fetchRankingVendas, { refreshInterval: 300000 })
 
   // Toast de sucesso vindo da URL
   useEffect(() => {
@@ -303,6 +328,65 @@ function EstoquePageInner() {
             + Novo Produto
           </Button>
         </div>
+
+        {/* Ranking de Vendas */}
+        {ranking && (ranking.modelos.length > 0 || ranking.tamanhos.length > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Modelos mais vendidos */}
+            {ranking.modelos.length > 0 && (
+              <Card padding="sm">
+                <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide mb-3">Modelos mais vendidos</p>
+                <div className="flex flex-col gap-1.5">
+                  {ranking.modelos.map(({ nome, qty }, i) => {
+                    const max = ranking.modelos[0].qty
+                    const pct = Math.round((qty / max) * 100)
+                    return (
+                      <div key={nome} className="flex items-center gap-2">
+                        <span className="text-[10px] text-[#555555] w-4 text-right">{i+1}.</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-0.5">
+                            <span className="text-xs text-[#F0F0F0] truncate max-w-[160px]">{nome}</span>
+                            <span className="text-xs font-bold text-gold ml-2">{qty}un</span>
+                          </div>
+                          <div className="h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
+                            <div className="h-full bg-gold rounded-full transition-all" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
+            )}
+            {/* Tamanhos mais vendidos */}
+            {ranking.tamanhos.length > 0 && (
+              <Card padding="sm">
+                <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide mb-3">Tamanhos mais vendidos</p>
+                <div className="flex flex-wrap gap-2">
+                  {ranking.tamanhos.map(({ tam, qty }, i) => {
+                    const max = ranking.tamanhos[0].qty
+                    const pct = Math.round((qty / max) * 100)
+                    return (
+                      <div key={tam} className="flex flex-col items-center gap-1 min-w-[52px]">
+                        <div
+                          className={`w-12 h-12 rounded-lg flex items-center justify-center text-sm font-black border-2 transition-colors ${
+                            i === 0 ? 'bg-gold/20 border-gold text-gold' : 'bg-[#1A1A1A] border-[#2A2A2A] text-[#F0F0F0]'
+                          }`}
+                        >
+                          {tam}
+                        </div>
+                        <span className="text-[10px] text-[#888888]">{qty}un</span>
+                        <div className="w-12 h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
+                          <div className="h-full bg-gold/60 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
 
         {/* Filtros */}
         <Card className="mb-4" padding="sm">

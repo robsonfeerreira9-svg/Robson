@@ -74,16 +74,30 @@ export default function NovoProdutoPage() {
 
   const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numero'>('letra')
   const [numeroValue,   setNumeroValue]   = useState('')
+  const [numeroQty,     setNumeroQty]     = useState('1')
+  // multi-tamanho para 'letra': chave = tamanho, valor = quantidade
+  const [tamanhoQtds,   setTamanhoQtds]   = useState<Partial<Record<TamanhoProduto, string>>>({})
 
   const [form, setForm] = useState({
     nome:       '',
-    tamanho:    'M' as TamanhoProduto,
     canal:      'ambos' as CanalProduto,
-    quantidade: '1',
     custo:      '',
     markupPct:  '100',
     precoVenda: '',
   })
+
+  function toggleTamanho(t: TamanhoProduto) {
+    setTamanhoQtds((prev) => {
+      const next = { ...prev }
+      if (next[t] !== undefined) delete next[t]
+      else next[t] = '1'
+      return next
+    })
+  }
+
+  function setQtdTamanho(t: TamanhoProduto, qty: string) {
+    setTamanhoQtds((prev) => ({ ...prev, [t]: qty }))
+  }
 
   const custoNum      = parseFloat(form.custo) || 0
   const markupNum     = parseFloat(form.markupPct) || 100
@@ -165,6 +179,10 @@ export default function NovoProdutoPage() {
     setErro('')
 
     if (!form.nome.trim()) { setErro('Nome do produto é obrigatório.'); return }
+    if (tipoNumeracao === 'letra' && Object.keys(tamanhoQtds).length === 0) {
+      setErro('Selecione ao menos um tamanho.'); return
+    }
+    if (tipoNumeracao === 'numero' && !numeroValue.trim()) { setErro('Informe o número.'); return }
     if (fotos.some((f) => f.processando)) { setErro('Aguarde o processamento das imagens.'); return }
 
     setLoading(true)
@@ -173,59 +191,61 @@ export default function NovoProdutoPage() {
       const supabase = createClient()
       const urlsUpload: string[] = []
 
-      // Upload de cada imagem processada para o Supabase Storage
+      // Upload de cada imagem
       for (const foto of fotos) {
         const srcParaUpload = foto.processada ?? foto.preview
         let blob: Blob
-
         if (srcParaUpload.startsWith('data:')) {
           blob = dataUrlParaBlob(srcParaUpload)
         } else {
-          // object URL — converte para blob
           blob = await fetch(srcParaUpload).then((r) => r.blob())
         }
-
         const ext      = foto.processada ? 'png' : (foto.file.name.split('.').pop() ?? 'jpg')
         const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-
         const { data: uploadData, error: uploadErr } = await supabase.storage
           .from('produtos')
           .upload(fileName, blob, { cacheControl: '3600', upsert: false })
-
         if (uploadErr) { setErro(`Erro no upload: ${uploadErr.message}`); return }
-
         const { data: publicData } = supabase.storage.from('produtos').getPublicUrl(uploadData.path)
         urlsUpload.push(publicData.publicUrl)
       }
 
-      const fotoUrl    = urlsUpload[0] ?? null
-      const fotosUrls  = urlsUpload
+      const fotoUrl   = urlsUpload[0] ?? null
+      const fotosUrls = urlsUpload
+      const custoVal  = userRole === 'socio' ? (parseFloat(form.custo) || 0) : 0
+      const markupVal = userRole === 'socio' ? (parseFloat(form.markupPct) || 100) : 100
+      const precoVal  = userRole === 'socio' ? (parseFloat(form.precoVenda) || precoSugerido) : 0
 
-      // Inserir produto
-      const { data: produto, error: prodError } = await supabase
-        .from('produtos')
-        .insert({
-          nome:             form.nome.trim(),
-          tamanho:          tipoNumeracao === 'numero' ? 'UNICO' : form.tamanho,
-          numero:           tipoNumeracao === 'numero' ? (numeroValue.trim() || null) : null,
-          canal:            form.canal,
-          foto_url:         fotoUrl,
-          fotos_urls:       fotosUrls,
-          custo:            userRole === 'socio' ? (parseFloat(form.custo) || 0) : 0,
-          markup_percentual: userRole === 'socio' ? (parseFloat(form.markupPct) || 100) : 100,
-          preco_venda:      userRole === 'socio' ? (parseFloat(form.precoVenda) || precoSugerido) : 0,
-        })
-        .select()
-        .single()
-
-      if (prodError || !produto) { setErro(`Erro ao cadastrar produto: ${prodError?.message}`); return }
-
-      const { error: estoqueError } = await supabase.from('estoque').insert({
-        produto_id: produto.id,
-        quantidade: parseInt(form.quantidade) || 0,
-      })
-
-      if (estoqueError) { setErro(`Produto criado, mas erro no estoque: ${estoqueError.message}`); return }
+      // Para tipo número: cria um único produto
+      if (tipoNumeracao === 'numero') {
+        const { data: produto, error: prodError } = await supabase
+          .from('produtos')
+          .insert({
+            nome: form.nome.trim(), tamanho: 'UNICO', numero: numeroValue.trim() || null,
+            canal: form.canal, foto_url: fotoUrl, fotos_urls: fotosUrls,
+            custo: custoVal, markup_percentual: markupVal, preco_venda: precoVal,
+          })
+          .select().single()
+        if (prodError || !produto) { setErro(`Erro ao cadastrar produto: ${prodError?.message}`); return }
+        const { error: estErr } = await supabase.from('estoque').insert({ produto_id: produto.id, quantidade: parseInt(numeroQty) || 0 })
+        if (estErr) { setErro(`Produto criado, mas erro no estoque: ${estErr.message}`); return }
+      } else {
+        // Para tipo letra: cria um produto por tamanho selecionado
+        const entradas = Object.entries(tamanhoQtds) as [TamanhoProduto, string][]
+        for (const [tamanho, qty] of entradas) {
+          const { data: produto, error: prodError } = await supabase
+            .from('produtos')
+            .insert({
+              nome: form.nome.trim(), tamanho, numero: null,
+              canal: form.canal, foto_url: fotoUrl, fotos_urls: fotosUrls,
+              custo: custoVal, markup_percentual: markupVal, preco_venda: precoVal,
+            })
+            .select().single()
+          if (prodError || !produto) { setErro(`Erro ao cadastrar tamanho ${tamanho}: ${prodError?.message}`); return }
+          const { error: estErr } = await supabase.from('estoque').insert({ produto_id: produto.id, quantidade: parseInt(qty) || 0 })
+          if (estErr) { setErro(`Tamanho ${tamanho} criado, mas erro no estoque: ${estErr.message}`); return }
+        }
+      }
 
       router.push('/estoque?success=Produto+cadastrado+com+sucesso')
     } catch {
@@ -445,22 +465,69 @@ export default function NovoProdutoPage() {
                   ))}
                 </div>
                 {tipoNumeracao === 'letra' ? (
-                  <Select
-                    label="Tamanho"
-                    options={TAMANHOS}
-                    value={form.tamanho}
-                    onChange={(e) => setForm((f) => ({ ...f, tamanho: e.target.value as TamanhoProduto }))}
-                  />
-                ) : (
                   <div>
-                    <label className="block text-sm font-medium text-[#F0F0F0] mb-1">Número</label>
-                    <input
-                      type="text"
-                      placeholder="Ex: 38, 39, 40, 42..."
-                      value={numeroValue}
-                      onChange={(e) => setNumeroValue(e.target.value)}
-                      className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
-                    />
+                    <label className="block text-sm font-medium text-[#F0F0F0] mb-2">
+                      Tamanhos disponíveis <span className="text-[#555555] text-xs">(clique para selecionar)</span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['PP','P','M','G','GG'] as TamanhoProduto[]).map((t) => {
+                        const sel = tamanhoQtds[t] !== undefined
+                        return (
+                          <div key={t} className="flex flex-col gap-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleTamanho(t)}
+                              className={`py-2.5 rounded-md text-sm font-black transition-colors border ${
+                                sel
+                                  ? 'bg-gold text-[#0D0D0D] border-gold'
+                                  : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-gold hover:text-gold'
+                              }`}
+                            >
+                              {t}
+                            </button>
+                            {sel && (
+                              <input
+                                type="number"
+                                min="0"
+                                value={tamanhoQtds[t]}
+                                onChange={(e) => setQtdTamanho(t, e.target.value)}
+                                className="w-full bg-[#0D0D0D] border border-gold/40 rounded-md px-2 py-1.5 text-xs text-center text-[#F0F0F0] focus:outline-none focus:border-gold"
+                                placeholder="qtd"
+                              />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    {Object.keys(tamanhoQtds).length > 0 && (
+                      <p className="text-[10px] text-[#555555] mt-2">
+                        Selecionados: {(Object.entries(tamanhoQtds) as [TamanhoProduto, string][])
+                          .map(([t, q]) => `${t}×${q || 0}`).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-[#F0F0F0] mb-1">Número</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: 38, 39, 40, 42..."
+                        value={numeroValue}
+                        onChange={(e) => setNumeroValue(e.target.value)}
+                        className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#F0F0F0] mb-1">Quantidade</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={numeroQty}
+                        onChange={(e) => setNumeroQty(e.target.value)}
+                        className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -471,16 +538,6 @@ export default function NovoProdutoPage() {
                 options={CANAIS}
                 value={form.canal}
                 onChange={(e) => setForm((f) => ({ ...f, canal: e.target.value as CanalProduto }))}
-              />
-
-              {/* Quantidade */}
-              <Input
-                label="Quantidade inicial em estoque"
-                type="number"
-                min="0"
-                placeholder="0"
-                value={form.quantidade}
-                onChange={(e) => setForm((f) => ({ ...f, quantidade: e.target.value }))}
               />
 
               {/* Precificação — só sócio */}
