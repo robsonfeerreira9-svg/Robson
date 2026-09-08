@@ -1,5 +1,5 @@
-RESULTADO: 320 vendas no banco agora.
+RESULTADO: 433 vendas no banco agora.
 Nenhum backup encontrado antes de 06/05/2026 — dados irrecuperáveis via API.
 HTTP 200
 Resposta completa da API de backups:
-{"region":"us-west-2","pitr_enabled":false,"walg_enabled":true,"backups":[],"physical_backup_data":{}}
+{"region":"us-west-2","walg_enabled":true,"pitr_enabled":false,"backups":[],"physical_backup_data":{}}
