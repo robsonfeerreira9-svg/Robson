@@ -55,10 +55,12 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
     return true
   })
 
-  // Agrupa por nome do modelo
+  // Agrupa por nome normalizado (ignora espaços extras e capitalização)
+  const normalizar = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
   const grupos = produtosFiltrados.reduce<Record<string, ProdutoComEstoque[]>>((acc, p) => {
-    if (!acc[p.nome]) acc[p.nome] = []
-    acc[p.nome].push(p)
+    const key = normalizar(p.nome)
+    if (!acc[key]) acc[key] = []
+    acc[key].push(p)
     return acc
   }, {})
   const gruposArr = Object.entries(grupos).sort(([a], [b]) => a.localeCompare(b))
@@ -112,7 +114,8 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {gruposArr.map(([nome, variantes]) => {
+            {gruposArr.map(([, variantes]) => {
+              const nome = variantes[0].nome.trim()
               const foto = variantes.find((v) => v.foto_url)?.foto_url ?? null
               const preco = variantes[0].preco_venda
               const totalNoCarrinho = variantes.reduce((s, v) => s + getQtdNoCarrinho(v.id), 0)
