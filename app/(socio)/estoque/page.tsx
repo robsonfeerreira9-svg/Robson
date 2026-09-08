@@ -175,6 +175,34 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
             </div>
           </div>
 
+          {/* Preview Markup / Margem */}
+          {(() => {
+            const c = parseFloat(custo)
+            const p = parseFloat(preco)
+            if (!c || !p || c <= 0 || p <= 0) return null
+            const lucro  = p - c
+            const mkup   = ((lucro / c) * 100).toFixed(1)
+            const mg     = ((lucro / p) * 100).toFixed(1)
+            return (
+              <div className="rounded-lg border border-[#2A2A2A] bg-[#111111] px-4 py-3 flex justify-between items-center">
+                <div className="text-center">
+                  <p className="text-[10px] text-[#888888] uppercase tracking-wide mb-0.5">Lucro unitário</p>
+                  <p className={`text-sm font-black ${lucro >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatarMoeda(lucro)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-[#888888] uppercase tracking-wide mb-0.5">Markup</p>
+                  <p className="text-sm font-black text-orange-400">{mkup}%</p>
+                  <p className="text-[9px] text-[#555555]">(lucro/custo)</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-[#888888] uppercase tracking-wide mb-0.5">Margem</p>
+                  <p className="text-sm font-black text-green-400">{mg}%</p>
+                  <p className="text-[9px] text-[#555555]">(lucro/preço)</p>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Quantidade */}
           <div>
             <label className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Quantidade</label>
@@ -357,7 +385,7 @@ function EstoquePageInner() {
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Qtd</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Custo</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Preço</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Margem</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Markup / Margem</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Última venda</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Alertas</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Ações</th>
@@ -387,7 +415,9 @@ function EstoquePageInner() {
                   const foto = variantes.find((v) => v.foto_url)?.foto_url ?? null
                   const preco = variantes[0]?.preco_venda ?? 0
                   const custo = variantes[0]?.custo ?? 0
-                  const margem = custo > 0 ? (((preco - custo) / custo) * 100).toFixed(0) : '—'
+                  const lucroGrp  = preco - custo
+                  const markupGrp = custo > 0 ? ((lucroGrp / custo) * 100).toFixed(1) : null
+                  const margemGrp = preco > 0 ? ((lucroGrp / preco) * 100).toFixed(1) : null
                   const temAlerta = variantes.some((v) => {
                     const q = v.estoque?.[0]?.quantidade ?? 0
                     return isEstoqueBaixo(q) || isProdutoParado(v.estoque?.[0]?.ultima_venda_em ?? null)
@@ -416,7 +446,14 @@ function EstoquePageInner() {
                         <td className="px-4 py-3 text-right font-black text-gold">{totalQty}</td>
                         <td className="px-4 py-3 text-right text-[#888888] text-xs">{formatarMoeda(custo)}</td>
                         <td className="px-4 py-3 text-right font-semibold text-gold text-xs">{formatarMoeda(preco)}</td>
-                        <td className="px-4 py-3 text-right text-[#888888] text-xs">{margem}%</td>
+                        <td className="px-4 py-3 text-right">
+                          {markupGrp !== null ? (
+                            <div className="flex flex-col items-end gap-0.5">
+                              <span className="text-xs font-semibold text-orange-400">{markupGrp}% mk</span>
+                              <span className="text-xs text-green-400">{margemGrp}% mg</span>
+                            </div>
+                          ) : <span className="text-[#555555] text-xs">—</span>}
+                        </td>
                         <td colSpan={2} className="px-4 py-3 text-xs text-[#555555]">{variantes.length} variação{variantes.length !== 1 ? 'ões' : ''}</td>
                         <td className="px-4 py-3" />
                       </tr>
@@ -462,9 +499,9 @@ function EstoquePageInner() {
                   const baixo = isEstoqueBaixo(qty)
                   const parado = isProdutoParado(ultima)
 
-                  const margem = produto.custo > 0
-                    ? (((produto.preco_venda - produto.custo) / produto.custo) * 100).toFixed(0)
-                    : '—'
+                  const lucro   = produto.preco_venda - produto.custo
+                  const markup  = produto.custo > 0 ? ((lucro / produto.custo) * 100).toFixed(1) : null
+                  const margem  = produto.preco_venda > 0 ? ((lucro / produto.preco_venda) * 100).toFixed(1) : null
 
                   const ultimaStr = ultima
                     ? new Date(ultima).toLocaleDateString('pt-BR')
@@ -501,7 +538,14 @@ function EstoquePageInner() {
                       <td className={`px-4 py-3 text-right font-bold ${qty === 0 ? 'text-[#555555]' : qty < 3 ? 'text-red-400' : 'text-[#F0F0F0]'}`}>{qty}</td>
                       <td className="px-4 py-3 text-right text-[#888888]">{formatarMoeda(produto.custo)}</td>
                       <td className="px-4 py-3 text-right font-semibold text-gold">{formatarMoeda(produto.preco_venda)}</td>
-                      <td className="px-4 py-3 text-right text-[#888888]">{margem}%</td>
+                      <td className="px-4 py-3 text-right">
+                        {markup !== null ? (
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className="text-xs font-semibold text-orange-400">{markup}% mk</span>
+                            <span className="text-xs text-green-400">{margem}% mg</span>
+                          </div>
+                        ) : <span className="text-[#555555]">—</span>}
+                      </td>
                       <td className="px-4 py-3 text-[#888888] text-xs">{ultimaStr}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
