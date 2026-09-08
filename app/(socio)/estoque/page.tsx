@@ -206,24 +206,34 @@ function EditarProdutoModal({ produto, onClose, onSave }: EditarProdutoModalProp
             const c = parseFloat(custo)
             const p = parseFloat(preco)
             if (!c || !p || c <= 0 || p <= 0) return null
-            const lucro  = p - c
-            const mkup   = ((lucro / c) * 100).toFixed(1)
-            const mg     = ((lucro / p) * 100).toFixed(1)
+            const lucro = p - c
+            const mkup  = ((lucro / c) * 100).toFixed(1)
+            const mg    = ((lucro / p) * 100).toFixed(1)
             return (
-              <div className="rounded-lg border border-[#2A2A2A] bg-[#111111] px-4 py-3 flex justify-between items-center">
-                <div className="text-center">
-                  <p className="text-[10px] text-[#888888] uppercase tracking-wide mb-0.5">Lucro unitário</p>
-                  <p className={`text-sm font-black ${lucro >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatarMoeda(lucro)}</p>
+              <div className="rounded-lg border border-[#2A2A2A] bg-[#111111] p-3">
+                <div className="grid grid-cols-3 gap-3 divide-x divide-[#2A2A2A]">
+                  <div className="text-center px-1">
+                    <p className="text-[9px] text-[#555555] uppercase tracking-wide mb-1">Lucro por peça</p>
+                    <p className={`text-base font-black ${lucro >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatarMoeda(lucro)}</p>
+                  </div>
+                  <div className="text-center px-3">
+                    <p className="text-[9px] text-[#555555] uppercase tracking-wide mb-1">Markup</p>
+                    <p className="text-base font-black text-orange-400">{mkup}%</p>
+                    <p className="text-[9px] text-[#444444] mt-0.5">lucro ÷ custo</p>
+                  </div>
+                  <div className="text-center px-3">
+                    <p className="text-[9px] text-[#555555] uppercase tracking-wide mb-1">Margem</p>
+                    <p className="text-base font-black text-green-400">{mg}%</p>
+                    <p className="text-[9px] text-[#444444] mt-0.5">lucro ÷ preço</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-[10px] text-[#888888] uppercase tracking-wide mb-0.5">Markup</p>
-                  <p className="text-sm font-black text-orange-400">{mkup}%</p>
-                  <p className="text-[9px] text-[#555555]">(lucro/custo)</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[10px] text-[#888888] uppercase tracking-wide mb-0.5">Margem</p>
-                  <p className="text-sm font-black text-green-400">{mg}%</p>
-                  <p className="text-[9px] text-[#555555]">(lucro/preço)</p>
+                <div className="mt-2 pt-2 border-t border-[#1A1A1A] flex gap-4 justify-center">
+                  <span className="text-[9px] text-[#444444]">
+                    <span className="text-orange-400 font-bold">Markup:</span> quanto colocou a mais sobre o custo
+                  </span>
+                  <span className="text-[9px] text-[#444444]">
+                    <span className="text-green-400 font-bold">Margem:</span> % do preço que é lucro
+                  </span>
                 </div>
               </div>
             )
@@ -331,61 +341,76 @@ function EstoquePageInner() {
 
         {/* Ranking de Vendas */}
         {ranking && (ranking.modelos.length > 0 || ranking.tamanhos.length > 0) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {/* Modelos mais vendidos */}
-            {ranking.modelos.length > 0 && (
-              <Card padding="sm">
-                <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide mb-3">Modelos mais vendidos</p>
-                <div className="flex flex-col gap-1.5">
-                  {ranking.modelos.map(({ nome, qty }, i) => {
-                    const max = ranking.modelos[0].qty
-                    const pct = Math.round((qty / max) * 100)
-                    return (
-                      <div key={nome} className="flex items-center gap-2">
-                        <span className="text-[10px] text-[#555555] w-4 text-right">{i+1}.</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center mb-0.5">
-                            <span className="text-xs text-[#F0F0F0] truncate max-w-[160px]">{nome}</span>
-                            <span className="text-xs font-bold text-gold ml-2">{qty}un</span>
+          <Card className="mb-4" padding="sm">
+            <p className="text-xs font-bold text-[#888888] uppercase tracking-widest mb-4">Análise de Vendas</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* Modelos */}
+              {ranking.modelos.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-semibold text-[#555555] uppercase tracking-wide mb-3">Modelos que mais vendem</p>
+                  <div className="flex flex-col gap-3">
+                    {ranking.modelos.map(({ nome, qty }, i) => {
+                      const max = ranking.modelos[0].qty
+                      const pct = Math.round((qty / max) * 100)
+                      const medal = i === 0 ? 'text-[#FFD700]' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-[#444444]'
+                      return (
+                        <div key={nome} className="flex items-center gap-3">
+                          <span className={`text-sm font-black w-5 text-center ${medal}`}>{i + 1}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm font-semibold text-[#F0F0F0] truncate pr-2">{nome}</span>
+                              <span className="text-xs font-black text-gold whitespace-nowrap">{qty} un</span>
+                            </div>
+                            <div className="h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${i === 0 ? 'bg-gold' : 'bg-[#444444]'}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
                           </div>
-                          <div className="h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
-                            <div className="h-full bg-gold rounded-full transition-all" style={{ width: `${pct}%` }} />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Tamanhos */}
+              {ranking.tamanhos.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-semibold text-[#555555] uppercase tracking-wide mb-3">Tamanhos que mais vendem</p>
+                  <div className="flex flex-col gap-2">
+                    {ranking.tamanhos.map(({ tam, qty }, i) => {
+                      const max = ranking.tamanhos[0].qty
+                      const pct = Math.round((qty / max) * 100)
+                      const isTop = i === 0
+                      return (
+                        <div key={tam} className="flex items-center gap-3">
+                          <div className={`w-10 h-8 rounded-md flex items-center justify-center text-xs font-black flex-shrink-0 border ${
+                            isTop ? 'bg-gold/15 border-gold text-gold' : 'bg-[#1A1A1A] border-[#2A2A2A] text-[#888888]'
+                          }`}>
+                            {tam}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-center mb-1">
+                              <div className="h-2 bg-[#1A1A1A] rounded-full overflow-hidden flex-1 mr-3">
+                                <div
+                                  className={`h-full rounded-full ${isTop ? 'bg-gold' : 'bg-[#333333]'}`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className={`text-xs font-bold whitespace-nowrap ${isTop ? 'text-gold' : 'text-[#888888]'}`}>{qty} un</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
-              </Card>
-            )}
-            {/* Tamanhos mais vendidos */}
-            {ranking.tamanhos.length > 0 && (
-              <Card padding="sm">
-                <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide mb-3">Tamanhos mais vendidos</p>
-                <div className="flex flex-wrap gap-2">
-                  {ranking.tamanhos.map(({ tam, qty }, i) => {
-                    const max = ranking.tamanhos[0].qty
-                    const pct = Math.round((qty / max) * 100)
-                    return (
-                      <div key={tam} className="flex flex-col items-center gap-1 min-w-[52px]">
-                        <div
-                          className={`w-12 h-12 rounded-lg flex items-center justify-center text-sm font-black border-2 transition-colors ${
-                            i === 0 ? 'bg-gold/20 border-gold text-gold' : 'bg-[#1A1A1A] border-[#2A2A2A] text-[#F0F0F0]'
-                          }`}
-                        >
-                          {tam}
-                        </div>
-                        <span className="text-[10px] text-[#888888]">{qty}un</span>
-                        <div className="w-12 h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
-                          <div className="h-full bg-gold/60 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </Card>
-            )}
-          </div>
+              )}
+            </div>
+          </Card>
         )}
 
         {/* Filtros */}
@@ -469,7 +494,10 @@ function EstoquePageInner() {
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Qtd</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Custo</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Preço</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Markup / Margem</th>
+                <th className="text-right px-4 py-3">
+                  <span className="text-xs font-semibold text-[#888888] uppercase tracking-wide block">Markup / Margem</span>
+                  <span className="text-[9px] text-[#444444] font-normal block mt-0.5">sobre custo / sobre preço</span>
+                </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Última venda</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Alertas</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold text-[#888888] uppercase tracking-wide">Ações</th>
@@ -532,9 +560,15 @@ function EstoquePageInner() {
                         <td className="px-4 py-3 text-right font-semibold text-gold text-xs">{formatarMoeda(preco)}</td>
                         <td className="px-4 py-3 text-right">
                           {markupGrp !== null ? (
-                            <div className="flex flex-col items-end gap-0.5">
-                              <span className="text-xs font-semibold text-orange-400">{markupGrp}% mk</span>
-                              <span className="text-xs text-green-400">{margemGrp}% mg</span>
+                            <div className="flex flex-col items-end gap-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[9px] text-[#555555] font-medium">MARKUP</span>
+                                <span className="text-xs font-black text-orange-400">{markupGrp}%</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[9px] text-[#555555] font-medium">MARGEM</span>
+                                <span className="text-xs font-bold text-green-400">{margemGrp}%</span>
+                              </div>
                             </div>
                           ) : <span className="text-[#555555] text-xs">—</span>}
                         </td>
@@ -624,9 +658,15 @@ function EstoquePageInner() {
                       <td className="px-4 py-3 text-right font-semibold text-gold">{formatarMoeda(produto.preco_venda)}</td>
                       <td className="px-4 py-3 text-right">
                         {markup !== null ? (
-                          <div className="flex flex-col items-end gap-0.5">
-                            <span className="text-xs font-semibold text-orange-400">{markup}% mk</span>
-                            <span className="text-xs text-green-400">{margem}% mg</span>
+                          <div className="flex flex-col items-end gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[9px] text-[#555555] font-medium">MARKUP</span>
+                              <span className="text-xs font-black text-orange-400">{markup}%</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[9px] text-[#555555] font-medium">MARGEM</span>
+                              <span className="text-xs font-bold text-green-400">{margem}%</span>
+                            </div>
                           </div>
                         ) : <span className="text-[#555555]">—</span>}
                       </td>
