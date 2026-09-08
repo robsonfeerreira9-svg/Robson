@@ -107,23 +107,8 @@ const COR_CATEGORIA: Record<string, string> = {
   funcionarios: 'text-cyan-400',
 }
 
-// ── Fetcher de saldo do mês anterior (para carryover) ────────────────────────
-async function fetchSaldoMesAnterior(): Promise<number> {
-  const supabase = createClient()
-  const hoje = new Date()
-  const fimMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0, 23, 59, 59)
-
-  const { data } = await supabase
-    .from('movimentacao_caixa')
-    .select('tipo, valor, pago')
-    .eq('pago', true)
-    .lte('criado_em', fimMesAnterior.toISOString())
-
-  if (!data) return 0
-  const entradas = data.filter((m) => m.tipo === 'entrada').reduce((s, m) => s + Number(m.valor), 0)
-  const saidas   = data.filter((m) => m.tipo === 'saida').reduce((s, m) => s + Number(m.valor), 0)
-  return entradas - saidas
-}
+// Saldo acumulado até o fim do mês anterior (valor fixo confirmado pelo sócio)
+const SALDO_MES_ANTERIOR = 1109
 
 // ── Modal de Aporte com projeção de parcelas ──────────────────────────────────
 function AporteModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
@@ -806,7 +791,7 @@ export default function FinanceiroPage() {
     { refreshInterval: 30000 }
   )
 
-  const { data: saldoAnterior = 0 } = useSWR('saldo-mes-anterior', fetchSaldoMesAnterior, { refreshInterval: 300000 })
+  const saldoAnterior = SALDO_MES_ANTERIOR
 
   const receitaVendas = cardMovs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'venda').reduce((a, m) => a + Number(m.valor), 0)
   const aportes       = cardMovs.filter((m) => m.pago && m.tipo === 'entrada' && m.categoria === 'aporte').reduce((a, m) => a + Number(m.valor), 0)
