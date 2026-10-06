@@ -108,7 +108,7 @@ const COR_CATEGORIA: Record<string, string> = {
 }
 
 // Saldo acumulado até o fim do mês anterior (valor fixo confirmado pelo sócio)
-const SALDO_MES_ANTERIOR = 1109
+const SALDO_MES_ANTERIOR = 6395.01
 
 // ── Modal de Aporte com projeção de parcelas ──────────────────────────────────
 function AporteModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
