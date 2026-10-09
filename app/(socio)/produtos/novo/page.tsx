@@ -72,11 +72,11 @@ export default function NovoProdutoPage() {
   const [fotos,     setFotos]     = useState<FotoItem[]>([])
   const [dragOver,  setDragOver]  = useState(false)
 
-  const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numero'>('letra')
-  const [numeroValue,   setNumeroValue]   = useState('')
-  const [numeroQty,     setNumeroQty]     = useState('1')
-  // multi-tamanho para 'letra': chave = tamanho, valor = quantidade
+  const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numeracao' | 'tenis'>('letra')
+  // multi-tamanho para 'letra'
   const [tamanhoQtds,   setTamanhoQtds]   = useState<Partial<Record<TamanhoProduto, string>>>({})
+  // multi-número para 'numeracao' e 'tenis': chave = número (string), valor = quantidade
+  const [numeroQtds,    setNumeroQtds]    = useState<Record<string, string>>({})
 
   const [form, setForm] = useState({
     nome:       '',
@@ -182,7 +182,9 @@ export default function NovoProdutoPage() {
     if (tipoNumeracao === 'letra' && Object.keys(tamanhoQtds).length === 0) {
       setErro('Selecione ao menos um tamanho.'); return
     }
-    if (tipoNumeracao === 'numero' && !numeroValue.trim()) { setErro('Informe o número.'); return }
+    if ((tipoNumeracao === 'numeracao' || tipoNumeracao === 'tenis') && Object.keys(numeroQtds).length === 0) {
+      setErro('Selecione ao menos um número.'); return
+    }
     if (fotos.some((f) => f.processando)) { setErro('Aguarde o processamento das imagens.'); return }
 
     setLoading(true)
@@ -216,21 +218,8 @@ export default function NovoProdutoPage() {
       const markupVal = userRole === 'socio' ? (parseFloat(form.markupPct) || 100) : 100
       const precoVal  = userRole === 'socio' ? (parseFloat(form.precoVenda) || precoSugerido) : 0
 
-      // Para tipo número: cria um único produto
-      if (tipoNumeracao === 'numero') {
-        const { data: produto, error: prodError } = await supabase
-          .from('produtos')
-          .insert({
-            nome: form.nome.trim(), tamanho: 'UNICO', numero: numeroValue.trim() || null,
-            canal: form.canal, foto_url: fotoUrl, fotos_urls: fotosUrls,
-            custo: custoVal, markup_percentual: markupVal, preco_venda: precoVal,
-          })
-          .select().single()
-        if (prodError || !produto) { setErro(`Erro ao cadastrar produto: ${prodError?.message}`); return }
-        const { error: estErr } = await supabase.from('estoque').insert({ produto_id: produto.id, quantidade: parseInt(numeroQty) || 0 })
-        if (estErr) { setErro(`Produto criado, mas erro no estoque: ${estErr.message}`); return }
-      } else {
-        // Para tipo letra: cria um produto por tamanho selecionado
+      if (tipoNumeracao === 'letra') {
+        // Cria um produto por tamanho selecionado
         const entradas = Object.entries(tamanhoQtds) as [TamanhoProduto, string][]
         for (const [tamanho, qty] of entradas) {
           const { data: produto, error: prodError } = await supabase
@@ -244,6 +233,21 @@ export default function NovoProdutoPage() {
           if (prodError || !produto) { setErro(`Erro ao cadastrar tamanho ${tamanho}: ${prodError?.message}`); return }
           const { error: estErr } = await supabase.from('estoque').insert({ produto_id: produto.id, quantidade: parseInt(qty) || 0 })
           if (estErr) { setErro(`Tamanho ${tamanho} criado, mas erro no estoque: ${estErr.message}`); return }
+        }
+      } else {
+        // 'numeracao' ou 'tenis': cria um produto por número selecionado
+        for (const [numero, qty] of Object.entries(numeroQtds)) {
+          const { data: produto, error: prodError } = await supabase
+            .from('produtos')
+            .insert({
+              nome: form.nome.trim(), tamanho: 'UNICO', numero,
+              canal: form.canal, foto_url: fotoUrl, fotos_urls: fotosUrls,
+              custo: custoVal, markup_percentual: markupVal, preco_venda: precoVal,
+            })
+            .select().single()
+          if (prodError || !produto) { setErro(`Erro ao cadastrar número ${numero}: ${prodError?.message}`); return }
+          const { error: estErr } = await supabase.from('estoque').insert({ produto_id: produto.id, quantidade: parseInt(qty) || 0 })
+          if (estErr) { setErro(`Número ${numero} criado, mas erro no estoque: ${estErr.message}`); return }
         }
       }
 
@@ -450,25 +454,28 @@ export default function NovoProdutoPage() {
               {/* Numeração */}
               <div>
                 <label className="block text-sm font-medium text-[#F0F0F0] mb-1.5">Tipo de Numeração</label>
-                <div className="flex rounded overflow-hidden border border-[#2A2A2A] mb-2">
-                  {(['letra', 'numero'] as const).map((t) => (
+                <div className="flex rounded overflow-hidden border border-[#2A2A2A] mb-3">
+                  {([
+                    { value: 'letra',     label: 'PP / P / M / G / GG' },
+                    { value: 'numeracao', label: 'Numeração (32–50)' },
+                    { value: 'tenis',     label: 'Tênis (33–44)' },
+                  ] as const).map((t) => (
                     <button
-                      key={t}
+                      key={t.value}
                       type="button"
-                      onClick={() => setTipoNumeracao(t)}
-                      className={`flex-1 py-2 text-xs font-semibold transition-colors ${
-                        tipoNumeracao === t ? 'bg-gold text-[#0D0D0D]' : 'bg-transparent text-[#888888] hover:text-gold'
+                      onClick={() => { setTipoNumeracao(t.value); setTamanhoQtds({}); setNumeroQtds({}) }}
+                      className={`flex-1 py-2 text-xs font-semibold transition-colors border-r border-[#2A2A2A] last:border-r-0 ${
+                        tipoNumeracao === t.value ? 'bg-gold text-[#0D0D0D]' : 'bg-transparent text-[#888888] hover:text-gold'
                       }`}
                     >
-                      {t === 'letra' ? 'PP / P / M / G / GG' : 'Números (38/39/40…)'}
+                      {t.label}
                     </button>
                   ))}
                 </div>
-                {tipoNumeracao === 'letra' ? (
+
+                {tipoNumeracao === 'letra' && (
                   <div>
-                    <label className="block text-sm font-medium text-[#F0F0F0] mb-2">
-                      Tamanhos disponíveis <span className="text-[#555555] text-xs">(clique para selecionar)</span>
-                    </label>
+                    <p className="text-xs text-[#555555] mb-2">Clique para selecionar os tamanhos disponíveis</p>
                     <div className="grid grid-cols-3 gap-2">
                       {(['PP','P','M','G','GG'] as TamanhoProduto[]).map((t) => {
                         const sel = tamanhoQtds[t] !== undefined
@@ -478,17 +485,14 @@ export default function NovoProdutoPage() {
                               type="button"
                               onClick={() => toggleTamanho(t)}
                               className={`py-2.5 rounded-md text-sm font-black transition-colors border ${
-                                sel
-                                  ? 'bg-gold text-[#0D0D0D] border-gold'
-                                  : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-gold hover:text-gold'
+                                sel ? 'bg-gold text-[#0D0D0D] border-gold' : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-gold hover:text-gold'
                               }`}
                             >
                               {t}
                             </button>
                             {sel && (
                               <input
-                                type="number"
-                                min="0"
+                                type="number" min="0"
                                 value={tamanhoQtds[t]}
                                 onChange={(e) => setQtdTamanho(t, e.target.value)}
                                 className="w-full bg-[#0D0D0D] border border-gold/40 rounded-md px-2 py-1.5 text-xs text-center text-[#F0F0F0] focus:outline-none focus:border-gold"
@@ -501,35 +505,60 @@ export default function NovoProdutoPage() {
                     </div>
                     {Object.keys(tamanhoQtds).length > 0 && (
                       <p className="text-[10px] text-[#555555] mt-2">
-                        Selecionados: {(Object.entries(tamanhoQtds) as [TamanhoProduto, string][])
-                          .map(([t, q]) => `${t}×${q || 0}`).join(', ')}
+                        {(Object.entries(tamanhoQtds) as [TamanhoProduto, string][]).map(([t, q]) => `${t}×${q || 0}`).join(', ')}
                       </p>
                     )}
                   </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <div>
-                      <label className="block text-sm font-medium text-[#F0F0F0] mb-1">Número</label>
-                      <input
-                        type="text"
-                        placeholder="Ex: 38, 39, 40, 42..."
-                        value={numeroValue}
-                        onChange={(e) => setNumeroValue(e.target.value)}
-                        className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#F0F0F0] mb-1">Quantidade</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={numeroQty}
-                        onChange={(e) => setNumeroQty(e.target.value)}
-                        className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-md px-3 py-2.5 text-sm text-[#F0F0F0] placeholder:text-[#888888] focus:outline-none focus:border-gold"
-                      />
-                    </div>
-                  </div>
                 )}
+
+                {(tipoNumeracao === 'numeracao' || tipoNumeracao === 'tenis') && (() => {
+                  const nums = tipoNumeracao === 'numeracao'
+                    ? ['32','34','36','38','40','42','44','46','48','50']
+                    : ['33','34','35','36','37','38','39','40','41','42','43','44']
+                  return (
+                    <div>
+                      <p className="text-xs text-[#555555] mb-2">Clique para selecionar os números disponíveis</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {nums.map((n) => {
+                          const sel = numeroQtds[n] !== undefined
+                          return (
+                            <div key={n} className="flex flex-col gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setNumeroQtds((prev) => {
+                                    const next = { ...prev }
+                                    if (sel) delete next[n]; else next[n] = '1'
+                                    return next
+                                  })
+                                }}
+                                className={`py-2 rounded-md text-sm font-black transition-colors border ${
+                                  sel ? 'bg-gold text-[#0D0D0D] border-gold' : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-gold hover:text-gold'
+                                }`}
+                              >
+                                {n}
+                              </button>
+                              {sel && (
+                                <input
+                                  type="number" min="0"
+                                  value={numeroQtds[n]}
+                                  onChange={(e) => setNumeroQtds((prev) => ({ ...prev, [n]: e.target.value }))}
+                                  className="w-full bg-[#0D0D0D] border border-gold/40 rounded-md px-2 py-1.5 text-xs text-center text-[#F0F0F0] focus:outline-none focus:border-gold"
+                                  placeholder="qtd"
+                                />
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                      {Object.keys(numeroQtds).length > 0 && (
+                        <p className="text-[10px] text-[#555555] mt-2">
+                          {Object.entries(numeroQtds).map(([n, q]) => `${n}×${q || 0}`).join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })()}
               </div>
 
               {/* Canal */}

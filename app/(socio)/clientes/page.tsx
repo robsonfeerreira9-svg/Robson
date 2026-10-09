@@ -1326,6 +1326,7 @@ export default function ClientesPage() {
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteStats | null>(null)
   const [showCampanha, setShowCampanha] = useState(false)
   const [showConfigWpp, setShowConfigWpp] = useState(false)
+  const [busca, setBusca] = useState('')
 
   const { data: clientes = [], isLoading } = useSWR('clientes-stats', fetchClientesStats, { refreshInterval: 60000 })
   const { data: aniversariantes = [] } = useSWR('aniversariantes', fetchAniversariantes, { refreshInterval: 3600000 })
@@ -1337,8 +1338,16 @@ export default function ClientesPage() {
   const anivMes  = aniversariantes.filter((a) => !a.ehHoje)
 
   const clientesFiltrados = clientes.filter((c) => {
-    if (filtro === 'novos') return c.total_compras === 1
-    if (filtro === 'fieis') return c.total_compras >= 2
+    if (filtro === 'novos' && c.total_compras !== 1) return false
+    if (filtro === 'fieis' && c.total_compras < 2) return false
+    if (busca.trim()) {
+      const q = busca.trim().toLowerCase()
+      const digits = q.replace(/\D/g, '')
+      const matchNome = c.nome.toLowerCase().includes(q)
+      const matchCpf  = digits.length > 0 && (c.cpf ?? '').replace(/\D/g, '').includes(digits)
+      const matchTel  = digits.length > 0 && (c.telefone ?? '').replace(/\D/g, '').includes(digits)
+      if (!matchNome && !matchCpf && !matchTel) return false
+    }
     return true
   })
 
@@ -1466,7 +1475,7 @@ export default function ClientesPage() {
 
         {/* Filtro + Ranking */}
         <Card>
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
             <div>
               <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide">Ranking de Clientes</h2>
               <p className="text-xs text-[#888888] mt-0.5">Clique em um cliente para ver os detalhes</p>
@@ -1488,6 +1497,27 @@ export default function ClientesPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Busca */}
+          <div className="relative mb-4">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555555]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+            </svg>
+            <input
+              type="text"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar por nome, telefone ou CPF…"
+              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg pl-9 pr-3 py-2 text-sm text-[#F0F0F0] placeholder:text-[#555555] focus:outline-none focus:border-gold transition-colors"
+            />
+            {busca && (
+              <button onClick={() => setBusca('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555555] hover:text-[#F0F0F0]">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {isLoading ? (
