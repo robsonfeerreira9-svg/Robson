@@ -685,45 +685,139 @@ export default function DashboardPage() {
             )}
           </Card>
 
-          {/* Alertas */}
-          <div className="flex flex-col gap-4">
-            <Card>
-              <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-3 flex items-center gap-2">
-                Estoque Crítico
-                {alertas?.critico.length ? <Badge variant="danger">{alertas.critico.length}</Badge> : null}
-              </h2>
-              {!alertas?.critico.length ? (
-                <p className="text-xs text-[#888888]">Nenhum produto em estado crítico</p>
-              ) : (
-                <div className="flex flex-col gap-1.5">
-                  {alertas.critico.slice(0, 5).map((p, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <span className="text-xs text-[#F0F0F0] truncate">{p.nome}</span>
-                      <Badge variant="danger">{(p.estoque as {quantidade:number}[])?.[0]?.quantidade ?? 0} un</Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+          {/* Alertas — design unificado */}
+          <div className="flex flex-col gap-3">
 
-            <Card>
-              <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-3 flex items-center gap-2">
-                Produtos Parados
-                {alertas?.parado.length ? <Badge variant="warning">{alertas.parado.length}</Badge> : null}
-              </h2>
-              {!alertas?.parado.length ? (
-                <p className="text-xs text-[#888888]">Nenhum produto parado</p>
-              ) : (
-                <div className="flex flex-col gap-1.5">
-                  {alertas.parado.slice(0, 5).map((p, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <span className="text-xs text-[#F0F0F0] truncate">{p.nome}</span>
-                      <Badge variant="warning">Parado</Badge>
+            {/* Estoque Crítico */}
+            <a href="/estoque" className="block group">
+              <div className={`rounded-2xl overflow-hidden border transition-all ${
+                alertas?.critico.length
+                  ? 'border-[#E53E3E]/20 hover:border-[#E53E3E]/40'
+                  : 'border-[#1A1A1A] hover:border-[#252525]'
+              }`} style={{ background: alertas?.critico.length ? 'rgba(229,62,62,0.04)' : '#0E0E0E' }}>
+                {/* header */}
+                <div className="flex items-center justify-between px-5 pt-4 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      alertas?.critico.length ? 'bg-[#E53E3E]/10' : 'bg-[#141414]'
+                    }`}>
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 2.5L14 13H2L8 2.5Z" stroke={alertas?.critico.length ? '#E53E3E' : '#444'} strokeWidth="1.5" strokeLinejoin="round"/>
+                        <path d="M8 7V9.5" stroke={alertas?.critico.length ? '#E53E3E' : '#444'} strokeWidth="1.5" strokeLinecap="round"/>
+                        <circle cx="8" cy="11.5" r="0.75" fill={alertas?.critico.length ? '#E53E3E' : '#444'}/>
+                      </svg>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-[11px] font-bold text-[#EBEBEB] tracking-wide">Estoque Crítico</p>
+                      <p className="text-[10px] text-[#555]">
+                        {alertas?.critico.length
+                          ? `${alertas.critico.length} produto${alertas.critico.length !== 1 ? 's' : ''} com estoque baixo`
+                          : 'Tudo em ordem'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!!alertas?.critico.length && (
+                      <span className="text-xs font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(229,62,62,0.15)', color: '#E53E3E' }}>
+                        {alertas.critico.length}
+                      </span>
+                    )}
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#333] group-hover:text-[#666] transition-colors">
+                      <path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
                 </div>
-              )}
-            </Card>
+
+                {/* lista */}
+                {!!alertas?.critico.length && (
+                  <div className="px-5 pb-4 flex flex-col gap-1.5">
+                    {alertas.critico.slice(0, 5).map((p, i) => {
+                      const qty = (p.estoque as {quantidade:number}[])?.[0]?.quantidade ?? 0
+                      return (
+                        <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2" style={{ background: 'rgba(229,62,62,0.05)' }}>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-medium text-[#EBEBEB] truncate block">{p.nome}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex gap-0.5">
+                              {[0,1,2].map(dot => (
+                                <div key={dot} className="w-1.5 h-1.5 rounded-full" style={{ background: dot === 0 ? '#E53E3E' : 'rgba(229,62,62,0.15)' }} />
+                              ))}
+                            </div>
+                            <span className="text-[11px] font-bold" style={{ color: '#E53E3E' }}>{qty} un</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {alertas.critico.length > 5 && (
+                      <p className="text-[10px] text-[#E53E3E]/60 text-center pt-1">+ {alertas.critico.length - 5} outros → ver estoque</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </a>
+
+            {/* Produtos Parados */}
+            <a href="/estoque" className="block group">
+              <div className={`rounded-2xl overflow-hidden border transition-all ${
+                alertas?.parado.length
+                  ? 'border-[#C9913A]/20 hover:border-[#C9913A]/40'
+                  : 'border-[#1A1A1A] hover:border-[#252525]'
+              }`} style={{ background: alertas?.parado.length ? 'rgba(201,145,58,0.04)' : '#0E0E0E' }}>
+                {/* header */}
+                <div className="flex items-center justify-between px-5 pt-4 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      alertas?.parado.length ? 'bg-[#C9913A]/10' : 'bg-[#141414]'
+                    }`}>
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="5.5" stroke={alertas?.parado.length ? '#C9913A' : '#444'} strokeWidth="1.5"/>
+                        <path d="M8 5V8.5" stroke={alertas?.parado.length ? '#C9913A' : '#444'} strokeWidth="1.5" strokeLinecap="round"/>
+                        <circle cx="8" cy="10.5" r="0.75" fill={alertas?.parado.length ? '#C9913A' : '#444'}/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-[#EBEBEB] tracking-wide">Produtos Parados</p>
+                      <p className="text-[10px] text-[#555]">
+                        {alertas?.parado.length
+                          ? `${alertas.parado.length} produto${alertas.parado.length !== 1 ? 's' : ''} sem movimento`
+                          : 'Sem produtos parados'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!!alertas?.parado.length && (
+                      <span className="text-xs font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(201,145,58,0.15)', color: '#C9913A' }}>
+                        {alertas.parado.length}
+                      </span>
+                    )}
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#333] group-hover:text-[#666] transition-colors">
+                      <path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* lista */}
+                {!!alertas?.parado.length && (
+                  <div className="px-5 pb-4 flex flex-col gap-1.5">
+                    {alertas.parado.slice(0, 5).map((p, i) => (
+                      <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2" style={{ background: 'rgba(201,145,58,0.05)' }}>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-medium text-[#EBEBEB] truncate block">{p.nome}</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: 'rgba(201,145,58,0.12)', color: '#C9913A' }}>
+                          parado
+                        </span>
+                      </div>
+                    ))}
+                    {alertas.parado.length > 5 && (
+                      <p className="text-[10px] text-[#C9913A]/60 text-center pt-1">+ {alertas.parado.length - 5} outros → ver estoque</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </a>
+
           </div>
         </div>
 
