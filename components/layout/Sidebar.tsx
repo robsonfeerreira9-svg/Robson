@@ -154,17 +154,14 @@ export default function Sidebar() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-4 py-5">
-        <div
-          className="flex items-center justify-center rounded-lg flex-shrink-0"
-          style={{ width: 40, height: 40, background: '#F5C518' }}
-        >
-          <span className="text-xl font-black text-[#0D0D0D] leading-none">HG</span>
-        </div>
-        <div>
-          <p className="text-sm font-bold text-[#F0F0F0] tracking-widest uppercase leading-none">Grifes</p>
-          <p className="text-[10px] text-[#555555] tracking-widest uppercase mt-0.5">ERP</p>
-        </div>
+      <div className="flex flex-col items-center px-4 py-5 gap-1">
+        <img
+          src="/hg-logo.jpg"
+          alt="HG Select"
+          className="rounded-full object-cover"
+          style={{ width: 80, height: 80 }}
+        />
+        <p className="text-[10px] text-[#555555] tracking-[0.25em] uppercase mt-1">Sistema de Gestão</p>
       </div>
 
       <div className="h-px bg-[#1A1A1A] mx-4 mb-2" />
@@ -175,10 +172,10 @@ export default function Sidebar() {
           const active = isActive(item.href)
           const isExternal = item.href === '/pdv'
           const className = `
-            flex items-center gap-3 h-11 px-3 rounded-lg transition-all duration-150 text-sm font-medium
+            flex items-center gap-3 h-11 px-3 rounded-lg transition-all duration-150 text-sm
             ${active
-              ? 'bg-[#F5C518] text-[#0D0D0D] font-bold'
-              : 'text-[#666666] hover:text-[#F0F0F0] hover:bg-[#1A1A1A]'
+              ? 'bg-[#F5C518]/10 text-[#F5C518] font-semibold border-l-2 border-[#F5C518]'
+              : 'font-medium text-[#555555] hover:text-[#C0C0C0] hover:bg-white/5'
             }
           `
           if (isExternal) {
@@ -234,14 +231,8 @@ export default function Sidebar() {
         >
           <HamburgerIcon open={false} />
         </button>
-        <div className="flex-1 flex items-center justify-center gap-2">
-          <div
-            className="flex items-center justify-center rounded-md"
-            style={{ width: 28, height: 28, background: '#F5C518' }}
-          >
-            <span className="text-[11px] font-black text-[#0D0D0D] leading-none">HG</span>
-          </div>
-          <span className="text-sm font-bold text-[#F0F0F0] tracking-widest uppercase">Grifes</span>
+        <div className="flex-1 flex items-center justify-center">
+          <img src="/hg-logo.jpg" alt="HG Select" className="rounded-full object-cover" style={{ width: 36, height: 36 }} />
         </div>
         <div className="w-[22px]" />
       </div>
@@ -258,15 +249,7 @@ export default function Sidebar() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#1A1A1A]">
-              <div className="flex items-center gap-2">
-                <div
-                  className="flex items-center justify-center rounded-md"
-                  style={{ width: 28, height: 28, background: '#F5C518' }}
-                >
-                  <span className="text-[11px] font-black text-[#0D0D0D] leading-none">HG</span>
-                </div>
-                <span className="text-sm font-bold text-[#F0F0F0] tracking-widest uppercase">Grifes</span>
-              </div>
+              <img src="/hg-logo.jpg" alt="HG Select" className="rounded-full object-cover" style={{ width: 32, height: 32 }} />
               <button
                 onClick={() => setOpen(false)}
                 className="text-[#666666] hover:text-[#F0F0F0] transition-colors"

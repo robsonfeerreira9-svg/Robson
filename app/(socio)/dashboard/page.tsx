@@ -418,8 +418,10 @@ export default function DashboardPage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Dashboard</h1>
-          <p className="text-sm text-[#888888]">HG Grifes — Visão Geral</p>
+          <p className="text-[11px] text-[#444] uppercase tracking-[0.2em] font-medium mb-1">
+            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+          </p>
+          <h1 className="text-3xl font-black text-[#EBEBEB] tracking-tight">Visão Geral</h1>
         </div>
 
         {/* ── Contas a Pagar desta semana ── */}
@@ -428,40 +430,40 @@ export default function DashboardPage() {
           const totalPendente = contasAPagar.reduce((a, c) => a + Number(c.valor), 0)
           if (contasAPagar.length === 0) return null
           return (
-            <div className="bg-[#1A1000] border border-[#F59E0B]/40 rounded-xl p-4 flex flex-col gap-3">
+            <div className="border border-[#E53E3E]/25 rounded-2xl p-4 flex flex-col gap-3" style={{ background: 'rgba(229,62,62,0.04)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">⚠️</span>
-                  <h2 className="text-sm font-black text-[#F59E0B] uppercase tracking-wide">
-                    Contas a Pagar Esta Semana
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#E53E3E] animate-pulse" />
+                  <h2 className="text-xs font-bold text-[#EBEBEB] uppercase tracking-[0.12em]">
+                    Contas a Pagar — Esta Semana
                   </h2>
-                  <span className="bg-danger/20 text-danger text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(229,62,62,0.15)', color: '#E53E3E' }}>
                     {contasAPagar.length}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-base font-black text-danger">{formatarMoeda(totalPendente)}</span>
-                  <a href="/financeiro" className="text-[10px] text-[#888888] hover:text-gold underline transition-colors">
-                    Gerenciar →
+                  <span className="text-sm font-black" style={{ color: '#E53E3E' }}>{formatarMoeda(totalPendente)}</span>
+                  <a href="/financeiro" className="text-[10px] text-[#555] hover:text-gold transition-colors">
+                    Ver tudo →
                   </a>
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1">
                 {contasAPagar.map((c) => {
                   const vencida = c.vence_em < hojeStr
-                  const hoje    = c.vence_em === hojeStr
+                  const isHoje  = c.vence_em === hojeStr
                   const dataFmt = new Date(c.vence_em + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                   return (
-                    <div key={c.id} className="flex items-center justify-between gap-3 bg-[#0D0D00] rounded-lg px-3 py-2">
+                    <div key={c.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${
-                          vencida ? 'bg-danger/20 text-danger' : hoje ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#2A2A2A] text-[#888888]'
-                        }`}>
-                          {vencida ? 'VENCIDA' : hoje ? 'HOJE' : dataFmt}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                          vencida ? 'text-[#E53E3E]' : isHoje ? 'text-[#D69E2E]' : 'text-[#555]'
+                        }`} style={{ background: vencida ? 'rgba(229,62,62,0.12)' : isHoje ? 'rgba(214,158,46,0.12)' : 'rgba(255,255,255,0.05)' }}>
+                          {vencida ? 'VENCIDA' : isHoje ? 'HOJE' : dataFmt}
                         </span>
-                        <span className="text-xs text-[#F0F0F0] truncate">{c.descricao ?? '—'}</span>
+                        <span className="text-xs text-[#EBEBEB] truncate">{c.descricao ?? '—'}</span>
                       </div>
-                      <span className="text-xs font-bold text-danger flex-shrink-0">{formatarMoeda(Number(c.valor))}</span>
+                      <span className="text-xs font-semibold text-[#E53E3E] flex-shrink-0">{formatarMoeda(Number(c.valor))}</span>
                     </div>
                   )
                 })}
@@ -470,44 +472,46 @@ export default function DashboardPage() {
           )
         })()}
 
-        {/* KPIs do mês selecionado */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* KPIs do mês + estoque */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {kpiLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
+            Array.from({ length: 6 }).map((_, i) => <KpiSkeleton key={i} />)
           ) : (
             <>
-              {[
-                { label: `Receita Hoje`,          valor: kpis?.receitaHoje  ?? 0 },
-                { label: `Receita ${labelMes(periodoA)}`, valor: kpis?.receitaMes  ?? 0 },
-                { label: 'Ticket Médio',           valor: kpis?.ticketMedio  ?? 0 },
-              ].map((k) => (
-                <Card key={k.label} hover className="flex flex-col gap-1">
-                  <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold">{k.label}</p>
-                  <p className="text-2xl font-black text-gold-glow">{formatarMoeda(k.valor)}</p>
-                </Card>
-              ))}
-              <Card hover className="flex flex-col gap-1">
-                <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold">Peças Vendidas</p>
-                <p className="text-2xl font-black text-gold">{kpis?.pecasVendidas ?? 0}</p>
-                <p className="text-xs text-[#888888]">{labelMes(periodoA)}</p>
+              <Card hover className="flex flex-col gap-2 lg:col-span-2">
+                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Receita Hoje</p>
+                <p className="text-gold-glow font-black tracking-tight" style={{ fontSize: '1.6rem', lineHeight: 1 }}>{formatarMoeda(kpis?.receitaHoje ?? 0)}</p>
+              </Card>
+              <Card hover className="flex flex-col gap-2 lg:col-span-2">
+                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Receita {labelMes(periodoA)}</p>
+                <p className="text-gold-glow font-black tracking-tight" style={{ fontSize: '1.6rem', lineHeight: 1 }}>{formatarMoeda(kpis?.receitaMes ?? 0)}</p>
+              </Card>
+              <Card hover className="flex flex-col gap-2">
+                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Ticket Médio</p>
+                <p className="text-[#EBEBEB] font-black tracking-tight" style={{ fontSize: '1.4rem', lineHeight: 1 }}>{formatarMoeda(kpis?.ticketMedio ?? 0)}</p>
+              </Card>
+              <Card hover className="flex flex-col gap-2">
+                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Peças Vendidas</p>
+                <p className="text-gold font-black tracking-tight" style={{ fontSize: '1.4rem', lineHeight: 1 }}>{kpis?.pecasVendidas ?? 0}</p>
+                <p className="text-[10px] text-[#444]">{labelMes(periodoA)}</p>
               </Card>
             </>
           )}
         </div>
 
         {/* KPIs de estoque/investimento */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card hover className="flex flex-col gap-1">
-            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold">Total Investido</p>
-            <p className="text-2xl font-black text-[#F0F0F0]">{formatarMoeda(inventario?.totalInvestido ?? 0)}</p>
-            <p className="text-xs text-[#888888]">custo × estoque atual</p>
+        <div className="grid grid-cols-2 gap-3">
+          <Card hover className="flex flex-col gap-2">
+            <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Investido em Estoque</p>
+            <p className="text-[#C0C0C0] font-black tracking-tight" style={{ fontSize: '1.5rem', lineHeight: 1 }}>{formatarMoeda(inventario?.totalInvestido ?? 0)}</p>
+            <p className="text-[10px] text-[#444]">custo × qtd em estoque</p>
           </Card>
-          <Card hover className="flex flex-col gap-1">
-            <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold">Potencial de Retorno</p>
-            <p className="text-2xl font-black text-gold">{formatarMoeda(inventario?.potencialRetorno ?? 0)}</p>
-            <p className="text-xs text-[#888888]">
+          <Card hover className="flex flex-col gap-2">
+            <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Potencial de Retorno</p>
+            <p className="text-gold-glow font-black tracking-tight" style={{ fontSize: '1.5rem', lineHeight: 1 }}>{formatarMoeda(inventario?.potencialRetorno ?? 0)}</p>
+            <p className="text-[10px] text-[#444]">
               {inventario && inventario.totalInvestido > 0
-                ? `${(((inventario.potencialRetorno - inventario.totalInvestido) / inventario.totalInvestido) * 100).toFixed(0)}% de lucro potencial`
+                ? `+${(((inventario.potencialRetorno - inventario.totalInvestido) / inventario.totalInvestido) * 100).toFixed(0)}% lucro potencial`
                 : 'preço venda × estoque atual'}
             </p>
           </Card>
