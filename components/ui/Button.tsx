@@ -11,12 +11,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', loading = false, fullWidth = false, children, disabled, className = '', ...props }, ref) => {
     const base =
-      'inline-flex items-center justify-center gap-2 font-bold uppercase tracking-wide rounded-md transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-50 disabled:cursor-not-allowed text-sm px-4 py-2.5'
+      'inline-flex items-center justify-center gap-2 font-bold uppercase tracking-wide rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-40 disabled:cursor-not-allowed text-sm px-4 py-2.5 select-none'
 
     const variants: Record<string, string> = {
-      primary: 'bg-gold text-[#0D0D0D] hover:bg-yellow-400 active:scale-95',
-      ghost:   'bg-transparent border border-[#2A2A2A] text-[#F0F0F0] hover:border-gold hover:text-gold active:scale-95',
-      danger:  'bg-transparent border border-[#FF4444] text-[#FF4444] hover:bg-[#FF4444] hover:text-white active:scale-95',
+      primary: 'bg-gold text-[#0D0D0D] hover:bg-yellow-400 hover:shadow-[0_0_16px_rgba(245,197,24,0.35)] active:scale-95 active:shadow-none',
+      ghost:   'bg-transparent border border-[#2A2A2A] text-[#888888] hover:border-gold/60 hover:text-gold hover:bg-gold/5 active:scale-95',
+      danger:  'bg-transparent border border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-400 active:scale-95',
     }
 
     return (

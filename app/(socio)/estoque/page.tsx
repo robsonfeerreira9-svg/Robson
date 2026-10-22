@@ -288,6 +288,7 @@ function EstoquePageInner() {
   const [filtroAlerta, setFiltroAlerta] = useState(false)
   const [mostrarZerados, setMostrarZerados] = useState(false)
   const [modoGrade, setModoGrade] = useState(false)
+  const [busca, setBusca] = useState('')
   const { data: produtos = [], isLoading } = useSWR('estoque-socio', fetchEstoque, { refreshInterval: 60000 })
   const { data: ranking } = useSWR('ranking-vendas', fetchRankingVendas, { refreshInterval: 300000 })
 
@@ -310,6 +311,7 @@ function EstoquePageInner() {
     if (filtroTamanho !== 'todos' && p.tamanho !== filtroTamanho) return false
     if (filtroCanal !== 'todos' && p.canal !== filtroCanal) return false
     if (filtroAlerta && !baixo && !parado) return false
+    if (busca.trim() && !p.nome.toLowerCase().includes(busca.trim().toLowerCase())) return false
     return true
   })
 
@@ -429,6 +431,26 @@ function EstoquePageInner() {
 
         {/* Filtros */}
         <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-3 mb-4">
+          {/* Busca */}
+          <div className="relative mb-3">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555555]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+            </svg>
+            <input
+              type="text"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar produto por nome…"
+              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg pl-10 pr-9 py-2.5 text-sm text-[#F0F0F0] placeholder:text-[#555555] focus:outline-none focus:border-gold transition-colors"
+            />
+            {busca && (
+              <button onClick={() => setBusca('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555555] hover:text-[#F0F0F0] transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2 items-center">
             <div className="flex gap-1 flex-wrap">
               {TAMANHOS.map((t) => (

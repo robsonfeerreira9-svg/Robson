@@ -413,7 +413,7 @@ export default function DashboardPage() {
   const maxRanking = ranking[0]?.total ?? 1
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] p-6">
+    <div className="min-h-screen bg-[#0D0D0D] p-6 fade-up">
       <div className="max-w-7xl mx-auto flex flex-col gap-6">
 
         {/* Header */}
@@ -501,7 +501,7 @@ export default function DashboardPage() {
               ].map((k) => (
                 <Card key={k.label} hover className="flex flex-col gap-1">
                   <p className="text-xs text-[#888888] uppercase tracking-wide font-semibold">{k.label}</p>
-                  <p className="text-2xl font-black text-gold">{formatarMoeda(k.valor)}</p>
+                  <p className="text-2xl font-black text-gold-glow">{formatarMoeda(k.valor)}</p>
                 </Card>
               ))}
               <Card hover className="flex flex-col gap-1">
