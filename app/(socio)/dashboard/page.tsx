@@ -473,49 +473,68 @@ export default function DashboardPage() {
         })()}
 
         {/* KPIs principais — 2 colunas no mobile, 4 no desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {kpiLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
-          ) : (
-            <>
-              <Card hover className="flex flex-col gap-1.5 col-span-1">
-                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Receita Hoje</p>
-                <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)' }}>{formatarMoeda(kpis?.receitaHoje ?? 0)}</p>
-              </Card>
-              <Card hover className="flex flex-col gap-1.5 col-span-1">
-                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Mês</p>
-                <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)' }}>{formatarMoeda(kpis?.receitaMes ?? 0)}</p>
-                <p className="text-[10px] text-[#333]">{labelMes(periodoA)}</p>
-              </Card>
-              <Card hover className="flex flex-col gap-1.5 col-span-1">
-                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Ticket Médio</p>
-                <p className="text-[#A8A8A8] font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(kpis?.ticketMedio ?? 0)}</p>
-              </Card>
-              <Card hover className="flex flex-col gap-1.5 col-span-1">
-                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Peças</p>
-                <p className="text-gold font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)' }}>{kpis?.pecasVendidas ?? 0}</p>
-                <p className="text-[10px] text-[#333]">vendidas no mês</p>
-              </Card>
-            </>
-          )}
-        </div>
+        {(() => {
+          const mesStr = `${periodoA.ano}-${String(periodoA.mes).padStart(2, '0')}`
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {kpiLoading ? (
+                Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
+              ) : (
+                <>
+                  <a href="/vendas?filtro=hoje" className="block">
+                    <Card hover className="flex flex-col gap-1.5 h-full">
+                      <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Receita Hoje</p>
+                      <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)' }}>{formatarMoeda(kpis?.receitaHoje ?? 0)}</p>
+                      <p className="text-[10px] text-[#333] mt-auto">ver vendas de hoje →</p>
+                    </Card>
+                  </a>
+                  <a href={`/vendas?mes=${mesStr}`} className="block">
+                    <Card hover className="flex flex-col gap-1.5 h-full">
+                      <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Receita do Mês</p>
+                      <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)' }}>{formatarMoeda(kpis?.receitaMes ?? 0)}</p>
+                      <p className="text-[10px] text-[#333] mt-auto">{labelMes(periodoA)} →</p>
+                    </Card>
+                  </a>
+                  <a href={`/vendas?mes=${mesStr}`} className="block">
+                    <Card hover className="flex flex-col gap-1.5 h-full">
+                      <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Ticket Médio</p>
+                      <p className="text-[#A8A8A8] font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(kpis?.ticketMedio ?? 0)}</p>
+                      <p className="text-[10px] text-[#333] mt-auto">ver vendas →</p>
+                    </Card>
+                  </a>
+                  <a href={`/vendas?mes=${mesStr}`} className="block">
+                    <Card hover className="flex flex-col gap-1.5 h-full">
+                      <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Peças no Mês</p>
+                      <p className="text-gold font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)' }}>{kpis?.pecasVendidas ?? 0}</p>
+                      <p className="text-[10px] text-[#333] mt-auto">ver vendas →</p>
+                    </Card>
+                  </a>
+                </>
+              )}
+            </div>
+          )
+        })()}
 
         {/* KPIs de estoque/investimento */}
         <div className="grid grid-cols-2 gap-3">
-          <Card hover className="flex flex-col gap-1.5">
-            <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Investido</p>
-            <p className="text-[#A8A8A8] font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(inventario?.totalInvestido ?? 0)}</p>
-            <p className="text-[10px] text-[#333]">custo × estoque</p>
-          </Card>
-          <Card hover className="flex flex-col gap-1.5">
-            <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Retorno Potencial</p>
-            <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(inventario?.potencialRetorno ?? 0)}</p>
-            <p className="text-[10px] text-[#333]">
-              {inventario && inventario.totalInvestido > 0
-                ? `+${(((inventario.potencialRetorno - inventario.totalInvestido) / inventario.totalInvestido) * 100).toFixed(0)}% lucro potencial`
-                : 'preço venda × estoque'}
-            </p>
-          </Card>
+          <a href="/estoque" className="block">
+            <Card hover className="flex flex-col gap-1.5 h-full">
+              <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Investido</p>
+              <p className="text-[#A8A8A8] font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(inventario?.totalInvestido ?? 0)}</p>
+              <p className="text-[10px] text-[#333] mt-auto">ver estoque →</p>
+            </Card>
+          </a>
+          <a href="/estoque" className="block">
+            <Card hover className="flex flex-col gap-1.5 h-full">
+              <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Retorno Potencial</p>
+              <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(inventario?.potencialRetorno ?? 0)}</p>
+              <p className="text-[10px] text-[#333] mt-auto">
+                {inventario && inventario.totalInvestido > 0
+                  ? `+${(((inventario.potencialRetorno - inventario.totalInvestido) / inventario.totalInvestido) * 100).toFixed(0)}% lucro potencial →`
+                  : 'ver estoque →'}
+              </p>
+            </Card>
+          </a>
         </div>
 
         {/* Gráfico com filtro de período */}

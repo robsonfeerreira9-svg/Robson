@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
 import { createClient } from '@/lib/supabase'
 import Card from '@/components/ui/Card'
@@ -375,46 +376,52 @@ function VendaRow({
   )
 }
 
-// ── Página ────────────────────────────────────────────────────────────────────
-export default function VendasPage() {
+// ── Página interna (usa searchParams) ────────────────────────────────────────
+function VendasPageInner() {
+  const searchParams = useSearchParams()
+  const mesParam    = searchParams.get('mes')
+  const filtroParam = searchParams.get('filtro')
+
   const [mes, setMes] = useState(() => {
+    if (mesParam) return mesParam
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   })
+  const [filtroHoje, setFiltroHoje] = useState(filtroParam === 'hoje')
   const [vendedorFiltro, setVendedorFiltro] = useState('')
   const [modalExcluir, setModalExcluir] = useState<VendaRow | null>(null)
   const [modalEditar, setModalEditar] = useState<VendaRow | null>(null)
 
   const cacheKey = ['vendas', mes, vendedorFiltro]
-  const { data: vendas = [], isLoading } = useSWR(
+  const { data: todasVendas = [], isLoading } = useSWR(
     cacheKey,
     () => fetchVendas(mes, vendedorFiltro),
     { refreshInterval: 60000 }
   )
   const { data: funcionarias = [] } = useSWR('usuarios-vendas', fetchUsuarios)
 
-  const totalMes = vendas.reduce((a, v) => a + Number(v.total_final), 0)
+  const hojeStr = new Date().toISOString().slice(0, 10)
+  const vendas = filtroHoje
+    ? todasVendas.filter(v => v.criado_em.slice(0, 10) === hojeStr)
+    : todasVendas
+
+  const totalMes  = vendas.reduce((a, v) => a + Number(v.total_final), 0)
   const qtdVendas = vendas.length
 
-  function handleDeleted() {
-    mutate(cacheKey)
-  }
-
-  function handleEdited() {
-    mutate(cacheKey)
-  }
+  function handleDeleted() { mutate(cacheKey) }
+  function handleEdited()  { mutate(cacheKey) }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] p-6">
+    <div className="min-h-screen bg-[#080808] p-4 md:p-6">
       <div className="max-w-7xl mx-auto flex flex-col gap-6">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Vendas</h1>
-            <a href="/dashboard" className="text-xs text-[#888888] hover:text-gold transition-colors">← Dashboard</a>
+            <a href="/dashboard" className="text-xs text-[#555] hover:text-gold transition-colors">← Dashboard</a>
           </div>
-          <div className="flex items-center gap-3 text-xs text-[#888888]">
+          <div className="flex items-center gap-3 text-xs text-[#555]">
             <span>{qtdVendas} venda{qtdVendas !== 1 ? 's' : ''}</span>
             <span className="text-gold font-black text-sm">{formatarMoeda(totalMes)}</span>
           </div>
@@ -422,27 +429,34 @@ export default function VendasPage() {
 
         {/* Filtros */}
         <Card padding="sm">
-          <div className="flex gap-4 flex-wrap items-end">
+          <div className="flex gap-3 flex-wrap items-end">
+            {filtroHoje && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                style={{ background: 'rgba(201,168,64,0.1)', color: '#C9A840', border: '1px solid rgba(201,168,64,0.25)' }}>
+                <span>Hoje</span>
+                <button onClick={() => setFiltroHoje(false)} className="opacity-60 hover:opacity-100 ml-1">✕</button>
+              </div>
+            )}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-medium">Mês</label>
+              <label className="text-xs text-[#555] font-medium">Mês</label>
               <input
                 type="month"
                 value={mes}
-                onChange={(e) => setMes(e.target.value)}
-                className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+                onChange={(e) => { setMes(e.target.value); setFiltroHoje(false) }}
+                className="bg-[#080808] border border-[#222] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
                 style={{ colorScheme: 'dark' }}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-medium">Vendedora</label>
+              <label className="text-xs text-[#555] font-medium">Vendedora</label>
               <select
                 value={vendedorFiltro}
                 onChange={(e) => setVendedorFiltro(e.target.value)}
-                className="bg-[#0D0D0D] border border-[#2A2A2A] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
+                className="bg-[#080808] border border-[#222] rounded px-3 py-2 text-sm text-[#F0F0F0] focus:outline-none focus:border-gold"
               >
                 <option value="">Todas</option>
                 {funcionarias.map((f: { id: string; nome: string }) => (
-                  <option key={f.id} value={f.id} className="bg-[#1A1A1A]">{f.nome}</option>
+                  <option key={f.id} value={f.id} className="bg-[#141414]">{f.nome}</option>
                 ))}
               </select>
             </div>
@@ -509,5 +523,14 @@ export default function VendasPage() {
         />
       )}
     </div>
+  )
+}
+
+// ── Página ────────────────────────────────────────────────────────────────────
+export default function VendasPage() {
+  return (
+    <Suspense>
+      <VendasPageInner />
+    </Suspense>
   )
 }
