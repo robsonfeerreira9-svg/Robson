@@ -3,22 +3,20 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'ghost' | 'danger'
+  variant?: 'primary' | 'ghost' | 'danger' | 'silver'
   loading?: boolean
   fullWidth?: boolean
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', loading = false, fullWidth = false, children, disabled, className = '', ...props }, ref) => {
-    const base =
-      'inline-flex items-center justify-center gap-2 font-bold uppercase tracking-wide rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-40 disabled:cursor-not-allowed text-sm px-4 py-2.5 select-none'
-
+    const base = 'inline-flex items-center justify-center gap-2 font-semibold uppercase tracking-wider rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A840] disabled:opacity-35 disabled:cursor-not-allowed text-xs px-4 py-2.5 select-none'
     const variants: Record<string, string> = {
-      primary: 'bg-gold text-[#0D0D0D] hover:bg-yellow-400 hover:shadow-[0_0_16px_rgba(245,197,24,0.35)] active:scale-95 active:shadow-none',
-      ghost:   'bg-transparent border border-[#2A2A2A] text-[#888888] hover:border-gold/60 hover:text-gold hover:bg-gold/5 active:scale-95',
-      danger:  'bg-transparent border border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-400 active:scale-95',
+      primary: 'bg-[#C9A840] text-[#080808] hover:bg-[#DEB84A] hover:shadow-[0_0_20px_rgba(201,168,64,0.4)] active:scale-95',
+      ghost:   'bg-transparent border border-[#202020] text-[#606060] hover:border-[#C9A840]/50 hover:text-[#C9A840] hover:bg-[rgba(201,168,64,0.05)] active:scale-95',
+      silver:  'bg-transparent border border-[#303030] text-[#A8A8A8] hover:border-[#A8A8A8]/60 hover:text-[#F0F0F0] hover:bg-[rgba(168,168,168,0.06)] active:scale-95',
+      danger:  'bg-transparent border border-[#E53E3E]/35 text-[#E53E3E] hover:bg-[rgba(229,62,62,0.08)] hover:border-[#E53E3E]/60 active:scale-95',
     }
-
     return (
       <button
         ref={ref}
@@ -38,5 +36,4 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   }
 )
 Button.displayName = 'Button'
-
 export default Button

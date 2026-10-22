@@ -413,7 +413,7 @@ export default function DashboardPage() {
   const maxRanking = ranking[0]?.total ?? 1
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] p-6 fade-up">
+    <div className="min-h-screen bg-[#080808] p-6 fade-up">
       <div className="max-w-7xl mx-auto flex flex-col gap-6">
 
         {/* Header */}
@@ -521,7 +521,7 @@ export default function DashboardPage() {
         <Card>
           {/* Controles */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide">Receita</h2>
+            <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em]">Receita</h2>
             <div className="flex items-center gap-3 flex-wrap">
               {/* Toggle Diário / Anual */}
               <div className="flex rounded overflow-hidden border border-[#2A2A2A]">
@@ -579,7 +579,7 @@ export default function DashboardPage() {
 
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#181818" />
               <XAxis
                 dataKey="label"
                 tick={{ fill: '#888888', fontSize: 10 }}
@@ -611,8 +611,8 @@ export default function DashboardPage() {
               />
               <Line
                 yAxisId="receita"
-                type="monotone" dataKey={keyA} name="Receita" stroke="#F5C518" strokeWidth={2}
-                dot={false} activeDot={{ r: 4, fill: '#F5C518', stroke: '#0D0D0D', strokeWidth: 2 }}
+                type="monotone" dataKey={keyA} name="Receita" stroke="#C9A840" strokeWidth={2}
+                dot={false} activeDot={{ r: 4, fill: '#C9A840', stroke: '#080808', strokeWidth: 2 }}
               />
               {modo === 'mensal' && !comparar && (
                 <Bar
@@ -637,7 +637,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Ranking vendedores */}
           <Card>
-            <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">
+            <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-4">
               Ranking — {labelMes(periodoA)}
             </h2>
             {ranking.length === 0 ? (
@@ -654,7 +654,7 @@ export default function DashboardPage() {
                         <span className="text-xs font-semibold text-[#F0F0F0] truncate">{v.nome}</span>
                         <span className="text-xs text-gold font-bold ml-2">{formatarMoeda(v.total)}</span>
                       </div>
-                      <div className="h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-[#141414] rounded-full overflow-hidden">
                         <div className="h-full bg-gold rounded-full transition-all" style={{ width: `${(v.total / maxRanking) * 100}%` }} />
                       </div>
                       <p className="text-[10px] text-[#888888] mt-0.5">{v.qtd} venda{v.qtd !== 1 ? 's' : ''}</p>
@@ -668,7 +668,7 @@ export default function DashboardPage() {
           {/* Alertas */}
           <div className="flex flex-col gap-4">
             <Card>
-              <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-3 flex items-center gap-2">
+              <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-3 flex items-center gap-2">
                 Estoque Crítico
                 {alertas?.critico.length ? <Badge variant="danger">{alertas.critico.length}</Badge> : null}
               </h2>
@@ -687,7 +687,7 @@ export default function DashboardPage() {
             </Card>
 
             <Card>
-              <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-3 flex items-center gap-2">
+              <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-3 flex items-center gap-2">
                 Produtos Parados
                 {alertas?.parado.length ? <Badge variant="warning">{alertas.parado.length}</Badge> : null}
               </h2>
@@ -713,7 +713,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {rankingTamanhos.tamanhos.length > 0 && (
               <Card>
-                <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">
+                <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-4">
                   Tamanhos Mais Vendidos
                   <span className="text-[#555555] font-normal normal-case text-xs ml-2">ano atual</span>
                 </h2>
@@ -725,7 +725,7 @@ export default function DashboardPage() {
                         <span className={`w-8 text-xs font-black text-center ${i === 0 ? 'text-gold' : 'text-[#888888]'}`}>
                           {t.label}
                         </span>
-                        <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                        <div className="flex-1 h-2 bg-[#141414] rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${i === 0 ? 'bg-gold' : 'bg-[#555555]'}`}
                             style={{ width: `${(t.qtd / max) * 100}%` }} />
                         </div>
@@ -738,7 +738,7 @@ export default function DashboardPage() {
             )}
             {rankingTamanhos.numeros.length > 0 && (
               <Card>
-                <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">
+                <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-4">
                   Numerações Mais Vendidas
                   <span className="text-[#555555] font-normal normal-case text-xs ml-2">ano atual</span>
                 </h2>
@@ -750,7 +750,7 @@ export default function DashboardPage() {
                         <span className={`w-8 text-xs font-black text-center ${i === 0 ? 'text-gold' : 'text-[#888888]'}`}>
                           {n.label}
                         </span>
-                        <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                        <div className="flex-1 h-2 bg-[#141414] rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${i === 0 ? 'bg-gold' : 'bg-[#555555]'}`}
                             style={{ width: `${(n.qtd / max) * 100}%` }} />
                         </div>
@@ -766,7 +766,7 @@ export default function DashboardPage() {
 
         {funcionariasMeta.length > 0 && (
           <Card>
-            <h2 className="text-sm font-bold text-[#F0F0F0] uppercase tracking-wide mb-4">
+            <h2 className="text-xs font-semibold text-[#606060] uppercase tracking-[0.12em] mb-4">
               Metas Mensais — Vendedoras
             </h2>
             <div className="flex flex-col gap-4">
