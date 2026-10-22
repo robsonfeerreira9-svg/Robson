@@ -53,6 +53,7 @@ const LABEL_METODO: Record<MetodoPagamento, string> = {
 }
 const LABEL_CANAL: Record<CanalVenda, string> = {
   fisico: 'Loja Física', whatsapp: 'WhatsApp', instagram: 'Instagram',
+  grupo_vip: 'Grupo VIP', trafego_pago: 'Tráfego Pago',
 }
 
 function Comprovante({ dados, onNovaVenda }: { dados: ComprovanteDados; onNovaVenda: () => void }) {
@@ -206,9 +207,11 @@ const METODOS: { value: MetodoPagamento; label: string }[] = [
 ]
 
 const CANAIS_VENDA: { value: CanalVenda; label: string }[] = [
-  { value: 'fisico', label: 'Física' },
-  { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'instagram', label: 'Instagram' },
+  { value: 'fisico',       label: 'Física' },
+  { value: 'whatsapp',     label: 'WhatsApp' },
+  { value: 'instagram',    label: 'Instagram' },
+  { value: 'grupo_vip',    label: 'Grupo VIP' },
+  { value: 'trafego_pago', label: 'Tráfego Pago' },
 ]
 
 // ── Toast simples ─────────────────────────────────────────────────────────────

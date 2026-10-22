@@ -322,8 +322,8 @@ function EstoquePageInner() {
   const gruposOrdenados = Object.entries(gruposPorNome).sort(([a], [b]) => a.localeCompare(b))
 
   const TAMANHOS = ['todos', 'PP', 'P', 'M', 'G', 'GG', 'UNICO'] as const
-  const CANAIS = ['todos', 'fisico', 'online', 'ambos'] as const
-  const labelCanal: Record<string, string> = { todos: 'Todos', fisico: 'Físico', online: 'Online', ambos: 'Ambos' }
+  const CANAIS = ['todos', 'fisico', 'online', 'ambos', 'grupo_vip', 'trafego_pago'] as const
+  const labelCanal: Record<string, string> = { todos: 'Todos', fisico: 'Físico', online: 'Online', ambos: 'Ambos', grupo_vip: 'Grupo VIP', trafego_pago: 'Tráfego Pago' }
 
   // ── Métricas resumo do estoque ───────────────────────────────────────────────
   const totalItens        = produtosFiltrados.reduce((s, p) => s + (p.estoque?.[0]?.quantidade ?? 0), 0)

@@ -18,10 +18,12 @@ interface ProductGridProps {
 }
 
 const CANAIS: { value: CanalProduto | 'todos'; label: string }[] = [
-  { value: 'todos', label: 'Todos' },
-  { value: 'fisico', label: 'Físico' },
-  { value: 'online', label: 'Online' },
-  { value: 'ambos', label: 'Ambos' },
+  { value: 'todos',        label: 'Todos' },
+  { value: 'fisico',       label: 'Físico' },
+  { value: 'online',       label: 'Online' },
+  { value: 'ambos',        label: 'Ambos' },
+  { value: 'grupo_vip',    label: 'Grupo VIP' },
+  { value: 'trafego_pago', label: 'Tráfego Pago' },
 ]
 
 async function fetchProdutos(): Promise<ProdutoComEstoque[]> {

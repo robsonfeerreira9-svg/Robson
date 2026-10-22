@@ -118,6 +118,12 @@ BEGIN
 END;
 $$;
 
+-- STEP 26: novos canais — Grupo VIP e Tráfego Pago
+ALTER TYPE canal_produto    ADD VALUE IF NOT EXISTS 'grupo_vip';
+ALTER TYPE canal_produto    ADD VALUE IF NOT EXISTS 'trafego_pago';
+ALTER TYPE canal_venda_tipo ADD VALUE IF NOT EXISTS 'grupo_vip';
+ALTER TYPE canal_venda_tipo ADD VALUE IF NOT EXISTS 'trafego_pago';
+
 SELECT COUNT(*) AS total_vendas   FROM public.vendas;
 SELECT COUNT(*) AS total_clientes FROM public.clientes;
 SELECT COUNT(*) AS total_movimentacoes FROM public.movimentacao_caixa;

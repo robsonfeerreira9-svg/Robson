@@ -16,11 +16,11 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE canal_produto AS ENUM ('fisico', 'online', 'ambos');
+  CREATE TYPE canal_produto AS ENUM ('fisico', 'online', 'ambos', 'grupo_vip', 'trafego_pago');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE canal_venda_tipo AS ENUM ('fisico', 'whatsapp', 'instagram');
+  CREATE TYPE canal_venda_tipo AS ENUM ('fisico', 'whatsapp', 'instagram', 'grupo_vip', 'trafego_pago');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN

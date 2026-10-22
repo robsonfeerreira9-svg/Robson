@@ -21,9 +21,11 @@ const TAMANHOS = [
 ]
 
 const CANAIS = [
-  { value: 'fisico', label: 'Físico' },
-  { value: 'online', label: 'Online' },
-  { value: 'ambos',  label: 'Ambos' },
+  { value: 'fisico',       label: 'Físico' },
+  { value: 'online',       label: 'Online' },
+  { value: 'ambos',        label: 'Ambos' },
+  { value: 'grupo_vip',    label: 'Grupo VIP' },
+  { value: 'trafego_pago', label: 'Tráfego Pago' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -72,11 +74,13 @@ export default function NovoProdutoPage() {
   const [fotos,     setFotos]     = useState<FotoItem[]>([])
   const [dragOver,  setDragOver]  = useState(false)
 
-  const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numeracao' | 'tenis'>('letra')
+  const [tipoNumeracao, setTipoNumeracao] = useState<'letra' | 'numeracao' | 'tenis' | 'acessorio'>('letra')
   // multi-tamanho para 'letra'
   const [tamanhoQtds,   setTamanhoQtds]   = useState<Partial<Record<TamanhoProduto, string>>>({})
   // multi-número para 'numeracao' e 'tenis': chave = número (string), valor = quantidade
   const [numeroQtds,    setNumeroQtds]    = useState<Record<string, string>>({})
+  // quantidade única para acessório
+  const [acessorioQty,  setAcessorioQty]  = useState('1')
 
   const [form, setForm] = useState({
     nome:       '',
@@ -218,7 +222,19 @@ export default function NovoProdutoPage() {
       const markupVal = userRole === 'socio' ? (parseFloat(form.markupPct) || 100) : 100
       const precoVal  = userRole === 'socio' ? (parseFloat(form.precoVenda) || precoSugerido) : 0
 
-      if (tipoNumeracao === 'letra') {
+      if (tipoNumeracao === 'acessorio') {
+        const { data: produto, error: prodError } = await supabase
+          .from('produtos')
+          .insert({
+            nome: form.nome.trim(), tamanho: 'UNICO', numero: null,
+            canal: form.canal, foto_url: fotoUrl, fotos_urls: fotosUrls,
+            custo: custoVal, markup_percentual: markupVal, preco_venda: precoVal,
+          })
+          .select().single()
+        if (prodError || !produto) { setErro(`Erro ao cadastrar produto: ${prodError?.message}`); return }
+        const { error: estErr } = await supabase.from('estoque').insert({ produto_id: produto.id, quantidade: parseInt(acessorioQty) || 0 })
+        if (estErr) { setErro(`Produto criado, mas erro no estoque: ${estErr.message}`); return }
+      } else if (tipoNumeracao === 'letra') {
         // Cria um produto por tamanho selecionado
         const entradas = Object.entries(tamanhoQtds) as [TamanhoProduto, string][]
         for (const [tamanho, qty] of entradas) {
@@ -454,18 +470,19 @@ export default function NovoProdutoPage() {
               {/* Numeração */}
               <div>
                 <label className="block text-sm font-medium text-[#F0F0F0] mb-1.5">Tipo de Numeração</label>
-                <div className="flex rounded overflow-hidden border border-[#2A2A2A] mb-3">
+                <div className="grid grid-cols-2 gap-1 mb-3">
                   {([
                     { value: 'letra',     label: 'PP / P / M / G / GG' },
-                    { value: 'numeracao', label: 'Numeração (32–50)' },
-                    { value: 'tenis',     label: 'Tênis (33–44)' },
+                    { value: 'numeracao', label: 'Numeração 32–50' },
+                    { value: 'tenis',     label: 'Tênis 33–44' },
+                    { value: 'acessorio', label: 'Acessório (Único)' },
                   ] as const).map((t) => (
                     <button
                       key={t.value}
                       type="button"
-                      onClick={() => { setTipoNumeracao(t.value); setTamanhoQtds({}); setNumeroQtds({}) }}
-                      className={`flex-1 py-2 text-xs font-semibold transition-colors border-r border-[#2A2A2A] last:border-r-0 ${
-                        tipoNumeracao === t.value ? 'bg-gold text-[#0D0D0D]' : 'bg-transparent text-[#888888] hover:text-gold'
+                      onClick={() => { setTipoNumeracao(t.value); setTamanhoQtds({}); setNumeroQtds({}); setAcessorioQty('1') }}
+                      className={`py-2 rounded-md text-xs font-semibold transition-colors border ${
+                        tipoNumeracao === t.value ? 'bg-gold text-[#0D0D0D] border-gold' : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-gold hover:text-gold'
                       }`}
                     >
                       {t.label}
@@ -508,6 +525,23 @@ export default function NovoProdutoPage() {
                         {(Object.entries(tamanhoQtds) as [TamanhoProduto, string][]).map(([t, q]) => `${t}×${q || 0}`).join(', ')}
                       </p>
                     )}
+                  </div>
+                )}
+
+                {tipoNumeracao === 'acessorio' && (
+                  <div>
+                    <p className="text-xs text-[#555555] mb-2">Tamanho único — informe a quantidade disponível</p>
+                    <div className="flex items-center gap-3">
+                      <span className="px-4 py-2 rounded-md border border-[#2A2A2A] text-sm font-black text-[#888888] bg-[#111111]">ÚNICO</span>
+                      <input
+                        type="number" min="0"
+                        value={acessorioQty}
+                        onChange={(e) => setAcessorioQty(e.target.value)}
+                        className="w-24 bg-[#0D0D0D] border border-gold/40 rounded-md px-3 py-2 text-sm text-center text-[#F0F0F0] focus:outline-none focus:border-gold"
+                        placeholder="qtd"
+                      />
+                      <span className="text-xs text-[#555555]">peças</span>
+                    </div>
                   </div>
                 )}
 
