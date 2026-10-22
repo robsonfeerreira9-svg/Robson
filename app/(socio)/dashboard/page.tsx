@@ -417,27 +417,9 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto flex flex-col gap-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Dashboard</h1>
-            <p className="text-sm text-[#888888]">HG Grifes — Visão Geral</p>
-          </div>
-          <div className="flex gap-2 flex-wrap justify-end">
-            <a href="/pdv"       className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">PDV</a>
-            <a href="/vendas"    className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Vendas</a>
-            <a href="/estoque"   className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Estoque</a>
-            <a href="/clientes"  className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Clientes</a>
-            <a href="/comissoes" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Comissões</a>
-            <a href="/financeiro" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Financeiro</a>
-            <a href="/campanhas" className="text-xs text-[#888888] hover:text-gold transition-colors border border-[#2A2A2A] px-3 py-1.5 rounded hover:border-gold">Campanhas</a>
-            <a href="/relatorio" className="text-xs text-gold font-bold hover:text-[#F0F0F0] transition-colors border border-gold/40 px-3 py-1.5 rounded hover:border-gold">📄 Relatório PDF</a>
-            <button
-              onClick={async () => { await createClient().auth.signOut(); window.location.href = '/login' }}
-              className="text-xs text-[#FF4444] hover:text-white transition-colors border border-[#FF4444]/40 px-3 py-1.5 rounded hover:border-[#FF4444] hover:bg-[#FF4444]/10"
-            >
-              Sair
-            </button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-black text-[#F0F0F0] uppercase tracking-wide">Dashboard</h1>
+          <p className="text-sm text-[#888888]">HG Grifes — Visão Geral</p>
         </div>
 
         {/* ── Contas a Pagar desta semana ── */}
