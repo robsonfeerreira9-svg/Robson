@@ -413,7 +413,7 @@ export default function DashboardPage() {
   const maxRanking = ranking[0]?.total ?? 1
 
   return (
-    <div className="min-h-screen bg-[#080808] p-6 fade-up">
+    <div className="min-h-screen bg-[#080808] p-4 md:p-6 fade-up">
       <div className="max-w-7xl mx-auto flex flex-col gap-6">
 
         {/* Header */}
@@ -472,28 +472,29 @@ export default function DashboardPage() {
           )
         })()}
 
-        {/* KPIs do mês + estoque */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {/* KPIs principais — 2 colunas no mobile, 4 no desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {kpiLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <KpiSkeleton key={i} />)
+            Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
           ) : (
             <>
-              <Card hover className="flex flex-col gap-2 lg:col-span-2">
-                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Receita Hoje</p>
-                <p className="text-gold-glow font-black tracking-tight" style={{ fontSize: '1.6rem', lineHeight: 1 }}>{formatarMoeda(kpis?.receitaHoje ?? 0)}</p>
+              <Card hover className="flex flex-col gap-1.5 col-span-1">
+                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Receita Hoje</p>
+                <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)' }}>{formatarMoeda(kpis?.receitaHoje ?? 0)}</p>
               </Card>
-              <Card hover className="flex flex-col gap-2 lg:col-span-2">
-                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Receita {labelMes(periodoA)}</p>
-                <p className="text-gold-glow font-black tracking-tight" style={{ fontSize: '1.6rem', lineHeight: 1 }}>{formatarMoeda(kpis?.receitaMes ?? 0)}</p>
+              <Card hover className="flex flex-col gap-1.5 col-span-1">
+                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Mês</p>
+                <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)' }}>{formatarMoeda(kpis?.receitaMes ?? 0)}</p>
+                <p className="text-[10px] text-[#333]">{labelMes(periodoA)}</p>
               </Card>
-              <Card hover className="flex flex-col gap-2">
-                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Ticket Médio</p>
-                <p className="text-[#EBEBEB] font-black tracking-tight" style={{ fontSize: '1.4rem', lineHeight: 1 }}>{formatarMoeda(kpis?.ticketMedio ?? 0)}</p>
+              <Card hover className="flex flex-col gap-1.5 col-span-1">
+                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Ticket Médio</p>
+                <p className="text-[#A8A8A8] font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(kpis?.ticketMedio ?? 0)}</p>
               </Card>
-              <Card hover className="flex flex-col gap-2">
-                <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Peças Vendidas</p>
-                <p className="text-gold font-black tracking-tight" style={{ fontSize: '1.4rem', lineHeight: 1 }}>{kpis?.pecasVendidas ?? 0}</p>
-                <p className="text-[10px] text-[#444]">{labelMes(periodoA)}</p>
+              <Card hover className="flex flex-col gap-1.5 col-span-1">
+                <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Peças</p>
+                <p className="text-gold font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)' }}>{kpis?.pecasVendidas ?? 0}</p>
+                <p className="text-[10px] text-[#333]">vendidas no mês</p>
               </Card>
             </>
           )}
@@ -501,18 +502,18 @@ export default function DashboardPage() {
 
         {/* KPIs de estoque/investimento */}
         <div className="grid grid-cols-2 gap-3">
-          <Card hover className="flex flex-col gap-2">
-            <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Investido em Estoque</p>
-            <p className="text-[#C0C0C0] font-black tracking-tight" style={{ fontSize: '1.5rem', lineHeight: 1 }}>{formatarMoeda(inventario?.totalInvestido ?? 0)}</p>
-            <p className="text-[10px] text-[#444]">custo × qtd em estoque</p>
+          <Card hover className="flex flex-col gap-1.5">
+            <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Investido</p>
+            <p className="text-[#A8A8A8] font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(inventario?.totalInvestido ?? 0)}</p>
+            <p className="text-[10px] text-[#333]">custo × estoque</p>
           </Card>
-          <Card hover className="flex flex-col gap-2">
-            <p className="text-[10px] text-[#555] uppercase tracking-[0.15em] font-semibold">Potencial de Retorno</p>
-            <p className="text-gold-glow font-black tracking-tight" style={{ fontSize: '1.5rem', lineHeight: 1 }}>{formatarMoeda(inventario?.potencialRetorno ?? 0)}</p>
-            <p className="text-[10px] text-[#444]">
+          <Card hover className="flex flex-col gap-1.5">
+            <p className="text-[10px] text-[#454545] uppercase tracking-[0.12em] font-semibold">Retorno Potencial</p>
+            <p className="text-gold-glow font-black tracking-tight leading-none" style={{ fontSize: 'clamp(1rem, 3.5vw, 1.4rem)' }}>{formatarMoeda(inventario?.potencialRetorno ?? 0)}</p>
+            <p className="text-[10px] text-[#333]">
               {inventario && inventario.totalInvestido > 0
                 ? `+${(((inventario.potencialRetorno - inventario.totalInvestido) / inventario.totalInvestido) * 100).toFixed(0)}% lucro potencial`
-                : 'preço venda × estoque atual'}
+                : 'preço venda × estoque'}
             </p>
           </Card>
         </div>
