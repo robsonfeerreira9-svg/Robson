@@ -125,10 +125,10 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
               return (
                 <div
                   key={nome}
-                  className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-3 flex flex-col gap-2"
+                  className="bg-[#111111] border border-[#1E1E1E] rounded-xl overflow-hidden flex flex-col"
                 >
-                  {/* Foto */}
-                  <div className="relative w-full aspect-square bg-[#0D0D0D] rounded-md overflow-hidden">
+                  {/* Foto — ocupa a maior parte do card */}
+                  <div className="relative w-full aspect-[3/4] bg-[#0A0A0A]">
                     {foto ? (
                       <Image
                         src={foto}
@@ -138,33 +138,34 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
                         sizes="(max-width: 768px) 50vw, 33vw"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#2A2A2A]">
-                        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-[#252525]">
+                        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.8} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
+                        <span className="text-[9px] uppercase tracking-widest">sem foto</span>
                       </div>
                     )}
                     {/* Badge quantidade no carrinho */}
                     {totalNoCarrinho > 0 && (
-                      <span className="absolute top-1.5 right-1.5 bg-gold text-[#0D0D0D] text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                      <span className="absolute top-2 right-2 bg-[#C9A840] text-[#080808] text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-lg">
                         {totalNoCarrinho}
                       </span>
                     )}
+                    {/* Gradiente no fundo para legibilidade */}
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#111111] to-transparent pointer-events-none" />
+                    {/* Preço sobre a foto */}
+                    <div className="absolute bottom-2 left-3">
+                      <p className="text-sm font-black text-[#C9A840] drop-shadow-sm">{formatarMoeda(preco)}</p>
+                    </div>
                   </div>
 
-                  {/* Nome e preço */}
-                  <div>
-                    <p className="text-xs font-semibold text-[#F0F0F0] line-clamp-2 leading-snug mb-1">
+                  {/* Info + tamanhos */}
+                  <div className="p-2.5 flex flex-col gap-2">
+                    <p className="text-xs font-semibold text-[#EBEBEB] line-clamp-2 leading-snug">
                       {nome}
                     </p>
-                    <p className="text-sm font-black text-gold">{formatarMoeda(preco)}</p>
-                  </div>
 
-                  {/* Tamanhos disponíveis */}
-                  <div>
-                    <p className="text-[9px] text-[#555555] uppercase tracking-wide font-semibold mb-1.5">
-                      Tamanhos disponíveis
-                    </p>
+                    {/* Tamanhos disponíveis */}
                     <div className="flex flex-wrap gap-1">
                       {variantes.map((v) => {
                         const estoqueQty = v.estoque?.[0]?.quantidade ?? 0
@@ -178,12 +179,12 @@ export default function ProductGrid({ onAddToCart, cartItems }: ProductGridProps
                             onClick={() => disponivel > 0 && onAddToCart(v)}
                             disabled={disponivel <= 0}
                             title={`${disponivel} em estoque`}
-                            className={`px-2 py-1 rounded text-xs font-bold border transition-all ${
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all active:scale-95 ${
                               noCarrinho > 0
-                                ? 'bg-gold text-[#0D0D0D] border-gold'
+                                ? 'bg-[#C9A840] text-[#080808] border-[#C9A840]'
                                 : disponivel > 0
-                                ? 'bg-[#0D0D0D] text-[#F0F0F0] border-[#3A3A3A] hover:border-gold hover:text-gold active:scale-95'
-                                : 'opacity-25 cursor-not-allowed border-[#1A1A1A] text-[#444444]'
+                                ? 'bg-transparent text-[#EBEBEB] border-[#2A2A2A] hover:border-[#C9A840] hover:text-[#C9A840]'
+                                : 'opacity-20 cursor-not-allowed border-[#1A1A1A] text-[#444]'
                             }`}
                           >
                             {label}
