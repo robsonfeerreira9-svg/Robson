@@ -69,14 +69,14 @@ export default function LoginPage() {
         }
 
         input { background: transparent !important; }
-        input::placeholder { color: #282828; }
+        input::placeholder { color: #555; }
         input:focus { outline: none !important; }
         .btn-gold:hover { filter: brightness(1.08); }
       `}</style>
 
       <main
         className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden"
-        style={{ background: '#050403' }}
+        style={{ background: '#141008' }}
       >
         {/* ── camadas de fundo ── */}
         <div className="absolute inset-0 pointer-events-none">
@@ -155,35 +155,37 @@ export default function LoginPage() {
 
         {/* ── formulário centralizado ── */}
         <div className="fade-2 relative w-full max-w-xs px-6" style={{ zIndex: 5 }}>
+          {/* card com fundo levemente visível */}
+          <div className="rounded-2xl px-6 py-7" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,64,0.12)' }}>
           <form onSubmit={handleLogin} className="flex flex-col gap-5">
 
             {/* email */}
-            <div className="flex flex-col gap-1.5">
-              <label style={{ fontSize:'0.6rem', letterSpacing:'0.28em', color:'#383838', textTransform:'uppercase' }}>
+            <div className="flex flex-col gap-2">
+              <label style={{ fontSize:'0.65rem', letterSpacing:'0.22em', color:'#888', textTransform:'uppercase', fontWeight:500 }}>
                 Email
               </label>
               <input
                 type="email" placeholder="seu@email.com" value={email}
                 onChange={e => setEmail(e.target.value)} autoComplete="email" required
-                className="w-full py-3 text-sm text-[#D8D0C0]"
-                style={{ borderBottom:'1px solid rgba(201,168,64,0.2)', transition:'border-color .25s' }}
-                onFocus={e => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.65)'}
-                onBlur={e  => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.2)'}
+                className="w-full py-3 text-[15px] text-[#F0E8D8]"
+                style={{ borderBottom:'1px solid rgba(201,168,64,0.35)', transition:'border-color .25s' }}
+                onFocus={e => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.85)'}
+                onBlur={e  => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.35)'}
               />
             </div>
 
             {/* senha */}
-            <div className="flex flex-col gap-1.5">
-              <label style={{ fontSize:'0.6rem', letterSpacing:'0.28em', color:'#383838', textTransform:'uppercase' }}>
+            <div className="flex flex-col gap-2">
+              <label style={{ fontSize:'0.65rem', letterSpacing:'0.22em', color:'#888', textTransform:'uppercase', fontWeight:500 }}>
                 Senha
               </label>
               <input
                 type="password" placeholder="••••••••" value={senha}
                 onChange={e => setSenha(e.target.value)} autoComplete="current-password" required
-                className="w-full py-3 text-sm text-[#D8D0C0]"
-                style={{ borderBottom:'1px solid rgba(201,168,64,0.2)', transition:'border-color .25s' }}
-                onFocus={e => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.65)'}
-                onBlur={e  => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.2)'}
+                className="w-full py-3 text-[15px] text-[#F0E8D8]"
+                style={{ borderBottom:'1px solid rgba(201,168,64,0.35)', transition:'border-color .25s' }}
+                onFocus={e => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.85)'}
+                onBlur={e  => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.35)'}
               />
             </div>
 
@@ -209,6 +211,7 @@ export default function LoginPage() {
                 : 'Entrar'}
             </button>
           </form>
+          </div>
         </div>
 
         {/* rodapé */}
