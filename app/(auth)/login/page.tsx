@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 
 export default function LoginPage() {
@@ -125,17 +124,15 @@ export default function LoginPage() {
             {/* borda dourada visível */}
             <div className="absolute inset-4 rounded-full"
               style={{ boxShadow: '0 0 0 2px rgba(201,168,64,0.8), 0 0 40px rgba(201,168,64,0.25), 0 16px 60px rgba(0,0,0,0.8)' }} />
-            {/* a logo em si */}
-            <div className="relative rounded-full overflow-hidden" style={{ width: 208, height: 208 }}>
-              <Image
-                src="/hg-logo.jpg"
-                alt="HG Select"
-                fill
-                className="object-cover"
-                sizes="208px"
-                priority
-              />
-            </div>
+            {/* a logo em si — img direto, sem Next.js Image */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hg-logo.jpg"
+              alt="HG Select"
+              width={208}
+              height={208}
+              style={{ width: 208, height: 208, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+            />
           </div>
 
           {/* nome da marca com shimmer dourado */}
