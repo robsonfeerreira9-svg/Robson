@@ -113,22 +113,29 @@ export default function LoginPage() {
             }}
           />
 
-          {/* logo — exibida no tamanho real, sem corte */}
-          <div
-            className="relative"
-            style={{
-              width: 220, height: 220,
-              filter: 'drop-shadow(0 0 30px rgba(201,168,64,0.3)) drop-shadow(0 24px 60px rgba(0,0,0,0.9))',
-            }}
-          >
-            <Image
-              src="/hg-logo.jpg"
-              alt="HG Select"
-              fill
-              className="object-contain rounded-full"
-              sizes="220px"
-              priority
-            />
+          {/* logo — disco de fundo para separar do preto, depois a logo por cima */}
+          <div className="relative flex items-center justify-center"
+            style={{ width: 240, height: 240 }}>
+            {/* disco de brilho atrás */}
+            <div className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(201,168,64,0.22) 0%, rgba(120,80,10,0.08) 55%, transparent 75%)',
+                animation: 'glow 5s ease-in-out infinite',
+              }} />
+            {/* borda dourada visível */}
+            <div className="absolute inset-4 rounded-full"
+              style={{ boxShadow: '0 0 0 2px rgba(201,168,64,0.8), 0 0 40px rgba(201,168,64,0.25), 0 16px 60px rgba(0,0,0,0.8)' }} />
+            {/* a logo em si */}
+            <div className="relative rounded-full overflow-hidden" style={{ width: 208, height: 208 }}>
+              <Image
+                src="/hg-logo.jpg"
+                alt="HG Select"
+                fill
+                className="object-cover"
+                sizes="208px"
+                priority
+              />
+            </div>
           </div>
 
           {/* nome da marca com shimmer dourado */}
