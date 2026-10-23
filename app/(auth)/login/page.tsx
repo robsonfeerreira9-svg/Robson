@@ -23,163 +23,194 @@ export default function LoginPage() {
       const { data: usuario } = await supabase.from('usuarios').select('role').eq('id', authData.user.id).single()
       if (!usuario) { setErro('Usuário não encontrado.'); return }
       router.push(usuario.role === 'socio' ? '/dashboard' : '/pdv')
-    } catch { setErro('Erro inesperado. Tente novamente.') }
+    } catch { setErro('Erro inesperado.') }
     finally { setLoading(false) }
   }
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&display=swap');
-        @keyframes fadeIn  { from{opacity:0}to{opacity:1} }
-        @keyframes slideUp { from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)} }
-        @keyframes pulse   { 0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.04)} }
-        .cf { font-family:'Cormorant Garamond',serif; }
-        .af { animation:fadeIn 1.2s ease both; }
-        .a1 { animation:slideUp .9s cubic-bezier(.16,1,.3,1) .1s both; }
-        .a2 { animation:slideUp .9s cubic-bezier(.16,1,.3,1) .3s both; }
-        .a3 { animation:slideUp .9s cubic-bezier(.16,1,.3,1) .5s both; }
-        input { background:transparent!important; border-radius:0!important; }
-        input::placeholder { color:#333; }
-        input:focus { outline:none!important; }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400;500;600&display=swap');
+
+        @keyframes logoIn {
+          from { opacity:0; transform:scale(.88) translateY(16px); filter:blur(10px); }
+          to   { opacity:1; transform:scale(1)  translateY(0);    filter:blur(0); }
+        }
+        @keyframes fadeUp {
+          from { opacity:0; transform:translateY(20px); }
+          to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes shimmer {
+          0%   { background-position: -400% center; }
+          100% { background-position:  400% center; }
+        }
+        @keyframes glow {
+          0%,100% { opacity:.4; transform:scale(1); }
+          50%     { opacity:.7; transform:scale(1.07); }
+        }
+
+        .logo-in  { animation: logoIn  1.1s cubic-bezier(.16,1,.3,1) .05s both; }
+        .fade-1   { animation: fadeUp  .8s cubic-bezier(.16,1,.3,1) .6s  both; }
+        .fade-2   { animation: fadeUp  .8s cubic-bezier(.16,1,.3,1) .8s  both; }
+        .fade-3   { animation: fadeUp  .8s cubic-bezier(.16,1,.3,1) .95s both; }
+
+        .brand-text {
+          font-family: 'Cormorant Garamond', serif;
+          font-weight: 300;
+          letter-spacing: .42em;
+          text-indent: .42em;
+          background: linear-gradient(90deg,
+            #8A6820 0%, #C9A840 20%, #FFE98A 35%,
+            #C9A840 50%, #FFE98A 65%, #C9A840 80%, #8A6820 100%);
+          background-size: 400% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmer 5s linear 1.2s infinite;
+        }
+
+        input { background: transparent !important; }
+        input::placeholder { color: #282828; }
+        input:focus { outline: none !important; }
+        .btn-gold:hover { filter: brightness(1.08); }
       `}</style>
 
-      <main className="relative min-h-screen w-full overflow-hidden flex">
+      <main
+        className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden"
+        style={{ background: '#050403' }}
+      >
+        {/* ── camadas de fundo ── */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* glow central dourado */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(201,168,64,0.13) 0%, rgba(160,110,20,0.05) 45%, transparent 70%)',
+              animation: 'glow 6s ease-in-out infinite',
+            }}
+          />
+          {/* acento superior */}
+          <div className="absolute top-0 inset-x-0 h-64"
+            style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(201,168,64,0.04) 0%, transparent 70%)' }} />
+          {/* vinheta de borda */}
+          <div className="absolute inset-0"
+            style={{ background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.75) 100%)' }} />
+          {/* linhas horizontais sutis */}
+          <div className="absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: 'repeating-linear-gradient(0deg, rgba(201,168,64,1) 0px, rgba(201,168,64,1) 1px, transparent 1px, transparent 60px)' }} />
+        </div>
 
-        {/* ── FOTO DE FUNDO: homem bem vestido (Unsplash) ── */}
-        <div
-          className="absolute inset-0 af"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=1400&q=85&fit=crop&crop=top')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center top',
-          }}
-        />
+        {/* ── logo GRANDE no centro ── */}
+        <div className="relative flex flex-col items-center gap-5 logo-in" style={{ zIndex: 5 }}>
 
-        {/* ── OVERLAYS: escurecer e focar ── */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(100deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.82) 100%)' }} />
-        {/* vinheta lateral direita mais escura (onde fica o form) */}
-        <div className="absolute inset-y-0 right-0 w-[45%]" style={{ background: 'linear-gradient(270deg, rgba(0,0,0,0.88) 0%, transparent 100%)' }} />
-        {/* vinheta de baixo */}
-        <div className="absolute inset-x-0 bottom-0 h-48" style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%)' }} />
-        {/* tom dourado quente vindo da esquerda */}
-        <div className="absolute inset-y-0 left-0 w-[55%]" style={{ background: 'radial-gradient(ellipse at 20% 60%, rgba(180,130,20,0.12) 0%, transparent 70%)' }} />
+          {/* anel de luz atrás da logo */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+            style={{
+              width: 340, height: 340,
+              background: 'radial-gradient(circle, rgba(201,168,64,0.16) 0%, transparent 65%)',
+              animation: 'glow 5s ease-in-out 1s infinite',
+            }}
+          />
 
-        {/* ── LOGO GRANDE NO CENTRO ── */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ zIndex: 5 }}>
-          <div className="flex flex-col items-center gap-5 a1">
+          {/* logo — exibida no tamanho real, sem corte */}
+          <div
+            className="relative"
+            style={{
+              width: 220, height: 220,
+              filter: 'drop-shadow(0 0 30px rgba(201,168,64,0.3)) drop-shadow(0 24px 60px rgba(0,0,0,0.9))',
+            }}
+          >
+            <Image
+              src="/hg-logo.jpg"
+              alt="HG Select"
+              fill
+              className="object-contain rounded-full"
+              sizes="220px"
+              priority
+            />
+          </div>
 
-            {/* halo dourado atrás da logo */}
-            <div className="absolute w-80 h-80 rounded-full"
-              style={{ background: 'radial-gradient(circle, rgba(201,168,64,0.18) 0%, transparent 65%)', animation: 'pulse 5s ease-in-out infinite' }} />
+          {/* nome da marca com shimmer dourado */}
+          <div className="flex flex-col items-center gap-2">
+            <h1 className="brand-text" style={{ fontSize: 'clamp(1.5rem, 5vw, 2.4rem)' }}>
+              HG SELECT
+            </h1>
+            <div className="flex items-center gap-3">
+              <div className="h-px w-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(201,168,64,0.4))' }} />
+              <span style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'0.58rem', letterSpacing:'0.5em', color:'rgba(201,168,64,0.35)', fontStyle:'italic' }}>
+                MODA EXCLUSIVA
+              </span>
+              <div className="h-px w-10" style={{ background: 'linear-gradient(90deg, rgba(201,168,64,0.4), transparent)' }} />
+            </div>
+          </div>
+        </div>
 
-            {/* logo HG Select */}
-            <div className="relative rounded-full overflow-hidden"
-              style={{
-                width: 160, height: 160,
-                border: '3px solid rgba(201,168,64,0.9)',
-                boxShadow: '0 0 0 8px rgba(201,168,64,0.12), 0 0 60px rgba(201,168,64,0.3), 0 24px 80px rgba(0,0,0,0.8)',
-              }}>
-              <Image
-                src="/hg-logo.jpg"
-                alt="HG Select"
-                fill
-                className="object-cover"
-                sizes="160px"
-                priority
+        {/* ── separador ── */}
+        <div className="fade-1 my-8 w-px h-10" style={{ background: 'linear-gradient(180deg, transparent, rgba(201,168,64,0.3), transparent)', zIndex:5 }} />
+
+        {/* ── formulário centralizado ── */}
+        <div className="fade-2 relative w-full max-w-xs px-6" style={{ zIndex: 5 }}>
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+
+            {/* email */}
+            <div className="flex flex-col gap-1.5">
+              <label style={{ fontSize:'0.6rem', letterSpacing:'0.28em', color:'#383838', textTransform:'uppercase' }}>
+                Email
+              </label>
+              <input
+                type="email" placeholder="seu@email.com" value={email}
+                onChange={e => setEmail(e.target.value)} autoComplete="email" required
+                className="w-full py-3 text-sm text-[#D8D0C0]"
+                style={{ borderBottom:'1px solid rgba(201,168,64,0.2)', transition:'border-color .25s' }}
+                onFocus={e => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.65)'}
+                onBlur={e  => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.2)'}
               />
             </div>
 
-            {/* nome da marca */}
-            <div className="flex flex-col items-center gap-2.5">
-              <h1 className="cf text-center"
-                style={{
-                  fontSize: 'clamp(2rem, 5.5vw, 3.2rem)',
-                  fontWeight: 300,
-                  letterSpacing: '0.45em',
-                  textIndent: '0.45em',
-                  background: 'linear-gradient(180deg, #FFE990 0%, #D4AE48 35%, #A07828 70%, #C9A840 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  filter: 'drop-shadow(0 2px 12px rgba(201,168,64,0.35))',
-                }}>
-                HG SELECT
-              </h1>
-              <div className="flex items-center gap-4">
-                <div className="h-px w-14" style={{ background: 'linear-gradient(90deg,transparent,rgba(201,168,64,0.55))' }} />
-                <span className="cf text-[9px] uppercase tracking-[0.45em]" style={{ color: 'rgba(201,168,64,0.5)', fontStyle: 'italic' }}>Moda Exclusiva</span>
-                <div className="h-px w-14" style={{ background: 'linear-gradient(90deg,rgba(201,168,64,0.55),transparent)' }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── FORMULÁRIO — painel direito ── */}
-        <div className="relative ml-auto w-full md:w-[380px] flex items-end md:items-center justify-center px-7 pb-10 pt-[62vh] md:pt-0"
-          style={{ zIndex: 10 }}>
-          <div className="w-full max-w-xs">
-
-            {/* borda dourada em cima */}
-            <div className="h-px w-16 mb-7" style={{ background: 'linear-gradient(90deg, rgba(201,168,64,0.6), transparent)' }} />
-
-            <div className="a2 flex flex-col gap-1.5 mb-7">
-              <p className="cf text-[10px] uppercase tracking-[0.3em]" style={{ color: 'rgba(201,168,64,0.45)', fontStyle: 'italic' }}>Bem-vinda</p>
-              <h2 className="text-[#D8CEB8] font-light" style={{ fontSize: '1.25rem', letterSpacing: '0.05em' }}>Acesse o sistema</h2>
+            {/* senha */}
+            <div className="flex flex-col gap-1.5">
+              <label style={{ fontSize:'0.6rem', letterSpacing:'0.28em', color:'#383838', textTransform:'uppercase' }}>
+                Senha
+              </label>
+              <input
+                type="password" placeholder="••••••••" value={senha}
+                onChange={e => setSenha(e.target.value)} autoComplete="current-password" required
+                className="w-full py-3 text-sm text-[#D8D0C0]"
+                style={{ borderBottom:'1px solid rgba(201,168,64,0.2)', transition:'border-color .25s' }}
+                onFocus={e => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.65)'}
+                onBlur={e  => e.currentTarget.style.borderBottomColor='rgba(201,168,64,0.2)'}
+              />
             </div>
 
-            <form onSubmit={handleLogin} className="flex flex-col gap-5 a3">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase tracking-[0.25em] text-[#484848]">Email</label>
-                <input
-                  type="email" placeholder="seu@email.com" value={email}
-                  onChange={e => setEmail(e.target.value)} autoComplete="email" required
-                  className="w-full py-2.5 text-sm text-[#E0D8C8]"
-                  style={{ borderBottom: '1px solid rgba(201,168,64,0.22)', transition: 'border-color .2s' }}
-                  onFocus={e => e.currentTarget.style.borderBottomColor = 'rgba(201,168,64,0.7)'}
-                  onBlur={e => e.currentTarget.style.borderBottomColor = 'rgba(201,168,64,0.22)'}
-                />
-              </div>
+            {erro && (
+              <p className="text-xs flex items-center gap-2" style={{ color:'#FF6060' }}>
+                <span className="w-1 h-1 rounded-full bg-[#FF6060] flex-shrink-0" />{erro}
+              </p>
+            )}
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase tracking-[0.25em] text-[#484848]">Senha</label>
-                <input
-                  type="password" placeholder="••••••••" value={senha}
-                  onChange={e => setSenha(e.target.value)} autoComplete="current-password" required
-                  className="w-full py-2.5 text-sm text-[#E0D8C8]"
-                  style={{ borderBottom: '1px solid rgba(201,168,64,0.22)', transition: 'border-color .2s' }}
-                  onFocus={e => e.currentTarget.style.borderBottomColor = 'rgba(201,168,64,0.7)'}
-                  onBlur={e => e.currentTarget.style.borderBottomColor = 'rgba(201,168,64,0.22)'}
-                />
-              </div>
-
-              {erro && (
-                <p className="text-xs flex items-center gap-2" style={{ color: '#FF6060' }}>
-                  <span className="w-1 h-1 rounded-full bg-[#FF6060] flex-shrink-0" />{erro}
-                </p>
-              )}
-
-              <button
-                type="submit" disabled={loading}
-                className="w-full py-4 text-[11px] font-semibold uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50 mt-1"
-                style={{ background: 'linear-gradient(90deg, #7A5E18, #C9A840, #EDD060, #C9A840, #7A5E18)', color: '#080604' }}
-              >
-                {loading
-                  ? <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
-                        <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                      </svg>Entrando
-                    </span>
-                  : 'Entrar'}
-              </button>
-            </form>
-
-            <p className="cf text-[9px] mt-8" style={{ color: '#222', letterSpacing: '0.2em', fontStyle: 'italic' }}>
-              HG Select &copy; {new Date().getFullYear()} — Acesso exclusivo
-            </p>
-          </div>
+            <button
+              type="submit" disabled={loading}
+              className="btn-gold w-full py-4 mt-1 text-[11px] font-semibold uppercase tracking-[0.32em] transition-all active:scale-[0.97] disabled:opacity-50"
+              style={{ background:'linear-gradient(90deg, #7A5E18, #C9A840, #EDD060, #C9A840, #7A5E18)', color:'#050403' }}
+            >
+              {loading
+                ? <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    Entrando
+                  </span>
+                : 'Entrar'}
+            </button>
+          </form>
         </div>
+
+        {/* rodapé */}
+        <p className="fade-3 absolute bottom-6 text-[9px] tracking-widest" style={{ color:'#1C1C1C', fontStyle:'italic', fontFamily:'Cormorant Garamond, serif', zIndex:5 }}>
+          HG Select &copy; {new Date().getFullYear()} — Acesso exclusivo
+        </p>
       </main>
     </>
   )
